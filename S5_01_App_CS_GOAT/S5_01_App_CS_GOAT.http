@@ -1,0 +1,6 @@
+@S5_01_App_CS_GOAT_HostAddress = http://localhost:5185
+
+GET {{S5_01_App_CS_GOAT_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
