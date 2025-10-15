@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_App_CS_GOAT", "S5_01_App_CS_GOAT\S5_01_App_CS_GOAT.csproj", "{5437B235-DBA2-4D17-95B6-455B3C97DD79}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_Blazor_CS_GOAT", "S5_01_Blazor_CS_GOAT\S5_01_Blazor_CS_GOAT.csproj", "{5A4B0666-254C-42B8-B88E-3B069068A6F8}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "S5_01_Flask_CS_GOAT", "S5_01_Flask_CS_GOAT\S5_01_Flask_CS_GOAT.pyproj", "{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
