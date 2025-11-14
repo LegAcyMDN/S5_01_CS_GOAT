@@ -34,14 +34,13 @@
   <ItemGroup>
     <Folder Include="S5_01_Flask_CS_GOAT\" />
     <Folder Include="S5_01_Flask_CS_GOAT\Controllers\" />
-    <Folder Include="S5_01_Flask_CS_GOAT\DataManager\" />
     <Folder Include="S5_01_Flask_CS_GOAT\DTO\" />
     <Folder Include="S5_01_Flask_CS_GOAT\EntityFramework\" />
+    <Folder Include="S5_01_Flask_CS_GOAT\Mapper\" />
     <Folder Include="S5_01_Flask_CS_GOAT\Models\" />
     <Folder Include="S5_01_Flask_CS_GOAT\Models\DataManager\" />
     <Folder Include="S5_01_Flask_CS_GOAT\Models\EntityFramework\" />
     <Folder Include="S5_01_Flask_CS_GOAT\Models\Repository\" />
-    <Folder Include="S5_01_Flask_CS_GOAT\Repository\" />
     <Folder Include="S5_01_Flask_CS_GOAT\static\" />
     <Folder Include="S5_01_Flask_CS_GOAT\static\content\" />
     <Folder Include="S5_01_Flask_CS_GOAT\static\fonts\" />
