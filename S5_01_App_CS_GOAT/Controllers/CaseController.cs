@@ -30,10 +30,10 @@
             [ProducesResponseType(StatusCodes.Status404NotFound)]
             public async Task<IActionResult> Delete(int id)
             {
-                ActionResult<Case?> caseResult = await manager.GetByIdAsync(id);
-                if (caseResult.Value == null)
+                Case? caseResult = await manager.GetByIdAsync(id);
+                if (caseResult == null)
                     return NotFound();
-                await manager.DeleteAsync(caseResult.Value);
+                await manager.DeleteAsync(caseResult);
                 return NoContent();
             }
 

@@ -29,10 +29,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            ActionResult<Item?> item = await manager.GetByIdAsync(id);
-            if (item.Value == null)
+            Item? item = await manager.GetByIdAsync(id);
+            if (item == null)
                 return NotFound();
-            await manager.DeleteAsync(item.Value);
+            await manager.DeleteAsync(item);
             return NoContent();
         }
 

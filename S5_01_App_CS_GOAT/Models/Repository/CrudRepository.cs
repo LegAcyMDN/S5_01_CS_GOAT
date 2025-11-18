@@ -1,6 +1,48 @@
 ﻿namespace S5_01_App_CS_GOAT.Models.Repository
 {
-    public class CrudRepository
+   using Microsoft.EntityFrameworkCore;
+    using S5_01_App_CS_GOAT.Models.EntityFramework;
+    using System;
+
+    public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, string> where TEntity : class
     {
+        protected readonly CSGOATDbContext _context;
+
+        public CrudRepository(CSGOATDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await _context.Set<TEntity>().ToListAsync();
+        }
+
+        public async Task<TEntity?> GetByIdAsync(int id)
+        {
+            return await _context.Set<TEntity>().FindAsync(id);
+        }
+
+        public abstract Task<TEntity?> GetByKeyAsync(string str);
+
+        public async Task<TEntity> AddAsync(TEntity entity)
+        {
+            await _context.Set<TEntity>().AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        public async Task UpdateAsync(TEntity entityToUpdate, TEntity entity)
+        {
+            _context.Set<TEntity>().Attach(entityToUpdate);
+            _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(TEntity entity)
+        {
+            _context.Set<TEntity>().Remove(entity);
+            await _context.SaveChangesAsync();
+        }
     }
 }
