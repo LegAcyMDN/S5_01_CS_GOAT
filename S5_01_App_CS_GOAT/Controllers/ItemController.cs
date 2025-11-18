@@ -24,17 +24,6 @@ namespace S5_01_App_CS_GOAT.Controllers
             return result == null ? NotFound() : Ok(result);
         }
 
-        [HttpDelete("remove/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int id)
-        {
-            Item? item = await manager.GetByIdAsync(id);
-            if (item == null)
-                return NotFound();
-            await manager.DeleteAsync(item);
-            return NoContent();
-        }
 
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -44,42 +33,6 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (item == null || !item.Any())
                 return NotFound();
             return Ok(item);
-        }
-
-        [HttpPost("create")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create( Item item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            await manager.AddAsync(item);
-
-            return CreatedAtAction("Get", new { id = item.ItemId }, item);
-        }
-
-        [HttpPut("update/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int id,  Item item)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            Item? itemToUpdate = await manager.GetByIdAsync(id);
-
-            if (itemToUpdate == null)
-            {
-                return NotFound();
-            }
-            await manager.UpdateAsync(itemToUpdate, item);
-
-            return NoContent();
         }
     }
 }

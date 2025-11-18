@@ -25,17 +25,6 @@
                 return result == null ? NotFound() : Ok(result);
             }
 
-            [HttpDelete("remove/{id}")]
-            [ProducesResponseType(StatusCodes.Status204NoContent)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-            public async Task<IActionResult> Delete(int id)
-            {
-                Case? caseResult = await manager.GetByIdAsync(id);
-                if (caseResult == null)
-                    return NotFound();
-                await manager.DeleteAsync(caseResult);
-                return NoContent();
-            }
 
             [HttpGet("all")]
             [ProducesResponseType(StatusCodes.Status200OK)]
@@ -46,43 +35,6 @@
                     return NotFound();
                 return Ok(caseResult);
             }
-
-            [HttpPost("create")]
-            [ProducesResponseType(StatusCodes.Status201Created)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            public async Task<IActionResult> Create(Case caseItem)
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                await manager.AddAsync(caseItem);
-
-                return CreatedAtAction("Get", new { id = caseItem.CaseId }, caseItem);
-            }
-
-            [HttpPut("update/{id}")]
-            [ProducesResponseType(StatusCodes.Status204NoContent)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-            public async Task<IActionResult> Update(int id, Case Case)
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                Case? caseToUpdate = await manager.GetByIdAsync(id);
-
-                if (caseToUpdate == null)
-                {
-                    return NotFound();
-                }
-                await manager.UpdateAsync(caseToUpdate, Case);
-
-                return NoContent();
-            }
-        }
     }
 
 
