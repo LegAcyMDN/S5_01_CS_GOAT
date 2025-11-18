@@ -16,26 +16,32 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("upg_floatstart")]
+        [Range(0.0, 1.0)]
         public float FloatStart { get; set; }
 
         [Required]
         [Column("upg_floatend")]
+        [Range(0.0, 1.0)]
         public float FloatEnd { get; set; }
 
         [Required]
         [Column("upg_probintact")]
+        [Range(0.0, 1.0)]
         public double ProbIntact { get; set; }
 
         [Required]
         [Column("upg_probdegrade")]
+        [Range(0.0, 1.0)]
         public double ProbDegrade { get; set; }
 
         [Required]
         [Column("upg_propdestroy")]
+        [Range(0.0, 1.0)]
         public double PropDestroy { get; set; }
 
         [Required]
         [Column("upg_degradefuction")]
+        [StringLength(100)]
         public string DegradeFunction { get; set; } = null!;
 
         [ForeignKey($"{nameof(UserId)},{nameof(WearId)}")]

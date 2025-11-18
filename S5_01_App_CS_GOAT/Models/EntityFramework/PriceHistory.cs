@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_pricehistory_prc")]
+    [Index(nameof(PriceDate))]
     public class PriceHistory
     {
         [Key]
@@ -17,6 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("prc_pricevalue")]
+        [Range(0.0, double.MaxValue)]
         public double PriceValue { get; set; }
 
         [Column("prc_guessdate")]

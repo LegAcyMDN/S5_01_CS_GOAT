@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_limittype_lmt")]
+    [Index(nameof(LimitTypeName), IsUnique = true)]
     public class LimitType
     {
         [Key]
@@ -18,6 +20,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("lmt_duration")]
+        [Range(1, int.MaxValue)]
         public int Duration { get; set; }
 
         [Required]

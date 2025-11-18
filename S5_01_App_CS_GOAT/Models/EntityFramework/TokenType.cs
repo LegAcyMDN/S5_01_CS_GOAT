@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_tokentype_tkt")]
+    [Index(nameof(TokenTypeName), IsUnique = true)]
     public class TokenType
     {
         [Key]

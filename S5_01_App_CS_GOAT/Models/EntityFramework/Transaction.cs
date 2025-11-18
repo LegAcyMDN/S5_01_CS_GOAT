@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_transaction_txn")]
+    [Index(nameof(TransactionDate))]
+    [Index(nameof(CancelledOn))]
     public abstract class Transaction
     {
         [Key]
@@ -17,6 +20,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("txn_walletvalue")]
+        [Range(0.0, double.MaxValue)]
         public double WalletValue { get; set; }
 
         [Column("txn_cancelledon")]

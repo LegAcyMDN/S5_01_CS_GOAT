@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_j_ban_ban")]
+    [Index(nameof(BanDate))]
     public class Ban
     {
         [Key]
@@ -18,7 +20,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("ban_bandate")]
         public DateTime BanDate { get; set; } = DateTime.Now;
 
+        [Required]
         [Column("ban_banduration")]
+        [Range(1, int.MaxValue)]
         public int BanDuration { get; set; }
 
         [ForeignKey(nameof(UserId))]

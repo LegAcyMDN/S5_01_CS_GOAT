@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_wear_wer")]
+    [Index(nameof(Uuid))]
     public class Wear
     {
         [Key]
@@ -17,10 +19,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("wer_floatlow")]
+        [Range(0.0, 1.0)]
         public float FloatLow { get; set; }
 
         [Required]
         [Column("wer_floathigh")]
+        [Range(0.0, 1.0)]
         public float FloatHigh { get; set; }
 
         [Required]

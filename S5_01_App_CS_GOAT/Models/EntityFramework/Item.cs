@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_item_itm")]
+    [Index(nameof(ItemName))]
+    [Index(nameof(DefIndex))]
     public class Item
     {
         [Key]
@@ -22,6 +25,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string ItemModel { get; set; } = null!;
 
         [Column("itm_defindex")]
+        [Range(0, int.MaxValue)]
         public int? DefIndex { get; set; }
 
         [Required]

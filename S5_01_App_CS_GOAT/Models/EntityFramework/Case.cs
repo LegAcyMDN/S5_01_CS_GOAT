@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_case_cas")]
+    [Index(nameof(CaseName), IsUnique = true)]
+    [Index(nameof(CasePrice))]
     public class Case
     {
         [Key]
@@ -23,6 +26,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("cas_caseprice")]
+        [Range(0.0, double.MaxValue)]
         public double CasePrice { get; set; }
 
         [InverseProperty(nameof(CaseContent.Case))]
