@@ -32,6 +32,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("frn_fraction")]
+        [Range(0.0, 1.0)]
         public double Fraction { get; set; }
 
         [Column("rtr_id")]

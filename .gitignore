@@ -361,5 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/S5_01_App_CS_GOAT/appsettings.json
-/S5_01_App_CS_GOAT/appsettings.json
+
+# Configuration files with sensitive data
+**/appsettings.json
+**/appsettings.*.json

@@ -6,7 +6,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Table("t_j_limit_lim")]
     public class Limit
     {
-
         [Key]
         [Column("usr_id")]
         public int UserId { get; set; }
@@ -17,6 +16,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("lim_limitamount")]
+        [Range(0.0, double.MaxValue)]
         public double LimitAmount { get; set; }
 
         [ForeignKey(nameof(UserId))]

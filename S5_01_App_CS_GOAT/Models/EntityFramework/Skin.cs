@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_skin_skn")]
+    [Index(nameof(SkinName))]
+    [Index(nameof(PaintIndex))]
     public class Skin
     {
         [Key]
@@ -18,6 +21,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("skn_paintindex")]
+        [Range(0, int.MaxValue)]
         public int PaintIndex { get; set; }
 
         [Required]

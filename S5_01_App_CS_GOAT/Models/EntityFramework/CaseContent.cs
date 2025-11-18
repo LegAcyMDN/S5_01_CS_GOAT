@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_j_casecontent_cct")]
+    [Index(nameof(Weight))]
     public class CaseContent
     {
         [Key]
@@ -16,6 +18,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("cct_weight")]
+        [Range(1, int.MaxValue)]
         public int Weight { get; set; }
 
         [ForeignKey(nameof(CaseId))]

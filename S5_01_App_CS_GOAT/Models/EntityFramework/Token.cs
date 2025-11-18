@@ -1,9 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_token_tkn")]
+    [Index(nameof(TokenCreationDate))]
+    [Index(nameof(TokenExpiry))]
+    [Index(nameof(TokenValue))]
     public class Token
     {
         [Key]

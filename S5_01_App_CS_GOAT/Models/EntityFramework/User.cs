@@ -1,10 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_user_usr")]
+    [Index(nameof(Login), IsUnique = true)]
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(SteamId), IsUnique = true)]
+    [Index(nameof(LastLogin))]
+    [Index(nameof(IsAdmin))]
+    [Index(nameof(DeleteOn))]
     public partial class User
     {
         [Key]
@@ -77,10 +84,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("usr_nonce")]
+        [Range(0, int.MaxValue)]
         public int Nonce { get; set; } = 0;
 
         [Required]
         [Column("usr_wallet")]
+        [Range(0.0, double.MaxValue)]
         public double Wallet { get; set; } = 0.0;
 
         [Column("usr_deletedon")]
