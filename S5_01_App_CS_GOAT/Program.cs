@@ -11,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("LocalConnectionString")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
 
 var app = builder.Build();
 
