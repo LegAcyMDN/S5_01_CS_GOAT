@@ -87,27 +87,27 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DateTime? DeleteOn { get; set; }
 
         [InverseProperty(nameof(Limit.User))]
-        public virtual ICollection<Limit> Limits { get; set; } = new List<Limit>();
+        public virtual ICollection<Limit> Limits { get; set; } = null!;
 
         [InverseProperty(nameof(Token.User))]
-        public virtual ICollection<Token> Tokens { get; set; }
+        public virtual ICollection<Token> Tokens { get; set; } = null!;
 
         [InverseProperty(nameof(UserNotification.User))]
-        public virtual ICollection<UserNotification> UserNotifications { get; set; }
+        public virtual ICollection<UserNotification> UserNotifications { get; set; } = null!;
 
         [InverseProperty(nameof(NotificationSetting.User))]
-        public virtual ICollection<NotificationSetting> NotificationSettings { get; set; }
+        public virtual ICollection<NotificationSetting> NotificationSettings { get; set; } = null!;
 
         [InverseProperty(nameof(Transaction.User))]
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; } = null!;
 
         [InverseProperty(nameof(Ban.User))]
-        public virtual ICollection<Ban> Bans { get; set; }
+        public virtual ICollection<Ban> Bans { get; set; } = null!;
 
         [InverseProperty(nameof(Favorite.User))]
-        public virtual ICollection<Favorite> Favorites { get; set; }
+        public virtual ICollection<Favorite> Favorites { get; set; } = null!;
 
         [InverseProperty(nameof(InventoryItem.User))]
-        public virtual ICollection<InventoryItem> InventoryItems { get; set; }
+        public virtual ICollection<InventoryItem> InventoryItems { get; set; } = null!;
     }
 }

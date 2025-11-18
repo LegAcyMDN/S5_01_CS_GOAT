@@ -43,9 +43,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual InventoryItem InventoryItem { get; set; } = null!;
 
         [InverseProperty(nameof(RandomTransaction.UpgradeResult))]
-        public virtual ICollection<RandomTransaction> RandomTransactions { get; set; }
+        public virtual ICollection<RandomTransaction> RandomTransactions { get; set; } = null!;
 
         [InverseProperty(nameof(FairRandom.UpgradeResult))]
-        public virtual ICollection<FairRandom> FairRandoms { get; set; }
+        public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
     }
 }

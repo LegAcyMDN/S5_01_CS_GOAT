@@ -37,9 +37,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual Rarity Rarity { get; set; } = null!;
 
         [InverseProperty(nameof(CaseContent.Skin))]
-        public virtual ICollection<CaseContent> CaseContents { get; set; }
+        public virtual ICollection<CaseContent> CaseContents { get; set; } = null!;
 
         [InverseProperty(nameof(Wear.Skin))]
-        public virtual ICollection<Wear> Wears { get; set; }
+        public virtual ICollection<Wear> Wears { get; set; } = null!;
     }
 }

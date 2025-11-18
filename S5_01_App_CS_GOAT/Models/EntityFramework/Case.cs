@@ -26,12 +26,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public double CasePrice { get; set; }
 
         [InverseProperty(nameof(CaseContent.Case))]
-        public virtual ICollection<CaseContent> CaseContents { get; set; }
+        public virtual ICollection<CaseContent> CaseContents { get; set; } = null!;
 
         [InverseProperty(nameof(Favorite.Case))]
-        public virtual ICollection<Favorite> Favorites { get; set; }
+        public virtual ICollection<Favorite> Favorites { get; set; } = null!;
 
         [InverseProperty(nameof(RandomTransaction.Case))]
-        public virtual ICollection<RandomTransaction> RandomTransactions { get; set; }
+        public virtual ICollection<RandomTransaction> RandomTransactions { get; set; } = null!;
     }
 }

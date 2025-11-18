@@ -17,6 +17,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string RarityName { get; set; } = null!;
 
         [InverseProperty(nameof(Skin.Rarity))]
-        public virtual ICollection<Skin> Skins { get; set; }
+        public virtual ICollection<Skin> Skins { get; set; } = null!;
     }
 }

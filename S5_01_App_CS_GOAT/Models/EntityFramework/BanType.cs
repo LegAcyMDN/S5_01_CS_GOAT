@@ -17,6 +17,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string BanTypeName { get; set; } = null!;
 
         [InverseProperty(nameof(Ban.BanType))]
-        public virtual ICollection<Ban> Bans { get; set; }
+        public virtual ICollection<Ban> Bans { get; set; } = null!;
     }
 }

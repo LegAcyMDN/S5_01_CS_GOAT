@@ -17,9 +17,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string NotificationTypeName { get; set; } = null!;
 
         [InverseProperty(nameof(NotificationSetting.NotificationType))]
-        public virtual ICollection<NotificationSetting> NotificationSettings { get; set; }
+        public virtual ICollection<NotificationSetting> NotificationSettings { get; set; } = null!;
 
         [InverseProperty(nameof(Notification.NotificationType))]
-        public virtual ICollection<Notification> Notifications { get; set; }
+        public virtual ICollection<Notification> Notifications { get; set; } = null!;
     }
 }

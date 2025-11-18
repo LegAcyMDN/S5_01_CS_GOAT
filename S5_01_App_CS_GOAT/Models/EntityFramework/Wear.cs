@@ -37,9 +37,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual Skin Skin { get; set; } = null!;
 
         [InverseProperty(nameof(PriceHistory.Wear))]
-        public virtual ICollection<PriceHistory> PriceHistories { get; set; }
+        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = null!;
 
         [InverseProperty(nameof(InventoryItem.Wear))]
-        public virtual ICollection<InventoryItem> InventoryItems { get; set; }
+        public virtual ICollection<InventoryItem> InventoryItems { get; set; } = null!;
     }
 }

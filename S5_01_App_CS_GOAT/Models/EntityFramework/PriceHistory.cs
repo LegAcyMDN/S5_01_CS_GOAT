@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("prc_pricedate")]
-        public DateTime PriceDate { get; set; } = null!;
+        public DateTime PriceDate { get; set; }
 
         [Required]
         [Column("prc_pricevalue")]

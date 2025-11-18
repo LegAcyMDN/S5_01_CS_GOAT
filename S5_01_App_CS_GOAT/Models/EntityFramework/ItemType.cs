@@ -24,9 +24,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual ItemType? ParentItemType { get; set; }
 
         [InverseProperty(nameof(ParentItemType))]
-        public virtual ICollection<ItemType> SubItemTypes { get; set; }
+        public virtual ICollection<ItemType> SubItemTypes { get; set; } = null!;
 
         [InverseProperty(nameof(Item.ItemType))]
-        public virtual ICollection<Item> Items { get; set; }
+        public virtual ICollection<Item> Items { get; set; } = null!;
     }
 }

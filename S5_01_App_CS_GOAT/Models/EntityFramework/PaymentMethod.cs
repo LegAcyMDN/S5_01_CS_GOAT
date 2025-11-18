@@ -25,6 +25,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public bool ToWallet { get; set; }
 
         [InverseProperty(nameof(MoneyTransaction.PaymentMethod))]
-        public virtual ICollection<MoneyTransaction> MoneyTransactions { get; set; }
+        public virtual ICollection<MoneyTransaction> MoneyTransactions { get; set; } = null!;
     }
 }

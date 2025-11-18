@@ -34,6 +34,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual NotificationType NotificationType { get; set; } = null!;
 
         [InverseProperty(nameof(Transaction.Notification))]
-        public virtual ICollection<Transaction> Transactions { get; set; }
+        public virtual ICollection<Transaction> Transactions { get; set; } = null!;
     }
 }

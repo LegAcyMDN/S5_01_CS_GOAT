@@ -26,6 +26,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string DurationName { get; set; } = null!;
 
         [InverseProperty(nameof(Limit.LimitType))]
-        public virtual ICollection<Limit> Limits { get; set; }
+        public virtual ICollection<Limit> Limits { get; set; } = null!;
     }
 }

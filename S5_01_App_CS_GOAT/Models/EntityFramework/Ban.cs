@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DateTime BanDate { get; set; } = DateTime.Now;
 
         [Column("ban_banduration")]
-        public DateTime? BanDuration { get; set; }
+        public int BanDuration { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Bans))]

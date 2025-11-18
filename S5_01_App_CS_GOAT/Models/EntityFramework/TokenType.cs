@@ -17,6 +17,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string TokenTypeName { get; set; } = null!;
 
         [InverseProperty(nameof(Token.TokenType))]
-        public virtual ICollection<Token> Tokens { get; set; }
+        public virtual ICollection<Token> Tokens { get; set; } = null!;
     }
 }
