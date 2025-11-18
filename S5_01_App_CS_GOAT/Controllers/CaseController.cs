@@ -11,7 +11,7 @@
         [Route("api/Case")]
         [ApiController]
         public class CaseController(
-            IMapper mapper,
+           // IMapper mapper,
             IDataRepository<Case, int, string> manager,
             CSGOATDbContext context
             ) : ControllerBase

@@ -10,7 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Route("api/items")]
     [ApiController]
     public class ItemController(
-        IMapper mapper,
+        //IMapper mapper,
         IDataRepository<Item, int, string> manager,
         CSGOATDbContext context
         ) : ControllerBase
