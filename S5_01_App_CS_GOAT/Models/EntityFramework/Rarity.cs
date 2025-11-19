@@ -18,6 +18,11 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("rar_rarityname")]
         public string RarityName { get; set; } = null!;
 
+        [Required]
+        [Column("rar_raritycolor")]
+        [RegularExpression("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$")]
+        public string RarityColor { get; set; } = null!;
+
         [InverseProperty(nameof(Skin.Rarity))]
         public virtual ICollection<Skin> Skins { get; set; } = null!;
     }
