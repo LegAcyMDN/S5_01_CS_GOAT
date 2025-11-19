@@ -8,6 +8,12 @@ namespace S5_01_App_CS_GOAT.DTO
         // Element of Class Skin
         public string SkinName { get; set; } = null!;
 
+        // Element of Class Item
+        public string ItemName { get; set; } = null!;
+
+        // Element of Class ItemType
+        public string ItemTypeName { get; set; } = null!;
+
         // Element of Class Rarity
         public string RarityName { get; set; } = null!;
 
