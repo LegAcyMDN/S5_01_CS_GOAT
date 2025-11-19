@@ -8,7 +8,7 @@
     namespace S5_01_App_CS_GOAT.Controllers
     {
 
-        [Route("api/Case")]
+        [Route("api/Cases")]
         [ApiController]
         public class CaseController(
              IMapper mapper,
