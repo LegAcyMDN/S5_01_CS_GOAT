@@ -4,6 +4,8 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    [Route("api/bans")]
+    [ApiController]
     public class BanController(/*IMapper mapper,*/ IDataRepository<Ban, int, string> manager, CSGOATDbContext context) : ControllerBase
     {
         [HttpGet("details/{id}")]

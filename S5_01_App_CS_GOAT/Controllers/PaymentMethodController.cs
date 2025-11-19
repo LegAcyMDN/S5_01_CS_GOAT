@@ -4,7 +4,7 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers;
 
-[Route("api/payment")]
+[Route("api/payments")]
 [ApiController]
 public class PaymentMethodController(
            // IMapper mapper,
