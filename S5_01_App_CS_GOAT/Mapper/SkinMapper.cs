@@ -12,11 +12,43 @@ public class SkinMapper : Profile
         CreateMap<Skin, SkinDTO>()
             .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.SkinName));
 
-        // DTO → Entity
+        //DTO → Entity
         CreateMap<SkinDTO, Skin>()
             .ForMember(dest => dest.SkinId, opt => opt.Ignore())
             .ForMember(dest => dest.ItemId, opt => opt.Ignore())
             .ForMember(dest => dest.PaintIndex, opt => opt.Ignore())
             .ForMember(dest => dest.RarityId, opt => opt.Ignore());
+
+        //Entity → DetailDTO
+        CreateMap<Skin, SkinDetailDTO>()
+            .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.SkinName))
+            .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Rarity.RarityName))
+            .ForMember(dest => dest.WearName, opt => opt.MapFrom(src => src.Wears.First().WearValue))
+            .ForMember(dest => dest.FloatLow, opt => opt.MapFrom(src => src.Wears.First().FloatLow))
+            .ForMember(dest => dest.FloatHigh, opt => opt.MapFrom(src => src.Wears.First().FloatHigh))
+            .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Wears.First().Uuid));
+
+        //DetailDTO → Entity
+        CreateMap<SkinDetailDTO, Skin>()
+            .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.SkinName))
+            .ForMember(dest => dest.Rarity, opt => opt.Ignore())
+            .ForMember(dest => dest.RarityId, opt => opt.Ignore())
+            .ForMember(dest => dest.PaintIndex, opt => opt.Ignore())
+            .ForMember(dest => dest.ItemId, opt => opt.Ignore())
+            .ForMember(dest => dest.Item, opt => opt.Ignore())
+            .ForMember(dest => dest.CaseContents, opt => opt.Ignore())
+
+            // Reconstruction d'une liste Wear
+            .ForMember(dest => dest.Wears, opt => opt.MapFrom(src =>
+                new List<Wear>
+                {
+                    new Wear
+                    {
+                        WearName = src.WearName,
+                        FloatLow = src.FloatLow,
+                        FloatHigh = src.FloatHigh,
+                        Uuid = src.Uuid
+                    }
+                }));
     }
 }
