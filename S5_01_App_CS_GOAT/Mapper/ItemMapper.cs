@@ -8,18 +8,17 @@ public class ItemMapper : Profile
 {
     public ItemMapper()
     {
-        //// Entity → DTO
-        //CreateMap<Item, ItemDTO>()
-        //    .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.ItemName))
-        //    .ForMember(dest => dest.ItemModel, opt => opt.MapFrom(src => src.ItemModel))
-        //    .ForMember(dest => dest.DefIndex, opt => opt.MapFrom(src => src.DefIndex));
+        // Entity → DTO
+        CreateMap<Item, ItemDTO>()
+            .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.ItemName))
+            .ForMember(dest => dest.ItemModel, opt => opt.MapFrom(src => src.ItemModel));
 
-        //// DTO → Entity
-        //CreateMap<ItemDTO, Item>()
-        //    .ForMember(dest => dest.ItemId, opt => opt.Ignore())
-        //    .ForMember(dest => dest.ItemTypeId, opt => opt.Ignore())
-        //    .ForMember(dest => dest.ItemType, opt => opt.Ignore())
-        //    .ForMember(dest => dest.Skins, opt => opt.Ignore())
-        //    .ForMember(dest => dest.PriceHistories, opt => opt.Ignore());
+        // DTO → Entity
+        CreateMap<ItemDTO, Item>()
+            .ForMember(dest => dest.ItemId, opt => opt.Ignore())
+            .ForMember(dest => dest.ItemTypeId, opt => opt.Ignore())
+            .ForMember(dest => dest.ItemType, opt => opt.Ignore())
+            .ForMember(dest => dest.Skins, opt => opt.Ignore())
+            .ForMember(dest => dest.DefIndex, opt => opt.Ignore());
     }
 }
