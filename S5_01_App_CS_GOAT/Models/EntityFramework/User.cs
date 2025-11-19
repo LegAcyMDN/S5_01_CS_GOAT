@@ -118,5 +118,8 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [InverseProperty(nameof(InventoryItem.User))]
         public virtual ICollection<InventoryItem> InventoryItems { get; set; } = null!;
+
+        [InverseProperty(nameof(PromoCode.User))]
+        public virtual ICollection<PromoCode> PromoCodes { get; set; } = null!;
     }
 }

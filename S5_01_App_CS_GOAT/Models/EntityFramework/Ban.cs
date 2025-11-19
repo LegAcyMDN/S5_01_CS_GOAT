@@ -17,6 +17,11 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public int BanTypeId { get; set; }
 
         [Required]
+        [Column("ban_reason")]
+        [StringLength(255)]
+        public string BanReason { get; set; } = null!;
+
+        [Required]
         [Column("ban_bandate")]
         public DateTime BanDate { get; set; } = DateTime.Now;
 

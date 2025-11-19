@@ -14,8 +14,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public int WearId { get; set; }
 
         [Required]
-        [Column("wer_wearid")]
-        public int WearValue { get; set; }
+        [Column("wer_wearname")]
+        [StringLength(50)]
+        public string WearName { get; set; } = null!;
 
         [Required]
         [Column("wer_floatlow")]

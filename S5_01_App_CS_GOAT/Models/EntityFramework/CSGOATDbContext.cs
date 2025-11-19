@@ -44,6 +44,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DbSet<PriceHistory> PriceHistories { get; set; }
         public DbSet<Limit> Limits { get; set; }
         public DbSet<LimitType> LimitTypes { get; set; }
+        public DbSet<PromoCode> PromoCodes { get; set; }
 
         public CSGOATDbContext()
         {
@@ -385,6 +386,20 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithOne(m => m.LimitType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_limit_limittype");
+            });
+
+            // Configure PromoCode
+            modelBuilder.Entity<PromoCode>(e =>
+            {
+                e.HasKey(p => p.PromoCodeId);
+                e.HasOne(p => p.User)
+                    .WithMany(m => m.PromoCodes)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_promocode_user");
+                e.HasOne(p => p.Case)
+                    .WithMany(m => m.PromoCodes)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_promocode_case");
             });
 
             OnModelCreatingPartial(modelBuilder);

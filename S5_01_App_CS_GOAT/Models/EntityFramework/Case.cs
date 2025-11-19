@@ -37,5 +37,8 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [InverseProperty(nameof(RandomTransaction.Case))]
         public virtual ICollection<RandomTransaction> RandomTransactions { get; set; } = null!;
+
+        [InverseProperty(nameof(PromoCode.Case))]
+        public virtual ICollection<PromoCode> PromoCodes { get; set; } = null!;
     }
 }

@@ -10,6 +10,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("usr_id")]
         public int UserId { get; set; }
 
+        [Required]
+        [Column("unf_isread")]
+        public bool IsRead { get; set; } = false;
+
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.UserNotifications))]
         public virtual User User { get; set; } = null!;

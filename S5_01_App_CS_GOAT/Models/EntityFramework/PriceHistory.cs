@@ -4,25 +4,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
-    [Table("t_e_pricehistory_prc")]
+    [Table("t_e_pricehistory_prh")]
     [Index(nameof(PriceDate))]
     public class PriceHistory
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("prc_id")]
+        [Column("prh_id")]
         public int PriceHistoryId { get; set; }
 
         [Required]
-        [Column("prc_pricedate")]
+        [Column("prh_pricedate")]
         public DateTime PriceDate { get; set; }
 
         [Required]
-        [Column("prc_pricevalue")]
+        [Column("prh_pricevalue")]
         [Range(0.0, double.MaxValue)]
         public double PriceValue { get; set; }
 
-        [Column("prc_guessdate")]
+        [Column("prh_guessdate")]
         public DateTime? GuessDate { get; set; }
 
         [Required]
