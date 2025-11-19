@@ -19,6 +19,7 @@ builder.Services.AddScoped<IDataRepository<Item, int, string>, ItemManager>();
 builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
+builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
 
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>

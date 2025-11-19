@@ -3,6 +3,9 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers;
+
+[Route("api/payment")]
+[ApiController]
 public class PaymentMethodController(
            // IMapper mapper,
            IDataRepository<PaymentMethod, int, string> manager,

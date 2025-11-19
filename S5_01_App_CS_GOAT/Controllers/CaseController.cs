@@ -1,6 +1,6 @@
 ﻿namespace S5_01_App_CS_GOAT.Controllers
 {
-    using AutoMapper;
+    using global::AutoMapper;
     using global::S5_01_App_CS_GOAT.DTO;
     using global::S5_01_App_CS_GOAT.Models.EntityFramework;
     using global::S5_01_App_CS_GOAT.Models.Repository;
