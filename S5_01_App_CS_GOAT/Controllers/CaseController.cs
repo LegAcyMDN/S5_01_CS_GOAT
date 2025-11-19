@@ -1,17 +1,17 @@
 ﻿namespace S5_01_App_CS_GOAT.Controllers
 {
-    using AutoMapper;
+    using global::AutoMapper;
+    using global::S5_01_App_CS_GOAT.DTO;
     using global::S5_01_App_CS_GOAT.Models.EntityFramework;
     using global::S5_01_App_CS_GOAT.Models.Repository;
     using Microsoft.AspNetCore.Mvc;
-
     namespace S5_01_App_CS_GOAT.Controllers
     {
 
-        [Route("api/Case")]
+        [Route("api/Cases")]
         [ApiController]
         public class CaseController(
-            // IMapper mapper,
+             IMapper mapper,
             IDataRepository<Case, int, string> manager,
             CSGOATDbContext context
             ) : ControllerBase
@@ -22,18 +22,19 @@
             public async Task<IActionResult> Get(int id)
             {
                 Case? result = await manager.GetByIdAsync(id);
-                return result == null ? NotFound() : Ok(result);
+                return result == null ? NotFound() : Ok(mapper.Map<CaseDTO>(result));
             }
 
 
             [HttpGet("all")]
             [ProducesResponseType(StatusCodes.Status200OK)]
-            public async Task<ActionResult<IEnumerable<Case>>> GetAll()
+            public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
             {
                 IEnumerable<Case?> caseResult = await manager.GetAllAsync();
                 if (caseResult == null || !caseResult.Any())
                     return NotFound();
-                return Ok(caseResult);
+                IEnumerable<CaseDTO?> caseDto = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
+                return Ok(caseDto);
             }
         }
 
