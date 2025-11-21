@@ -49,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual RandomTransaction? RandomTransaction { get; set; }
 
         [ForeignKey($"{nameof(UserIdUpgrade)},{nameof(WearIdUpgrade)}")]
-        [InverseProperty(nameof(UpgradeResult.FairRandoms))]
+        [InverseProperty(nameof(UpgradeResult.FairRandom))]
         public virtual UpgradeResult? UpgradeResult { get; set; }
     }
 }
