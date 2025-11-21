@@ -2,7 +2,11 @@ namespace S5_01_App_CS_GOAT.DTO;
 
 public class InventoryItemDTO
 {
-    public string? RarityColor{ get; set; }
+    public int UserId { get; set; }
+
+    public int WearId { get; set; }
+
+    public string RarityColor { get; set; } = null!;
 
     public bool IsFavorite { get; set; }
 
