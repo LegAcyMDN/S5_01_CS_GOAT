@@ -1,4 +1,4 @@
-namespace S5_01_App_CS_GOAT.AutoMapper;
+namespace S5_01_App_CS_GOAT.Mapper;
 
 public interface IMapper<Entity, DTO>
 {
