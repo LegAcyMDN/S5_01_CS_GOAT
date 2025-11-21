@@ -11,6 +11,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         {
             // Entity -> DTO
             CreateMap<User, UserDetailDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.Login, opt => opt.MapFrom(src => src.Login))
                 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.DisplayName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))

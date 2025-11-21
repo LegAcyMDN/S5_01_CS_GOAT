@@ -10,6 +10,7 @@ public class CaseMapper : Profile
     {
         // Entity -> DTO
         CreateMap<Case, CaseDTO>()
+            .ForMember(dest => dest.CaseId, opt => opt.MapFrom(src => src.CaseId))
             .ForMember(dest => dest.CaseName, opt => opt.MapFrom(src => src.CaseName))
             .ForMember(dest => dest.CaseImage, opt => opt.MapFrom(src => src.CaseImage))
             .ForMember(dest => dest.CasePrice, opt => opt.MapFrom(src => src.CasePrice))

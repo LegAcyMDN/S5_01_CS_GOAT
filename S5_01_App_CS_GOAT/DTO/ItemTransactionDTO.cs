@@ -6,7 +6,9 @@ namespace S5_01_App_CS_GOAT.DTO
 {
     public class ItemTransactionDTO
     {
-       public DateTime TransactionDate { get; set; }
+        public int? UserIdItem { get; set; }
+        public int? WearIdItem { get; set; }
+        public DateTime TransactionDate { get; set; }
         public double WalletValue { get; set; }
 
         public DateTime? CancelledOn { get; set; }
