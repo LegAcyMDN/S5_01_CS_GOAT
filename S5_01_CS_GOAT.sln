@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_App_CS_GOAT", "S5_01_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_Blazor_CS_GOAT", "S5_01_Blazor_CS_GOAT\S5_01_Blazor_CS_GOAT.csproj", "{5A4B0666-254C-42B8-B88E-3B069068A6F8}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "S5_01_Flask_CS_GOAT", "S5_01_Flask_CS_GOAT\S5_01_Flask_CS_GOAT.pyproj", "{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
