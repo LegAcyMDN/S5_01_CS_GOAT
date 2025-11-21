@@ -18,12 +18,13 @@ namespace S5_01_App_CS_GOAT.DTO
 
         public string SkinName { get; set; } = null!;
 
+        public string ItemName { get; set; } = null!;
+
+        public string ItemTypeName { get; set; } = null!;
+
         public string RarityColor { get; set; } = null!;
 
         public string RarityName { get; set;} = null!;
 
-        public string ItemName { get; set; } = null!;
-
-        public string ItemTypeName { get; set; } = null!;
     }
 }
