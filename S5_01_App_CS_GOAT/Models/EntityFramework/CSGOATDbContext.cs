@@ -185,7 +185,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             modelBuilder.Entity<RandomTransaction>(e =>
             {
                 e.HasOne(p => p.UpgradeResult)
-                    .WithMany(m => m.RandomTransactions)
+                    .WithOne(m => m.RandomTransaction)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_randomtransaction_upgraderesult");
                 e.HasOne(p => p.Case)
@@ -330,11 +330,11 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithMany(m => m.UpgradeResults)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_upgraderesult_inventoryitem");
-                e.HasMany(p => p.RandomTransactions)
+                e.HasOne(p => p.RandomTransaction)
                     .WithOne(m => m.UpgradeResult)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_randomtransaction_upgraderesult");
-                e.HasMany(p => p.FairRandoms)
+                e.HasOne(p => p.FairRandom)
                     .WithOne(m => m.UpgradeResult)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_upgraderesult");
@@ -349,7 +349,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_randomtransaction");
                 e.HasOne(p => p.UpgradeResult)
-                    .WithMany(m => m.FairRandoms)
+                    .WithOne(m => m.FairRandom)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_upgraderesult");
             });

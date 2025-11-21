@@ -4,6 +4,8 @@ namespace S5_01_App_CS_GOAT.DTO;
 
 public class UserDetailDTO
 {
+    public int UserId { get; set; }
+
     public string Login { get; set; } = null!;
 
     public string DisplayName { get; set; } = null!;

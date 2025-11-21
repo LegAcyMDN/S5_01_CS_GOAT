@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
 
         [ForeignKey($"{nameof(UserIdUpgrade)},{nameof(WearIdUpgrade)}")]
-        [InverseProperty(nameof(UpgradeResult.RandomTransactions))]
+        [InverseProperty(nameof(UpgradeResult.RandomTransaction))]
         public virtual UpgradeResult? UpgradeResult { get; set; }
 
         [ForeignKey(nameof(CaseId))]

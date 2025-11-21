@@ -6,6 +6,14 @@ namespace S5_01_App_CS_GOAT.DTO
 {
     public class FairRandomDTO
     {
+        public int? UserIdUpgrade { get; set; }
+
+        public int? WearIdUpgrade { get; set; }
+
+        public int UserId { get; set; }
+
+        public int WearId { get; set; }
+
         public string ServerSeed { get; set; } = null!;
    
         public string ServerHash { get; set; } = null!;
