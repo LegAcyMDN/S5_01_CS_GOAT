@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_promocode_prc")]
+    [Index(nameof(Code))]
+    [Index(nameof(ExpiryDate))]
     public class PromoCode
     {
         [Key]
