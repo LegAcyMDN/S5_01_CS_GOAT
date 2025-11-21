@@ -2,8 +2,9 @@
 {
     public class CaseDTO
     {
-        public string? CaseName { get; set; } 
+        public string CaseName { get; set; } = null!;
         public string? CaseImage { get; set; }
         public double CasePrice { get; set; }
+        public bool IsFavorite { get; set; }
     }
 }
