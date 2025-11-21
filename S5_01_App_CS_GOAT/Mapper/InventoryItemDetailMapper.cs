@@ -4,9 +4,9 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 
 namespace S5_01_App_CS_GOAT.AutoMapper;
 
-public class InventoryItemMapper : Profile
+public class InventoryItemDetail : Profile
 {
-    public InventoryItemMapper()
+    public InventoryItemDetail()
     {
         // Entity → DTO
         CreateMap<InventoryItem, InventoryItemDTO>()
