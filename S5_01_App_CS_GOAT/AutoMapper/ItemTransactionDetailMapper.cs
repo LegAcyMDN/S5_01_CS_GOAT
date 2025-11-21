@@ -1,0 +1,38 @@
+﻿using AutoMapper;
+using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+
+namespace S5_01_App_CS_GOAT.AutoMapper
+{
+    public class ItemTransactionDetailMapper : Profile
+    {
+        public ItemTransactionDetailMapper()
+        {
+            // Entity -> DTO
+            CreateMap<ItemTransaction, ItemTransactionDetailDTO>()
+                .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
+                .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
+                .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn))
+                .ForMember(dest => dest.WearName, opt => opt.MapFrom(src => src.InventoryItem.Wear.WearName))
+                .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.SkinName))
+                .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.Item.ItemName))
+                .ForMember(dest => dest.ItemTypeName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.Item.ItemType.ItemTypeName))
+                .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.InventoryItem.Wear.Uuid))
+                .ForMember(dest => dest.RarityColor, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.Rarity.RarityColor));
+
+            // DTO -> Entity
+            CreateMap<ItemTransactionDetailDTO, ItemTransaction>()
+                .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
+                .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
+                .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn))
+                .ForMember(dest => dest.TransactionId, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.NotificationId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Notification, opt => opt.Ignore())
+                .ForMember(dest => dest.UserIdItem, opt => opt.Ignore())
+                .ForMember(dest => dest.WearIdItem, opt => opt.Ignore())
+                .ForMember(dest => dest.InventoryItem, opt => opt.Ignore());
+        }
+    }
+}
