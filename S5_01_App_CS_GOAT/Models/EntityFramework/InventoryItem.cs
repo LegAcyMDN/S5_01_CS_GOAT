@@ -19,11 +19,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public int WearId { get; set; }
 
         [Required]
-        [StringLength(100)]
-        [Column("inv_fullname")]
-        public string FullName { get; set; } = null!;
-
-        [Required]
         [Column("inv_float")]
         [Range(0.0, 1.0)]
         public float Float { get; set; }
