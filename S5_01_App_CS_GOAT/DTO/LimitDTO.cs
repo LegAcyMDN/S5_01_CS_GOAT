@@ -3,5 +3,9 @@
     public class LimitDTO
     {
         public double LimitAmount { get; set; } = 0;
+
+        public string LimitTypeName { get; set; } = null!;
+
+        public string DurationName { get; set; } = null!;
     }
 }
