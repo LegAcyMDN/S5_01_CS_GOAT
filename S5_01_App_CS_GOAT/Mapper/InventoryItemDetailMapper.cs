@@ -26,7 +26,7 @@ public class InventoryItemDetailMapper : Profile
             .ForMember(dest => dest.UserId, opt => opt.Ignore())
             .ForMember(dest => dest.WearId, opt => opt.Ignore())
             .ForMember(dest => dest.RemovedOn, opt => opt.Ignore())
-            .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float))
+            .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float)) 
             .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
             .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn));
     }
