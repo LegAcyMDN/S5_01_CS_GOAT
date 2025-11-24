@@ -21,6 +21,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("cas_id")]
         public int? CaseId { get; set; }
 
+        [Column("frn_id")]
+        public int? FairRandomId { get; set; }
+
+        [ForeignKey(nameof(FairRandomId))]
         [InverseProperty(nameof(FairRandom.RandomTransaction))]
         public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
 

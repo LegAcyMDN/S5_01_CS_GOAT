@@ -18,8 +18,8 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.DegradeFunction, opt => opt.MapFrom(src => src.DegradeFunction))
                 .ForMember(dest => dest.UserIdUpgrade, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.WearIdUpgrade, opt => opt.MapFrom(src => src.WearId))
-                .ForMember(dest => dest.FairRandomId, opt => opt.MapFrom(src => src.FairRandoms.First().FairRandomId))
-                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.RandomTransactions.First().TransactionId));
+                .ForMember(dest => dest.FairRandomId, opt => opt.MapFrom(src => src.FairRandomId))
+                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.RandomTransaction.TransactionId));
 
             // DTO -> Entity 
             CreateMap<UpgradeResultDTO, UpgradeResult>()
@@ -31,10 +31,8 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.ProbDegrade, opt => opt.MapFrom(src => src.ProbDegrade))
                 .ForMember(dest => dest.PropDestroy, opt => opt.MapFrom(src => src.PropDestroy))
                 .ForMember(dest => dest.DegradeFunction, opt => opt.MapFrom(src => src.DegradeFunction))
-                .ForMember(dest => dest.FairRandoms, opt => opt.MapFrom((src, dest) =>
-                    (src.FairRandomId != 0) ? new List<FairRandom> { new FairRandom { FairRandomId = src.FairRandomId } } : new List<FairRandom>()))
-                .ForMember(dest => dest.RandomTransactions, opt => opt.MapFrom((src, dest) =>
-                    (src.TransactionId != 0) ? new List<RandomTransaction> { new RandomTransaction { TransactionId = src.TransactionId } } : new List<RandomTransaction>()));
+                .ForMember(dest => dest.FairRandomId, opt => opt.MapFrom(src => src.FairRandomId))
+                .ForMember(dest => dest.RandomTransaction, opt => opt.Ignore());
         }
     }
 }
