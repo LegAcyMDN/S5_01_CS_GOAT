@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -24,6 +25,7 @@ builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomM
 builder.Services.AddScoped<IDataRepository<Favorite, int, string>, FavoriteManager>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, GlobalNotificationManager>();
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
+builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
 
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
