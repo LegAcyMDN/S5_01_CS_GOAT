@@ -22,5 +22,5 @@ public interface IWriteRepository<TEntity>
 public interface IDataRepository<TEntity, TIdentifier, TKey>
     : ISearchableRepository<TEntity, TKey>,
       IReadableRepository<TEntity, TIdentifier>,
-      IWriteRepository<TEntity>,
+      IWriteRepository<TEntity>
 { }

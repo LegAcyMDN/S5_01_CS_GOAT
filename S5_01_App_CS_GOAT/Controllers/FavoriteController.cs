@@ -19,22 +19,37 @@
             CSGOATDbContext context
             ) : ControllerBase
         {
-
-
+            [HttpGet("details/{id}")]
+            [ProducesResponseType(StatusCodes.Status200OK)]
+            [ProducesResponseType(StatusCodes.Status404NotFound)]
+          
             [HttpDelete("remove/{id}")]
             [ProducesResponseType(StatusCodes.Status204NoContent)]
             [ProducesResponseType(StatusCodes.Status404NotFound)]
             public async Task<IActionResult> Delete(int id)
             {
-                ActionResult<Favorite?> Favorite = await manager.GetByIdAsync(id);
-                if (Favorite.Value == null)
+               Favorite? Favorite = await manager.GetByIdAsync(id);
+                if (Favorite == null)
                     return NotFound();
-                await manager.DeleteAsync(Favorite.Value);
+                await manager.DeleteAsync(Favorite);
                 return NoContent();
             }
 
+    
+            [HttpPost("create")]
+            [ProducesResponseType(StatusCodes.Status201Created)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest)]
+            public async Task<IActionResult> Create([FromBody] Favorite favorite)
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                await manager.AddAsync(favorite);
+                return CreatedAtAction("Get", new { id = favorite.CaseId, favorite.UserId }, favorite);
+            }
 
         }
     }
 }
-
