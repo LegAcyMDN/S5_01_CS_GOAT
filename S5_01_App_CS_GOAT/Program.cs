@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -21,6 +22,11 @@ builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, Inventor
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomManager>();
+builder.Services.AddScoped<IDataRepository<Favorite, int, string>, FavoriteManager>();
+builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, GlobalNotificationManager>();
+builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
+builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
+builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>

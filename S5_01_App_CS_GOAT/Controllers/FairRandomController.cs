@@ -4,6 +4,7 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using System;
+using System.Collections.Generic;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -15,15 +16,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         CSGOATDbContext context
         ) : ControllerBase
     {
-        [HttpGet("details/{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Get(int id)
-        {
-            FairRandom? result = await manager.GetByIdAsync(id);
-            return result == null ? NotFound() : Ok(mapper.Map<FairRandomDTO>(result));
-        }
-        
+   
 
-}
-}
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<FairRandomDTO>>> GetAll()
+        {
+            IEnumerable<FairRandom?> fairRandom = await manager.GetAllAsync();
+            if (fairRandom == null || !fairRandom.Any())
+                return NotFound();
+
+            IEnumerable<FairRandomDTO?> fairRandomDto = mapper.Map<IEnumerable<FairRandomDTO>>(fairRandom);
+            return Ok(fairRandomDto);
+        }
+
+       
+        }
+    }
