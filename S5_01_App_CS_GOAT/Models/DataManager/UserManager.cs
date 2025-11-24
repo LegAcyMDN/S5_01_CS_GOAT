@@ -104,7 +104,9 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
     // Simple verification example: if code matches seed, mark email verified. Real logic should be more robust.
     public async Task<bool> VerifyAsync(int id, string code)
     {
-        var user = await _context.Set<User>().FindAsync(id);
+        throw new NotImplementedException();
+
+        /*var user = await _context.Set<User>().FindAsync(id);
         if (user == null)
             return false;
 
@@ -115,6 +117,6 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
             return true;
         }
 
-        return false;
+        return false;*/
     }
 }
