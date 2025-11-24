@@ -19,10 +19,7 @@
             CSGOATDbContext context
             ) : ControllerBase
         {
-            [HttpGet("details/{id}")]
-            [ProducesResponseType(StatusCodes.Status200OK)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-          
+
             [HttpDelete("remove/{id}")]
             [ProducesResponseType(StatusCodes.Status204NoContent)]
             [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -47,7 +44,7 @@
                 }
 
                 await manager.AddAsync(favorite);
-                return CreatedAtAction("Get", new { id = favorite.CaseId, favorite.UserId }, favorite);
+                return CreatedAtAction(null, new { id = favorite.CaseId, favorite.UserId }, favorite);
             }
 
         }
