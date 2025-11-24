@@ -22,7 +22,8 @@ builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentM
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomManager>();
 builder.Services.AddScoped<IDataRepository<Favorite, int, string>, FavoriteManager>();
-builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, NotificationManager>();
+builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, GlobalNotificationManager>();
+builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
 
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
