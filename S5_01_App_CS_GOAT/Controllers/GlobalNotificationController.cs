@@ -6,7 +6,7 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-    [Route("api/notification")]
+    [Route("api/globalNotification")]
     [ApiController]
     public class GlobalNotificationController(
         IMapper mapper,
