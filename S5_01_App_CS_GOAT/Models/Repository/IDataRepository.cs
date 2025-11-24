@@ -1,16 +1,6 @@
-﻿namespace S5_01_App_CS_GOAT.Models.Repository;
+﻿using S5_01_App_CS_GOAT.Services;
 
-public class FilterOptions // à mettre dans un dossier service
-{ 
-    public Dictionary<string, object?>? Filters { get; set; }
-    public int? Page { get; set; }
-    public int? PageSize { get; set; }
-}
-
-public class SortOptions 
-{
-    public Dictionary<string, string>? Sorts { get; set; }
-}
+namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface ISearchableRepository<TEntity, TKey>
 {
@@ -35,8 +25,5 @@ public interface IWriteRepository<TEntity>
 }
 
 public interface IDataRepository<TEntity, TIdentifier, TKey>
-    : ISearchableRepository<TEntity, TKey>,
-      IReadableRepository<TEntity, TIdentifier>,
-      IWriteRepository<TEntity>
-{
-}
+    : ISearchableRepository<TEntity, TKey>, IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
+{}
