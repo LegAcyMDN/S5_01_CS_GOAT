@@ -15,7 +15,7 @@
         [ApiController]
         public class TransactionController(
             IMapper mapper,
-            IDataRepository<Favorite, int, string> manager,
+            IDataRepository<Transaction, int, string> manager,
             CSGOATDbContext context
             ) : ControllerBase
         {
@@ -25,28 +25,12 @@
             [ProducesResponseType(StatusCodes.Status404NotFound)]
             public async Task<IActionResult> Delete(int id)
             {
-                Favorite? Favorite = await manager.GetByIdAsync(id);
-                if (Favorite == null)
+                Transaction? transaction = await manager.GetByIdAsync(id);
+                if (transaction == null)
                     return NotFound();
-                await manager.DeleteAsync(Favorite);
+                await manager.DeleteAsync(transaction);
                 return NoContent();
             }
-
-
-            [HttpPost("create")]
-            [ProducesResponseType(StatusCodes.Status201Created)]
-            [ProducesResponseType(StatusCodes.Status400BadRequest)]
-            public async Task<IActionResult> Create([FromBody] Favorite favorite)
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                await manager.AddAsync(favorite);
-                return CreatedAtAction(null, new { id = favorite.CaseId, favorite.UserId }, favorite);
-            }
-
         }
     }
 }
