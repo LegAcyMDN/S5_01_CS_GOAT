@@ -25,6 +25,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public int PaintIndex { get; set; }
 
         [Required]
+        [Column("skn_uvtype")]
+        public int UvType { get; set; }
+
+        [Required]
         [Column("itm_id")]
         public int ItemId { get; set; }
 

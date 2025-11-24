@@ -35,21 +35,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Range(0.0, 1.0)]
         public double Fraction { get; set; }
 
-        [Column("rtr_id")]
-        public int? RandomTransactionId { get; set; }
-
-        [Column("usr_id_upgrade")]
-        public int? UserIdUpgrade { get; set; }
-
-        [Column("wer_id_upgrade")]
-        public int? WearIdUpgrade { get; set; }
-
-        [ForeignKey(nameof(RandomTransactionId))]
         [InverseProperty(nameof(RandomTransaction.FairRandoms))]
         public virtual RandomTransaction? RandomTransaction { get; set; }
 
-        [ForeignKey($"{nameof(UserIdUpgrade)},{nameof(WearIdUpgrade)}")]
-        [InverseProperty(nameof(UpgradeResult.FairRandoms))]
+        [InverseProperty(nameof(UpgradeResult.FairRandom))]
         public virtual UpgradeResult? UpgradeResult { get; set; }
     }
 }

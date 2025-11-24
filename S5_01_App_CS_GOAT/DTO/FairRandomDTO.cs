@@ -15,5 +15,11 @@ namespace S5_01_App_CS_GOAT.DTO
         public string CombinedHash { get; set; } = null!;
 
         public double Fraction { get; set; }
+
+        public int? TransactionId { get; set; }
+
+        public int? ItemWearId { get; set; }
+
+        public int? ItemUserId { get; set; }
     }
 }

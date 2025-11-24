@@ -44,14 +44,19 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [StringLength(100)]
         public string DegradeFunction { get; set; } = null!;
 
+        [Required]
+        [Column("frn_id")]
+        public int FairRandomId { get; set; }
+
         [ForeignKey($"{nameof(UserId)},{nameof(WearId)}")]
         [InverseProperty(nameof(InventoryItem.UpgradeResults))]
         public virtual InventoryItem InventoryItem { get; set; } = null!;
 
         [InverseProperty(nameof(RandomTransaction.UpgradeResult))]
-        public virtual ICollection<RandomTransaction> RandomTransactions { get; set; } = null!;
+        public virtual RandomTransaction RandomTransaction { get; set; } = null!;
 
+        [ForeignKey(nameof(FairRandomId))]
         [InverseProperty(nameof(FairRandom.UpgradeResult))]
-        public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
+        public virtual FairRandom FairRandom { get; set; } = null!;
     }
 }

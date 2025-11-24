@@ -2,7 +2,7 @@
 using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 
-namespace S5_01_App_CS_GOAT.AutoMapper
+namespace S5_01_App_CS_GOAT.Mapper
 {
     public class ItemTransactionMapper : Profile
     {
@@ -10,12 +10,16 @@ namespace S5_01_App_CS_GOAT.AutoMapper
         {
             // Entity → DTO
             CreateMap<ItemTransaction, ItemTransactionDTO>()
+                .ForMember(dest => dest.UserIdItem, opt => opt.MapFrom(src => src.UserIdItem))
+                .ForMember(dest => dest.WearIdItem, opt => opt.MapFrom(src => src.WearIdItem))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
                 .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn));
 
             // DTO → Entity
             CreateMap<ItemTransactionDTO, ItemTransaction>()
+                .ForMember(dest => dest.UserIdItem, opt => opt.MapFrom(src => src.UserIdItem))
+                .ForMember(dest => dest.WearIdItem, opt => opt.MapFrom(src => src.WearIdItem))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
                 .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn))
@@ -23,7 +27,8 @@ namespace S5_01_App_CS_GOAT.AutoMapper
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.NotificationId, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.Notification, opt => opt.Ignore());
+                .ForMember(dest => dest.Notification, opt => opt.Ignore())
+                .ForMember(dest => dest.InventoryItem, opt => opt.Ignore());
         }
     }
 }

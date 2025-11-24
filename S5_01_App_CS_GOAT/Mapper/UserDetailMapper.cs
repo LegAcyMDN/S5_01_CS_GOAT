@@ -3,7 +3,7 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Partials;
 
-namespace S5_01_App_CS_GOAT.AutoMapper
+namespace S5_01_App_CS_GOAT.Mapper
 {
     public class UserDetailMapper : Profile
     {
@@ -11,6 +11,7 @@ namespace S5_01_App_CS_GOAT.AutoMapper
         {
             // Entity -> DTO
             CreateMap<User, UserDetailDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
                 .ForMember(dest => dest.Login, opt => opt.MapFrom(src => src.Login))
                 .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.DisplayName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))

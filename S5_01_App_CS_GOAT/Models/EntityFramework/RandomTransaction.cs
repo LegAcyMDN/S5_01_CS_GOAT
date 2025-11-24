@@ -21,11 +21,15 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("cas_id")]
         public int? CaseId { get; set; }
 
+        [Column("frn_id")]
+        public int? FairRandomId { get; set; }
+
+        [ForeignKey(nameof(FairRandomId))]
         [InverseProperty(nameof(FairRandom.RandomTransaction))]
         public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
 
         [ForeignKey($"{nameof(UserIdUpgrade)},{nameof(WearIdUpgrade)}")]
-        [InverseProperty(nameof(UpgradeResult.RandomTransactions))]
+        [InverseProperty(nameof(UpgradeResult.RandomTransaction))]
         public virtual UpgradeResult? UpgradeResult { get; set; }
 
         [ForeignKey(nameof(CaseId))]
