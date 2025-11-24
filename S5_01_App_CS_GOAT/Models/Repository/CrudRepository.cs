@@ -42,23 +42,24 @@
             await _context.SaveChangesAsync();
         }
 
-        public async Task PatchAsync(TEntity entityToUpdate, IDictionary<string, object> updates)
-        {
-            _context.Set<TEntity>().Attach(entityToUpdate);
-            EntityEntry<TEntity> entry = _context.Entry(entityToUpdate);
+        // TO-DO Move it to a separate Repository
+        //public async Task PatchAsync(TEntity entityToUpdate, IDictionary<string, object> updates)
+        //{
+        //    _context.Set<TEntity>().Attach(entityToUpdate);
+        //    EntityEntry<TEntity> entry = _context.Entry(entityToUpdate);
 
-            foreach (KeyValuePair<string, object> update in updates)
-            {
-                PropertyEntry property = entry.Property(update.Key);
-                if (property != null)
-                {
-                    property.CurrentValue = update.Value;
-                    property.IsModified = true;
-                }
-            }
+        //    foreach (KeyValuePair<string, object> update in updates)
+        //    {
+        //        PropertyEntry property = entry.Property(update.Key);
+        //        if (property != null)
+        //        {
+        //            property.CurrentValue = update.Value;
+        //            property.IsModified = true;
+        //        }
+        //    }
 
-            await _context.SaveChangesAsync();
-        }
+        //    await _context.SaveChangesAsync();
+        //}
 
         public async Task DeleteAsync(TEntity entity)
         {
