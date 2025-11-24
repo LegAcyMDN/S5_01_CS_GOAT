@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_j_limit_lim")]
-    public class Limit
+    public partial class Limit
     {
         [Key]
         [Column("usr_id")]

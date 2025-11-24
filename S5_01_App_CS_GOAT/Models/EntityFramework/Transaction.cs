@@ -7,7 +7,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Table("t_e_transaction_txn")]
     [Index(nameof(TransactionDate))]
     [Index(nameof(CancelledOn))]
-    public abstract class Transaction
+    public abstract partial class Transaction
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

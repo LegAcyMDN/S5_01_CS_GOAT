@@ -8,7 +8,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Index(nameof(AcquiredOn))]
     [Index(nameof(RemovedOn))]
     [Index(nameof(IsFavorite))]
-    public class InventoryItem
+    public partial class InventoryItem
     {
         [Key]
         [Column("usr_id", Order = 1)]

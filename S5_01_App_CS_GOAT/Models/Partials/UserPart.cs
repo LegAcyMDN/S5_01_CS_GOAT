@@ -1,10 +1,13 @@
 using System;
 using System.Linq;
+using S5_01_App_CS_GOAT.Models.Services;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
-    public partial class User
+    public partial class User : IUserDependant
     {
+        public int? DependantUserId { get => this.UserId; }
+
         /// <summary>
         /// Generates a random 16-character string for the Seed property
         /// </summary>

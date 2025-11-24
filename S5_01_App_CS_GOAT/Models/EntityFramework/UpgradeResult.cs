@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_j_upgraderesult_upg")]
-    public class UpgradeResult
+    public partial class UpgradeResult
     {
         [Key]
         [Column("usr_id", Order = 1)]

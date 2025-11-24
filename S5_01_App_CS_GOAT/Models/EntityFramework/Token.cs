@@ -8,7 +8,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Index(nameof(TokenCreationDate))]
     [Index(nameof(TokenExpiry))]
     [Index(nameof(TokenValue))]
-    public class Token
+    public partial class Token
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_j_ban_ban")]
     [Index(nameof(BanDate))]
-    public class Ban
+    public partial class Ban
     {
         [Key]
         [Column("usr_id", Order = 1)]
