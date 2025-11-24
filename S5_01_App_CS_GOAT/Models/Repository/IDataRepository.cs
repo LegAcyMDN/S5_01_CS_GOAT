@@ -18,6 +18,14 @@ public interface IWriteRepository<TEntity>
     Task DeleteAsync(TEntity entity);
 }
 
-public interface IDataRepository <TEntity, TIdentifier, TKey>
-    : ISearchableRepository<TEntity, TKey>, IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
+public interface IPatchRepository<TEntity>
+{
+    Task PatchAsync(TEntity entityToUpdate, IDictionary<string, object> updates);
+}
+
+public interface IDataRepository<TEntity, TIdentifier, TKey>
+    : ISearchableRepository<TEntity, TKey>,
+      IReadableRepository<TEntity, TIdentifier>,
+      IWriteRepository<TEntity>,
+      IPatchRepository<TEntity>
 { }

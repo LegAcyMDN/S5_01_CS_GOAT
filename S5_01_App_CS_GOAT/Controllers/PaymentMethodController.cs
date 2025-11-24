@@ -12,14 +12,14 @@ public class PaymentMethodController(
            CSGOATDbContext context
            ) : ControllerBase
 {
-    [HttpGet("details/{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get(int id)
-    {
-        PaymentMethod? payment = await manager.GetByIdAsync(id);
-        return payment == null ? NotFound() : Ok(payment);
-    }
+    //[HttpGet("details/{id}")]
+    //[ProducesResponseType(StatusCodes.Status200OK)]
+    //[ProducesResponseType(StatusCodes.Status404NotFound)]
+    //public async Task<IActionResult> Get(int id)
+    //{
+    //    PaymentMethod? payment = await manager.GetByIdAsync(id);
+    //    return payment == null ? NotFound() : Ok(payment);
+    //}
 
 
     [HttpGet("all")]
