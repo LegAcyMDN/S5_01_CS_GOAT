@@ -4,7 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace S5_01_App_CS_GOAT.Models.Services
+namespace S5_01_App_CS_GOAT.Services
 {
     public struct AuthResult
     {
