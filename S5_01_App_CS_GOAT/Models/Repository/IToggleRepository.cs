@@ -2,5 +2,5 @@
 
 public interface IToggleRepository<TEntity>
 {
-    Task ToggleAsync(int id);
+    Task ToggleByIdsAsync(int id1, int id2);
 }

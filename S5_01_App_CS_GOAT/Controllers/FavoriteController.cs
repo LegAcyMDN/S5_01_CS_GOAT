@@ -43,7 +43,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Remove a favorite by ID
         /// </summary>
-        /// <param name="id">The ID of the favorite to remove</param>
+        /// <param name="userId">The ID of the user</param>
+        /// <param name="caseId">The ID of the case</param>
         /// <returns>No content on success</returns>
         [HttpDelete("remove/{userId}/{caseId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

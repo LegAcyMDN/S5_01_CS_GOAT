@@ -28,7 +28,6 @@ builder.Services.AddScoped<IDataRepository<Case, int, string>, CaseManager>();
 builder.Services.AddScoped<IDataRepository<Item, int, string>, ItemManager>();
 builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
-builder.Services.AddScoped<IUserRelatedRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IToggleRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
@@ -44,7 +43,11 @@ builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
 builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
 builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
+builder.Services.AddScoped<IDataRepository<Notification, int, string>, NotificationManager>();
+builder.Services.AddScoped<INotificationRepository<Notification>, NotificationManager>();
 builder.Services.AddScoped<IRandomTransactiony<RandomTransaction>, RandomTransactionManager>();
+builder.Services.AddScoped<IRandomTransactiony<ItemTransaction>, RandomTransactionManager>();
+
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
