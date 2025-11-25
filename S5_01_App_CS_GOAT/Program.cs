@@ -41,6 +41,7 @@ builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager>();
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
+builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
 builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
