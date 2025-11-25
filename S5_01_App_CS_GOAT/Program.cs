@@ -43,6 +43,8 @@ builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
 builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
 builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
+builder.Services.AddScoped<IDataRepository<Notification, int, string>, NotificationManager>();
+builder.Services.AddScoped<INotificationRepository<Notification>, NotificationManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
