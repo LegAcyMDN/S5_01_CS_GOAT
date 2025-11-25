@@ -44,6 +44,7 @@ builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
 builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
 builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
+builder.Services.AddScoped<IRandomTransactiony<RandomTransaction>, RandomTransactionManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));

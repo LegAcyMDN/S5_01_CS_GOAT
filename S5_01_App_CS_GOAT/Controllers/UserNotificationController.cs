@@ -44,7 +44,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             int? notificationTypeId = await manager.GetNotificationTypeIdByNameAsync(notificationDto.NotificationTypeName);
 
-            if (notificationTypeId == 0 )
+            if (notificationTypeId == null )
             {
                 return BadRequest($"Type de notification '{notificationDto.NotificationTypeName}' introuvable.");
             }
