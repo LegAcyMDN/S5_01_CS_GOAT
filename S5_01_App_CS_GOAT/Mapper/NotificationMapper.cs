@@ -23,6 +23,6 @@ public class NotificationMapper : Profile
             .ForMember(dest => dest.NotificationContent, opt => opt.MapFrom(src => src.NotificationContent))
             .ForMember(dest => dest.NotificationDate, opt => opt.MapFrom(src => src.NotificationDate))
             .ForMember(dest => dest.NotificationTypeId, opt => opt.Ignore())
-            .ForMember(dest => dest.NotificationType.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeName));
+            .ForPath(dest => dest.NotificationType.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeName));
     }
 }

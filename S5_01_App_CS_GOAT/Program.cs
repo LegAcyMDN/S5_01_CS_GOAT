@@ -26,6 +26,7 @@ builder.Services.AddScoped<IDataRepository<Favorite, int, string>, FavoriteManag
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, GlobalNotificationManager>();
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
 builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
+builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 
 

@@ -1,24 +1,25 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.Mapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-    [Route("api/Wear")]
+    [Route("api/wear")]
     [ApiController]
     public class WearController(
         IMapper mapper,
-        IDataRepository<Wear, int, string> manager
+        IWearRelatedRepository<Wear> manager
     ) : ControllerBase
     {
 
-        [HttpGet("all")]
+        [HttpGet("By3dModel")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Wear?>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Wear?>>> GetBy3dModel(int id)
         {
-            IEnumerable<Wear?> wear = await manager.GetAllAsync();
+            IEnumerable<Wear?> wear = await manager.GetBy3dModelAsync(id);
             if (wear == null || !wear.Any())
                 return NotFound();
             return Ok(wear);
