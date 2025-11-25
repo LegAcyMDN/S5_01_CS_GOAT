@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,27 +15,26 @@ namespace S5_01_App_CS_GOAT.Controllers;
 
 [Route("api/users")]
 [ApiController]
-[Authorize] // require JWT by default; allow anonymous on specific endpoints below
+[Authorize]
+[AllowAnonymous]
 public class UserController : ControllerBase
 {
     private readonly UserManager _manager;
     private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
 
-    public UserController(UserManager manager, IMapper mapper)
+    public UserController(IDataRepository<User, int, string> manager, IMapper mapper, IConfiguration configuration)
     {
-        _manager = manager;
+        _manager = (UserManager)manager;
         _mapper = mapper;
+        _configuration = configuration;
     }
 
-    // Helper to use JwtService.Authorized
-    private class OwnerDependant : IUserDependant { public int? DependantUserId { get; set; } }
-
-    // GET api/users/all  (Admin)
+    // GET api/users/all (Admin)
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
-        // admin only
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = null });
+        AuthResult auth = JwtService.JwtAuth(_configuration);
         if (!auth.IsAuthenticated)
             return Unauthorized();
         if (!auth.IsAdmin)
@@ -52,10 +52,10 @@ public class UserController : ControllerBase
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Get(int id)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth(_configuration);
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (!auth.IsAdmin && auth.AuthUserId != id)
             return Forbid();
 
         var user = await _manager.GetByIdAsync(id);
@@ -84,10 +84,10 @@ public class UserController : ControllerBase
     [HttpPatch("update/{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UserDetailDTO dto)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth(_configuration);
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (auth.AuthUserId != id)
             return Forbid();
 
         if (!ModelState.IsValid)
@@ -106,10 +106,10 @@ public class UserController : ControllerBase
     [HttpPatch("seed/{id}")]
     public async Task<IActionResult> PatchSeed(int id, [FromBody] SeedPatch model)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth(_configuration);
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (auth.AuthUserId != id)
             return Forbid();
 
         if (model == null || string.IsNullOrEmpty(model.Seed))
@@ -123,18 +123,14 @@ public class UserController : ControllerBase
     [HttpPatch("password/{id}")]
     public async Task<IActionResult> PatchPassword(int id, [FromBody] PasswordPatch model)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth(_configuration);
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (auth.AuthUserId != id)
             return Forbid();
 
         if (model == null || string.IsNullOrEmpty(model.Hash) || string.IsNullOrEmpty(model.CurrentPassword))
             return BadRequest();
-
-        // verify calling user's password
-        if (auth.AuthUserId == null)
-            return Unauthorized();
 
         var callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
         if (callingUser == null)
@@ -152,17 +148,14 @@ public class UserController : ControllerBase
     [HttpDelete("remove/{id}")]
     public async Task<IActionResult> Delete(int id, [FromBody] PasswordConfirm model)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth();
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (!auth.IsAdmin && auth.AuthUserId != id)
             return Forbid();
 
         if (model == null || string.IsNullOrEmpty(model.Password))
             return BadRequest();
-
-        if (auth.AuthUserId == null)
-            return Unauthorized();
 
         var callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
         if (callingUser == null)
@@ -196,10 +189,10 @@ public class UserController : ControllerBase
     [HttpHead("verifyphone")]
     public async Task<IActionResult> VerifyPhone([FromQuery] int id, [FromQuery] string code)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth();
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (auth.AuthUserId != id)
             return Forbid();
 
         var ok = await _manager.VerifyAsync(id, code);
@@ -210,10 +203,10 @@ public class UserController : ControllerBase
     [HttpHead("verifymail")]
     public async Task<IActionResult> VerifyMail([FromQuery] int id, [FromQuery] string code)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth();
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (auth.AuthUserId != id)
             return Forbid();
 
         var ok = await _manager.VerifyAsync(id, code);
@@ -224,10 +217,10 @@ public class UserController : ControllerBase
     [HttpHead("exportdata")]
     public async Task<IActionResult> ExportData([FromQuery] int id)
     {
-        var auth = JwtService.Authorized(new OwnerDependant { DependantUserId = id });
+        AuthResult auth = JwtService.JwtAuth();
         if (!auth.IsAuthenticated)
             return Unauthorized();
-        if (!auth.IsAuthorized)
+        if (!auth.IsAdmin && auth.AuthUserId != id)
             return Forbid();
 
         var user = await _manager.GetByIdAsync(id);
@@ -250,7 +243,7 @@ public class UserController : ControllerBase
             return Unauthorized();
 
         // NOTE: real password verification omitted. Return placeholder token.
-        return Ok(new { Token = JwtService.GenerateJwtToken(user) });
+        return Ok(new { Token = JwtService.GenerateJwtToken(user, _configuration) });
     }
 
     // POST api/users/remember (public)

@@ -16,6 +16,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<BanDTO>>> GetByUser()
         {
+            /*
             AuthResult authResult = JwtService.Authorized(null);
             int? id = authResult.AuthUserId;
 
@@ -26,6 +27,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return NotFound();
             IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(userBans);
             return Ok(userBansDTO);
+            */
+            return Unauthorized();
         }
 
         [HttpGet("all")]

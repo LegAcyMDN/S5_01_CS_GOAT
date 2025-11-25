@@ -23,6 +23,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<FairRandomDTO>>> GetByUser()
         {
+            /*
             AuthResult authResult = JwtService.Authorized(null);
             int? id = authResult.AuthUserId;
           
@@ -33,6 +34,8 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<FairRandomDTO?> fairRandomDto = mapper.Map<IEnumerable<FairRandomDTO>>(userfairRandom);
             return Ok(fairRandomDto);
+            */
+            return Unauthorized();
         }
 
        

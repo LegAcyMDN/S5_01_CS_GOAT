@@ -5,6 +5,10 @@ using S5_01_App_CS_GOAT.Models.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,12 +32,11 @@ builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, Money
 builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 
-
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
 
-string? secret = Environment.GetEnvironmentVariable("JWT_SECRET");
-if (secret == null) throw new Exception("JWT_SECRET environment variable is not set");
+string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
+if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  .AddJwtBearer(options =>
@@ -46,8 +49,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
          ValidateAudience = true,
          ValidateLifetime = true,
          ValidateIssuerSigningKey = true,
-         ValidIssuer = Environment.GetEnvironmentVariable("JWT_ISSUER"),
-         ValidAudience = Environment.GetEnvironmentVariable("JWT_AUDIENCE"),
+         ValidIssuer = builder.Configuration.GetValue<string>("JWT_ISSUER"),
+         ValidAudience = builder.Configuration.GetValue<string>("JWT_AUDIENCE"),
          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
          ClockSkew = TimeSpan.Zero
      };
