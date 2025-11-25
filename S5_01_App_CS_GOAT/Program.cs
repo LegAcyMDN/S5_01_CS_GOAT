@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Options;
+using S5_01_App_CS_GOAT.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserN
 builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager>();
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
 builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
+builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
