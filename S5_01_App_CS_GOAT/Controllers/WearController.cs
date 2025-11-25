@@ -15,14 +15,16 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
 
-        [HttpGet("By3dModel")]
+        [HttpGet("by3dModel")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Wear?>>> GetBy3dModel(int id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<ModelDTO>>> GetBy3dModel(int id)
         {
             IEnumerable<Wear?> wear = await manager.GetBy3dModelAsync(id);
             if (wear == null || !wear.Any())
                 return NotFound();
-            return Ok(wear);
+            IEnumerable<ModelDTO> modelDto = mapper.Map<IEnumerable<ModelDTO>>(wear);
+            return Ok(modelDto);
         }
     }
-    }
+}

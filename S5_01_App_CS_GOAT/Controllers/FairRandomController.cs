@@ -15,24 +15,28 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class FairRandomController(
         IMapper mapper,
         IDataRepository<FairRandom, int, string> manager,
-        CSGOATDbContext context
+        CSGOATDbContext context,
+        IConfiguration configuration
         ) : ControllerBase
     {
-        [HttpGet("byuser")]
+   
+
+        [HttpGet("ByUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<FairRandomDTO>>> GetByUser([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
         {
-            AuthResult authResult = JwtService.Authorized(null);
-            int? id = authResult.AuthUserId;
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
 
-            IEnumerable<FairRandom?> fairRandom = await manager.GetAllAsync(filters, sorts);
-            IEnumerable<FairRandom?> userFairRandom = fairRandom.Where(p => p.DependantUserId == id);
-            if (userFairRandom == null || !userFairRandom.Any())
-                return NotFound();
+            IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false);
+            if (!fairRandoms.Any()) return NotFound();
 
-            IEnumerable<FairRandomDTO?> fairRandomDto = mapper.Map<IEnumerable<FairRandomDTO>>(userFairRandom);
-            return Ok(fairRandomDto);
+            IEnumerable<FairRandomDTO> userBansDTO = mapper.Map<IEnumerable<FairRandomDTO>>(fairRandoms);
+            return Ok(userBansDTO);
         }
+
+       
     }
 }

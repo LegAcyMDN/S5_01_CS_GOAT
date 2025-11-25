@@ -1,16 +1,24 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,9 +39,29 @@ builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 
-
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
+
+string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
+if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+ .AddJwtBearer(options =>
+ {
+     options.RequireHttpsMetadata = false;
+     options.SaveToken = true;
+     options.TokenValidationParameters = new TokenValidationParameters
+     {
+         ValidateIssuer = true,
+         ValidateAudience = true,
+         ValidateLifetime = true,
+         ValidateIssuerSigningKey = true,
+         ValidIssuer = builder.Configuration.GetValue<string>("JWT_ISSUER"),
+         ValidAudience = builder.Configuration.GetValue<string>("JWT_AUDIENCE"),
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+         ClockSkew = TimeSpan.Zero
+     };
+ });
 
 var app = builder.Build();
 
