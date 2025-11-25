@@ -28,7 +28,6 @@ builder.Services.AddScoped<IDataRepository<Case, int, string>, CaseManager>();
 builder.Services.AddScoped<IDataRepository<Item, int, string>, ItemManager>();
 builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
-builder.Services.AddScoped<IUserRelatedRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IToggleRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
@@ -38,6 +37,7 @@ builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, Glo
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
 builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
+builder.Services.AddScoped<INotificationRelatedRepository<int?>, UserNotificationManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
 builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager>();
 builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
