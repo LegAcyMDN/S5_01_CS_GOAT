@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -11,11 +12,25 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     public class LimitController(
        IMapper mapper,
-       IDataRepository<Limit, int, (int, int)> manager,
-       CSGOATDbContext context
+       IDataRepository<Limit, int, (int, int)> manager, IConfiguration configuration
        ) : ControllerBase
     {
-        // PATCH api/limit/{userId}/{limitTypeId}
+
+        [HttpGet("byuser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<LimitDTO>>> GetByUser()
+        {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+
+            IEnumerable<Limit> limits = await authResult.GetByUser(manager, false);
+            if (!limits.Any()) return NotFound();
+
+            IEnumerable<LimitDTO> limitsDTO = mapper.Map<IEnumerable<LimitDTO>>(limits);
+            return Ok(limitsDTO);
+        }
+
         [HttpPatch("{userId}/{limitTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -30,25 +45,12 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (existingLimit == null)
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitTypeId}");
 
-
-            existingLimit.LimitAmount = limitDto.LimitAmount;
-
-            if (!string.IsNullOrEmpty(limitDto.LimitTypeName) || !string.IsNullOrEmpty(limitDto.DurationName))
+            Dictionary<string, object> patchData = new Dictionary<string, object>
             {
-                var newLimitType = context.LimitTypes.FirstOrDefault(lt => 
-                    lt.LimitTypeName == limitDto.LimitTypeName && 
-                    lt.DurationName == limitDto.DurationName);
-
-                if (newLimitType != null && newLimitType.LimitTypeId != limitTypeId)
-                {
-                    // Si on change le type de limite, il faut supprimer l'ancienne et créer une nouvelle
-                    // car LimitTypeId fait partie de la clé primaire
-                    return BadRequest("Cannot change LimitType. Delete the old limit and create a new one.");
-                }
-            }
-
-            // Mettre à jour l'entité
-            await manager.PatchAsync(existingLimit, limitDto);
+                { nameof(Limit.LimitAmount), limitDto.LimitAmount }
+            };
+            
+            await manager.PatchAsync(existingLimit, patchData);
 
             return NoContent();
         }
