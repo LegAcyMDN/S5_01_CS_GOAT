@@ -4,21 +4,16 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
-    public class LimitManager(CSGOATDbContext context) : CrudRepository<Limit>(context)
+    public class LimitManager(CSGOATDbContext context) : CrudRepository<Limit>(context), IDataRepository<Limit, int, (int, int)>
     {
-        public override async Task<Limit?> GetByKeyAsync(string str)
+        public Task<Limit?> GetByKeyAsync((int, int) key)
         {
-            // Implémentation à définir selon vos besoins
             throw new NotImplementedException();
         }
 
-        public async Task<Limit?> GetLimitTypeByNameAndDurationAsync(string? limitTypeName, string? durationName)
+        public override Task<Limit?> GetByKeyAsync(string str)
         {
-            
-
-            return await _context.LimitTypes.FirstOrDefaultAsync(lt => 
-                lt.LimitTypeName == limitTypeName && 
-                lt.DurationName == durationName);
+            throw new NotImplementedException();
         }
     }
 }
