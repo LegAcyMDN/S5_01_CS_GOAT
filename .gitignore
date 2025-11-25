@@ -365,3 +365,4 @@ FodyWeavers.xsd
 # Configuration files with sensitive data
 **/appsettings.json
 **/appsettings.*.json
+/S5_01_App_CS_GOAT/Controllers/UpgradeResultController.cs
