@@ -9,22 +9,25 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/bans")]
     [ApiController]
-    public class BanController(IMapper mapper, IDataRepository<Ban, int, string> manager, CSGOATDbContext context) : ControllerBase
+    public class BanController(
+        IMapper mapper,
+        IDataRepository<Ban, int, string> manager,
+        CSGOATDbContext context,
+        IConfiguration configuration) : ControllerBase
     {
-        [HttpGet("ByUser")]
+        [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<BanDTO>>> GetByUser()
         {
-            AuthResult authResult = JwtService.Authorized(null);
-            int? id = authResult.AuthUserId;
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
 
-            IEnumerable<Ban?> bans = await manager.GetAllAsync();
-            IEnumerable<Ban?> userBans = bans.Where(p => p.DependantUserId == id);
+            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true);
+            if (!bans.Any()) return NotFound();
 
-            if (userBans == null || !userBans.Any())
-                return NotFound();
-            IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(userBans);
+            IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(userBansDTO);
         }
 

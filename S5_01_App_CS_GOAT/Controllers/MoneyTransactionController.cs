@@ -20,6 +20,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<MoneyTransaction>>> GetByUser()
         {
+            /*
             AuthResult authResult = JwtService.Authorized(null);
             int? id = authResult.AuthUserId;
 
@@ -28,6 +29,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (payment == null || !payment.Any())
                 return NotFound();
             return Ok(userPayments);
+            */
+            return Unauthorized();
         }
 
 
