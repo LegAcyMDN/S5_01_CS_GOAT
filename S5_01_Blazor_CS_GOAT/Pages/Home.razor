@@ -1,5 +1,6 @@
 ﻿@page "/"
-
+@using S5_01_Blazor_CS_GOAT.Service
+@inject IService<Case> caseRepository
 
 
 
@@ -8,11 +9,25 @@
 <PageTitle>Home</PageTitle>
 
 
-<div class="bg-dark" style="height: 100vh">
-<Header></Header>
+@* <div class="bg-dark" id="home-container"> *@
+    <Header>
+        aaaaa
+    </Header>
+@* </div> *@
 
 
-</div>
+<style>
+    #home-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: row;
+        /*justify-content: center;*/
+        /*align-items: center;*/
+        
+    }
+    
+</style>
+
 @code {
 
     protected override async Task OnInitializedAsync()
