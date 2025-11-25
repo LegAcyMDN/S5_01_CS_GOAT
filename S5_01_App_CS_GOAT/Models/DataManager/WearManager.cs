@@ -10,7 +10,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         public async Task<IEnumerable<Wear>> GetBy3dModelAsync(int modelID, FilterOptions? filters = null, SortOptions? sorts = null)
         {
-            return await _context.Set<Wear>().Include(w => w.Skin).Where(w => w.Skin.ItemId == modelID).ToListAsync();
+            return await _context.Set<Wear>()
+                .Include(w => w.Skin)
+                    .ThenInclude(s => s.Item)
+                .Where(w => w.Skin.ItemId == modelID)
+                .ToListAsync();
         }
 
        

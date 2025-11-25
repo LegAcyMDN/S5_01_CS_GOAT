@@ -14,6 +14,7 @@ public interface IReadableRepository<TEntity, TIdentifier>
         FilterOptions? filters = null,
         SortOptions? sorts = null);
     Task<TEntity?> GetByIdAsync(TIdentifier id);
+    Task<TEntity?> GetByIdsAsync(params object[] keyValues);
 }
 
 public interface IWriteRepository<TEntity>
