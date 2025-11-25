@@ -1,7 +1,26 @@
 ﻿@page "/"
 
+@using S5_01_Blazor_CS_GOAT.Pages.Components
+
+
+
+
 <PageTitle>Home</PageTitle>
+
+
+<div class="bg-dark" style="height: 100vh">
+<Header></Header>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+
+</div>
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        
+    }
+}
