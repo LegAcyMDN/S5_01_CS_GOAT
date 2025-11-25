@@ -1,4 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.IdentityModel.Tokens;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,6 +21,12 @@ namespace S5_01_App_CS_GOAT.Services
             IsAdmin = isAdmin;
         }
 
+        /// <summary>
+        /// Checks if the current user is allowed to access the given IUserDependant ressource
+        /// </summary>
+        /// <param name="obj">The IUserDependant ressource to check access for</param>
+        /// <param name="adminOverride">If true, admins are allowed to access any ressource</param>
+        /// <returns>True if access is allowed, false otherwise</returns>
         public bool IsAllowed(IUserDependant obj, bool adminOverride)
         {
             if (obj.DependantUserId == null) return true;
@@ -27,6 +35,13 @@ namespace S5_01_App_CS_GOAT.Services
             return obj.DependantUserId == AuthUserId;
         }
 
+        /// <summary>
+        /// Retrieves all IUserDependant objects belonging to the authenticated user
+        /// </summary>
+        /// <typeparam name="T1">The type of IUserDependant objects to retrieve</typeparam>
+        /// <param name="manager">The repository manager to use for retrieval</param>
+        /// <param name="adminOverride">If true, admins will retrieve all objects</param>
+        /// <returns>The list of IUserDependant objects belonging to the authenticated user</returns>
         public async Task<IEnumerable<T1>> GetByUser<T1>(
                 IReadableRepository<T1, int> manager,
                 bool adminOverride)
@@ -95,7 +110,6 @@ namespace S5_01_App_CS_GOAT.Services
             // Bypass JWT authentification if the JWT_BYPASS environment variable is set (for testing)
             // Format: "@123" to spoof admin user with ID 123, "123" to spoof normal user with ID 123
             string? bypassAuth = configuration?["JWT_BYPASS"];
-            Console.WriteLine($"JWT_BYPASS = {bypassAuth}");
             if (!string.IsNullOrEmpty(bypassAuth))
             {
                 bool spoofIsAdmin = bypassAuth.StartsWith("@");
@@ -119,6 +133,29 @@ namespace S5_01_App_CS_GOAT.Services
             bool isAdmin = bool.Parse(isAdminClaim.Value);
             int userId = int.Parse(userIdClaim.Value);
             return new AuthResult(userId, isAdmin);
+        }
+    }
+
+    /// <summary>
+    /// Authorization filter attribute to restrict access to admin users only
+    /// </summary>
+    /// Useage: [Admin] on controller actions
+    public class AdminAttribute: Attribute, IAuthorizationFilter
+    {
+        public void OnAuthorization(AuthorizationFilterContext context)
+        {
+            IConfiguration configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+            if (!authResult.IsAdmin)
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
         }
     }
 }

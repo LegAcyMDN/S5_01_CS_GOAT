@@ -157,7 +157,7 @@ public class UserController : ControllerBase
         if (model == null || string.IsNullOrEmpty(model.Password))
             return BadRequest();
 
-        var callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
+        User? callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
         if (callingUser == null)
             return Unauthorized();
 
