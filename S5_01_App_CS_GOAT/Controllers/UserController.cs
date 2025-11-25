@@ -40,11 +40,11 @@ public class UserController : ControllerBase
         if (!auth.IsAdmin)
             return Forbid();
 
-        var users = await _manager.GetAllForAdminAsync();
+        IEnumerable<User> users = await _manager.GetAllForAdminAsync();
         if (users == null || !users.Any())
             return NotFound();
 
-        var dtos = _mapper.Map<IEnumerable<UserDetailDTO>>(users);
+        IEnumerable<UserDetailDTO> dtos = _mapper.Map<IEnumerable<UserDetailDTO>>(users);
         return Ok(dtos);
     }
 
