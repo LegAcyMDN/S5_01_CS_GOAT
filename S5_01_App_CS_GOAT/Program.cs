@@ -10,7 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -19,6 +23,8 @@ builder.Services.AddScoped<IDataRepository<Case, int, string>, CaseManager>();
 builder.Services.AddScoped<IDataRepository<Item, int, string>, ItemManager>();
 builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
+builder.Services.AddScoped<IUserRelatedRepository<InventoryItem>, InventoryItemManager>();
+builder.Services.AddScoped<IToggleRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomManager>();
