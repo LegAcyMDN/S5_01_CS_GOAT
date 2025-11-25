@@ -1,14 +1,14 @@
-<div class="bg-dark" id="container">
-    <div id="top-div">
-        <div id="left-div">
-            <img src="csgoat_images/Text_White_Color.png" id="logo"/>
+<div class="bg-dark" id="header-container">
+    <div id="header-top-div">
+        <div id="header-left-div">
+            <img src="csgoat_images/Text_White_Color.png" id="header-logo"/>
             <svg xmlns="http://www.w3.org/2000/svg" id="online-players-logo" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wifi-icon lucide-wifi"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg>
         </div>
-        <div id="right-div">
+        <div id="header-right-div">
             <div class="bg-black text-white" id="connexion-button">CONNEXION</div>
         </div>
     </div>
-    <div id="bottom-div">
+    <div id="header-bottom-div">
         <div class="button-bottom-div">Accueil</div>
         <div class="button-bottom-div">Caisses</div>
         <div class="button-bottom-div">Améliorer</div>
@@ -17,16 +17,17 @@
     </div>
 </div>
 
-<div id="left-weapon-bar">
+<div id="left-weapon-bar"> 
     <div style="color: white">arme</div>
     <div style="color: white">arme</div>
     <div style="color: white">arme</div>
     <div style="color: white">arme</div>
 </div>
-
+@ChildContent
 
 <style>
-    #logo {
+    
+    #header-logo {
         width: 60%;
     }
     
@@ -34,19 +35,19 @@
         transform: rotate(45deg);
     }
     
-    #container{
+    #header-container{
         display: flex;
         align-items: center;
         flex-direction: column;
     }
     
-    #left-div {
+    #header-left-div {
         display: flex;
         align-items: center;
         width: 50%;
     }
     
-    #right-div {
+    #header-right-div {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -63,7 +64,7 @@
         font-size: 2em;
     }
     
-    #top-div {
+    #header-top-div {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -72,7 +73,7 @@
         padding-bottom: 5px;
     }
 
-    #bottom-div {
+    #header-bottom-div {
         display: flex;
         align-items: center;
         justify-content: space-around;
@@ -98,6 +99,7 @@
         justify-content: start;
         flex-direction: column;
         width: 10%;
+        /*TODO MAKE THIS RESPONSIVE */
         height: 100%;
         background-color: black;
     }
@@ -105,5 +107,6 @@
 </style>
 
 @code {
-    
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
 }
