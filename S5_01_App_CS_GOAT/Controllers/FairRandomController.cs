@@ -4,8 +4,9 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -20,9 +21,10 @@ namespace S5_01_App_CS_GOAT.Controllers
     {
    
 
-        [HttpGet("byuser")]
+        [HttpGet("ByUser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<FairRandomDTO>>> GetByUser()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<FairRandomDTO>>> GetByUser([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
