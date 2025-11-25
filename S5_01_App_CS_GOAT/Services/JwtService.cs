@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -18,12 +19,23 @@ namespace S5_01_App_CS_GOAT.Services
             IsAdmin = isAdmin;
         }
 
-        public bool IsAllowed(IUserDependant obj)
+        public bool IsAllowed(IUserDependant obj, bool adminOverride)
         {
             if (obj.DependantUserId == null) return true;
             if (!IsAuthenticated) return false;
-            if (IsAdmin) return true;
+            if (adminOverride && IsAdmin) return true;
             return obj.DependantUserId == AuthUserId;
+        }
+
+        public async Task<IEnumerable<T1>> GetByUser<T1>(
+                IReadableRepository<T1, int> manager,
+                bool adminOverride)
+                where T1 : IUserDependant
+        {
+            IEnumerable<T1> allObjects = await manager.GetAllAsync();
+            AuthResult self = this;
+            return allObjects.Where(o => self.IsAllowed(o, adminOverride)
+            );
         }
     }
 
@@ -107,12 +119,6 @@ namespace S5_01_App_CS_GOAT.Services
             bool isAdmin = bool.Parse(isAdminClaim.Value);
             int userId = int.Parse(userIdClaim.Value);
             return new AuthResult(userId, isAdmin);
-        }
-
-        public static IEnumerable<T> FilterByAuthorizedUser<T>(IEnumerable<T> collection, IConfiguration? configuration = null) where T : IUserDependant
-        {
-            AuthResult auth = JwtAuth(configuration);
-            return collection.Where(item => auth.IsAllowed(item));
         }
     }
 }
