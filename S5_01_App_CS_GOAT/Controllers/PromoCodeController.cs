@@ -1,58 +1,81 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.Services;
-using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.DataManager;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
-namespace S5_01_App_CS_GOAT.Controllers;
-
-[Authorize]
-[ApiController]
-[Route("api/[controller]")]
-public class PromoCodeController : ControllerBase
+namespace S5_01_App_CS_GOAT.Controllers
 {
-    private readonly PromoCodeManager _manager;
-
-    public PromoCodeController(PromoCodeManager manager)
+    [ApiController]
+    [Route("api/promocode")]
+    public class PromoCodeController : ControllerBase
     {
-        _manager = manager;
-    }
+        private readonly PromoCodeManager _manager;
+        private readonly IConfiguration _configuration;
 
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<PromoCode>>> GetAll([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
-    {
-        var promoCodes = await _manager.GetAllAsync(filters, sorts);
-        return Ok(promoCodes);
-    }
+        public PromoCodeController(IDataRepository<PromoCode, int, string> manager, IConfiguration configuration)
+        {
+            _manager = (PromoCodeManager)manager;
+            _configuration = configuration;
+        }
 
-    [HttpPost]
-    [Authorize(Roles = "Admin")]
-    public async Task<ActionResult<PromoCode>> Create([FromBody] PromoCode promoCode)
-    {
-        var createdPromoCode = await _manager.AddAsync(promoCode);
-        return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdPromoCode);
-    }
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAll([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
+        {
+            AuthResult auth = JwtService.JwtAuth(_configuration);
+            if (!auth.IsAdmin) return Unauthorized();
 
-    [HttpPut("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Update(int id, [FromBody] PromoCode promoCode)
-    {
-        var existingPromoCode = await _manager.GetByIdAsync(id);
-        if (existingPromoCode == null) return NotFound();
+            var promoCodes = await _manager.GetAllAsync(filters, sorts);
+            if (promoCodes == null || !promoCodes.Any()) return NotFound();
 
-        await _manager.UpdateAsync(existingPromoCode, promoCode);
-        return NoContent();
-    }
+            return Ok(promoCodes);
+        }
 
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var promoCode = await _manager.GetByIdAsync(id);
-        if (promoCode == null) return NotFound();
+        [HttpPost("create")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Create([FromBody] PromoCode promoCode)
+        {
+            AuthResult auth = JwtService.JwtAuth(_configuration);
+            if (!auth.IsAdmin) return Unauthorized();
 
-        await _manager.DeleteAsync(promoCode);
-        return NoContent();
+            var createdPromoCode = await _manager.AddAsync(promoCode);
+            return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdPromoCode);
+        }
+
+        [HttpPut("put/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Update(int id, [FromBody] PromoCode updatedPromoCode)
+        {
+            AuthResult auth = JwtService.JwtAuth(_configuration);
+            if (!auth.IsAdmin) return Unauthorized();
+
+            var existingPromoCode = await _manager.GetByIdAsync(id);
+            if (existingPromoCode == null) return NotFound();
+
+            await _manager.UpdateAsync(existingPromoCode, updatedPromoCode);
+            return NoContent();
+        }
+
+        [HttpDelete("delete/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            AuthResult auth = JwtService.JwtAuth(_configuration);
+            if (!auth.IsAdmin) return Unauthorized();
+
+            var promoCode = await _manager.GetByIdAsync(id);
+            if (promoCode == null) return NotFound();
+
+            await _manager.DeleteAsync(promoCode);
+            return NoContent();
+        }
     }
 }
