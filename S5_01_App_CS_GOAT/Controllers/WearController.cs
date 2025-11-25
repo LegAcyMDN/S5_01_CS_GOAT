@@ -15,7 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
 
-        [HttpGet("By3dModel")]
+        [HttpGet("by3dModel")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<ModelDTO>>> GetBy3dModel(int id)

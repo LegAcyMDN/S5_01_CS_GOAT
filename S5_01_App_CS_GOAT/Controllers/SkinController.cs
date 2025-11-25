@@ -18,7 +18,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     {
 
 
-        [HttpGet("ByCase")]
+        [HttpGet("byCase")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SkinDTO>>> GetByCase(int id)
         {
