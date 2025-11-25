@@ -1,44 +1,49 @@
-﻿namespace S5_01_App_CS_GOAT.Controllers
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
+
+namespace S5_01_App_CS_GOAT.Controllers
 {
-    using global::AutoMapper;
-    using global::S5_01_App_CS_GOAT.DTO;
-    using global::S5_01_App_CS_GOAT.Models.EntityFramework;
-    using global::S5_01_App_CS_GOAT.Models.Repository;
-    using Microsoft.AspNetCore.Mvc;
-    namespace S5_01_App_CS_GOAT.Controllers
+    [Route("api/Case")]
+    [ApiController]
+    [Authorize]
+    [AllowAnonymous]
+    public class CaseController(
+        IMapper mapper,
+        IDataRepository<Case, int, string> manager,
+        IConfiguration configuration) : ControllerBase
     {
-
-        [Route("api/cases")]
-        [ApiController]
-        public class CaseController(
-             IMapper mapper,
-            IDataRepository<Case, int, string> manager,
-            CSGOATDbContext context
-            ) : ControllerBase
+        /// <summary>
+        /// Get all cases
+        /// </summary>
+        /// <returns>List of all CaseDTO objects</returns>
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
         {
-            [HttpGet("details/{id}")]
-            [ProducesResponseType(StatusCodes.Status200OK)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-            public async Task<IActionResult> Get(int id)
-            {
-                Case? result = await manager.GetByIdAsync(id);
-                return result == null ? NotFound() : Ok(mapper.Map<CaseDetailDTO>(result));
-            }
+            IEnumerable<Case?> caseResult = await manager.GetAllAsync();
 
-
-            [HttpGet("all")]
-            [ProducesResponseType(StatusCodes.Status200OK)]
-            public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
-            {
-                IEnumerable<Case?> caseResult = await manager.GetAllAsync();
-                if (caseResult == null || !caseResult.Any())
-                    return NotFound();
-                IEnumerable<CaseDTO?> caseDto = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
-                return Ok(caseDto);
-            }
+            IEnumerable<CaseDTO?> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
+            return Ok(caseDTO);
         }
 
-
-
+        /// <summary>
+        /// Get case details by ID
+        /// </summary>
+        /// <param name="id">The ID of the case</param>
+        /// <returns>CaseDetailDTO object</returns>
+        [HttpGet("details/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Get(int id)
+        {
+            Case? result = await manager.GetByIdAsync(id);
+            if (result == null) return NotFound();
+            return Ok(mapper.Map<CaseDetailDTO>(result));
+        }
     }
 }
