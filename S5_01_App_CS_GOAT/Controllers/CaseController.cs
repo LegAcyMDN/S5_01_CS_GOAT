@@ -8,7 +8,7 @@
     namespace S5_01_App_CS_GOAT.Controllers
     {
 
-        [Route("api/Cases")]
+        [Route("api/cases")]
         [ApiController]
         public class CaseController(
              IMapper mapper,
@@ -22,7 +22,7 @@
             public async Task<IActionResult> Get(int id)
             {
                 Case? result = await manager.GetByIdAsync(id);
-                return result == null ? NotFound() : Ok(mapper.Map<CaseDTO>(result));
+                return result == null ? NotFound() : Ok(mapper.Map<CaseDetailDTO>(result));
             }
 
 
