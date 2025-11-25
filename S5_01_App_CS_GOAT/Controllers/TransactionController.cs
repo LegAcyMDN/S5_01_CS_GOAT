@@ -1,36 +1,49 @@
-﻿namespace S5_01_App_CS_GOAT.Controllers
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.Models.DataManager;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
+
+namespace S5_01_App_CS_GOAT.Controllers
 {
-
-    using AutoMapper;
-    using global::AutoMapper;
-    using global::S5_01_App_CS_GOAT.Models.EntityFramework;
-    using global::S5_01_App_CS_GOAT.Models.Repository;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-
-    namespace S5_01_App_CS_GOAT.Controllers
+    [Route("api/transactions")]
+    [ApiController]
+    [Authorize]
+    public class TransactionController : ControllerBase
     {
+        private readonly TransactionManager _transactionManager;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        [Route("api/Transaction")]
-        [ApiController]
-        public class TransactionController(
-            IMapper mapper,
-            IDataRepository<Transaction, int, string> manager,
-            CSGOATDbContext context
-            ) : ControllerBase
+        public TransactionController(IDataRepository<Transaction, int, string> manager, IMapper mapper, IConfiguration configuration)
         {
+            _transactionManager = (TransactionManager)manager;
+            _mapper = mapper;
+            _configuration = configuration;
+        }
 
-            [HttpDelete("remove/{id}")]
-            [ProducesResponseType(StatusCodes.Status204NoContent)]
-            [ProducesResponseType(StatusCodes.Status404NotFound)]
-            public async Task<IActionResult> Delete(int id)
-            {
-                Transaction? transaction = await manager.GetByIdAsync(id);
-                if (transaction == null)
-                    return NotFound();
-                await manager.DeleteAsync(transaction);
-                return NoContent();
-            }
+        [HttpDelete("remove/{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            AuthResult auth = JwtService.JwtAuth(_configuration);
+            if (!auth.IsAuthenticated)
+                return Unauthorized();
+            if (!auth.IsAdmin)
+                return Forbid();
+
+            Transaction? transaction = await _transactionManager.GetByIdAsync(id);
+            if (transaction == null)
+                return NotFound();
+
+            await _transactionManager.SetCancelledOnAsync(id);
+            return NoContent();
         }
     }
 }
