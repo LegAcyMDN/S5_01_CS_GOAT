@@ -1,41 +1,42 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.Mapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-    [Route("api/randomtransaction")]
+    [Route("api/RandomTransaction")]
     [ApiController]
+    [Authorize]
+    [AllowAnonymous]
     public class RandomTransactionController(
         IMapper mapper,
-       IRandomTransactiony<ItemTransaction> manager, IConfiguration configuration,
-       IRandomTransactiony<RandomTransaction> randomanager
+        IRandomTransactiony<ItemTransaction> manager,
+        IConfiguration configuration,
+        IRandomTransactiony<RandomTransaction> randomManager
     ) : ControllerBase
     {
-
+        /// <summary>
+        /// Get all random transactions (admin only)
+        /// </summary>
+        /// <returns>List of all ItemTransactionDTO objects</returns>
         [HttpGet("all")]
+        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ItemTransactionDTO>>> GetAll()
         {
-            AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-                return Unauthorized();
-
-            if (!authResult.IsAdmin)
-                return Forbid();
             IEnumerable<ItemTransaction?> transactions = await manager.GetAllAsync();
-            if (transactions == null || !transactions.Any())
-                return NotFound();
             IEnumerable<ItemTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(transactions);
             return Ok(transactionsDTO);
         }
 
-
+        /// <summary>
+        /// Get random transactions for the authenticated user
+        /// </summary>
+        /// <returns>List of ItemTransactionDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ItemTransactionDTO>>> GetByUser()
@@ -45,10 +46,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             IEnumerable<ItemTransaction> transactions = await authResult.GetByUser(manager, false);
-            if (!transactions.Any()) return NotFound();
-
-            IEnumerable<ItemTransactionDTO> limitsDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(transactions);
-            return Ok(limitsDTO);
+            IEnumerable<ItemTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(transactions);
+            return Ok(transactionsDTO);
         }
 
         /// <summary>
@@ -70,7 +69,12 @@ namespace S5_01_App_CS_GOAT.Controllers
             return Ok(mapper.Map<ItemTransactionDTO>(result));
         }
 
-        [HttpGet("liveFeed")]
+        /// <summary>
+        /// Get live feed of random transactions
+        /// </summary>
+        /// <param name="count">Number of transactions to retrieve</param>
+        /// <returns>List of RandomTransaction objects</returns>
+        [HttpGet("livefeed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RandomTransaction>>> LiveFeed(int count)
         {
@@ -78,13 +82,10 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<RandomTransaction?> transactions = await randomanager.GetRandomTransactionsAsync(count);
-
-            if (transactions == null || !transactions.Any())
-                return NotFound();
+            IEnumerable<RandomTransaction?> transactions = await randomManager.GetRandomTransactionsAsync(count);
             return Ok(transactions);
         }
 
-        // TODO: Add OpenCase  endpoint
+        // TODO: Add OpenCase endpoint
     }
 }

@@ -1,49 +1,50 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-
-    [Route("api/transaction")]
+    [Route("api/MoneyTransaction")]
     [ApiController]
+    [Authorize]
+    [AllowAnonymous]
     public class MoneyTransactionController(
-               // IMapper mapper,
-               IDataRepository<MoneyTransaction, int, string> manager,
-               CSGOATDbContext context
-               ) : ControllerBase
+        IDataRepository<MoneyTransaction, int, string> manager,
+        IConfiguration configuration
+        ) : ControllerBase
     {
-
-
-        [HttpGet("ByUser")]
+        /// <summary>
+        /// Get money transactions for the authenticated user
+        /// </summary>
+        /// <returns>List of MoneyTransaction objects for the user</returns>
+        [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<MoneyTransaction>>> GetByUser()
         {
-            /*
-            AuthResult authResult = JwtService.Authorized(null);
-            int? id = authResult.AuthUserId;
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
 
-            IEnumerable<MoneyTransaction?> payment = await manager.GetAllAsync();
-            IEnumerable<MoneyTransaction?> userPayments = payment.Where(p => p.DependantUserId == id);
-            if (payment == null || !payment.Any())
-                return NotFound();
-            return Ok(userPayments);
-            */
-            return Unauthorized();
+            IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false);
+            return Ok(transactions);
         }
 
-
+        /// <summary>
+        /// Get all money transactions (admin only)
+        /// </summary>
+        /// <returns>List of all MoneyTransaction objects</returns>
         [HttpGet("all")]
+        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<MoneyTransaction>>> GetAll()
         {
-            IEnumerable<MoneyTransaction?> payment = await manager.GetAllAsync();
-            if (payment == null || !payment.Any())
-                return NotFound();
-            return Ok(payment);
+            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync();
+            return Ok(transactions);
         }
-
     }
 }
 

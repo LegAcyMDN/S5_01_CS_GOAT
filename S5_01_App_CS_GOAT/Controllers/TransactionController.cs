@@ -9,38 +9,29 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-    [Route("api/transactions")]
+    [Route("api/Transaction")]
     [ApiController]
     [Authorize]
-    public class TransactionController : ControllerBase
+    [AllowAnonymous]
+    public class TransactionController(
+        IDataRepository<Transaction, int, string> manager
+    ) : ControllerBase
     {
-        private readonly TransactionManager _transactionManager;
-        private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
+        private readonly TransactionManager _transactionManager = (TransactionManager)manager;
 
-        public TransactionController(IDataRepository<Transaction, int, string> manager, IMapper mapper, IConfiguration configuration)
-        {
-            _transactionManager = (TransactionManager)manager;
-            _mapper = mapper;
-            _configuration = configuration;
-        }
-
+        /// <summary>
+        /// Cancel/remove a transaction (admin only)
+        /// </summary>
+        /// <param name="id">The ID of the transaction to cancel</param>
+        /// <returns>No content on success</returns>
         [HttpDelete("remove/{id}")]
+        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated)
-                return Unauthorized();
-            if (!auth.IsAdmin)
-                return Forbid();
-
             Transaction? transaction = await _transactionManager.GetByIdAsync(id);
-            if (transaction == null)
-                return NotFound();
+            if (transaction == null) return NotFound();
 
             await _transactionManager.SetCancelledOnAsync(id);
             return NoContent();

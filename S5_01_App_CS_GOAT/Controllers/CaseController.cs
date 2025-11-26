@@ -27,6 +27,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             IEnumerable<Case?> caseResult = await manager.GetAllAsync();
 
+            // TODO: Use the auth user id to detect if case is user's favorite
             IEnumerable<CaseDTO?> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
             return Ok(caseDTO);
         }

@@ -15,7 +15,6 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class InventoryItemController(
         IDataRepository<InventoryItem, int, string> manager,
         IToggleRepository<InventoryItem> toggleManager,
-        CSGOATDbContext context,
         IMapper mapper,
         IConfiguration configuration
         ) : ControllerBase
@@ -54,7 +53,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? item = await manager.GetByIdsAsync(authResult.AuthUserId.Value, wearId);
+            InventoryItem? item = await manager.GetByIdsAsync(authResult.AuthUserId, wearId);
             if (item == null) return NotFound();
 
             InventoryItemDetailDTO? inventory = mapper.Map<InventoryItemDetailDTO>(item);
@@ -87,8 +86,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             InventoryItem? inventory = await manager.GetByIdsAsync(authResult.AuthUserId.Value, wearId);
-            if (inventory == null)
-                return NotFound();
+            if (inventory == null) return NotFound();
 
             await toggleManager.ToggleByIdsAsync(authResult.AuthUserId.Value, wearId);
             return NoContent();
@@ -109,8 +107,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             InventoryItem? inventory = await manager.GetByIdsAsync(authResult.AuthUserId.Value, wearId);
-            if (inventory == null)
-                return NotFound();
+            if (inventory == null) return NotFound();
 
             inventory.RemovedOn = DateTime.Now;
             await manager.UpdateAsync(inventory, inventory);

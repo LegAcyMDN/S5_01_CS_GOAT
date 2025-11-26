@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.DTO
    
         public DateTime NotificationDate { get; set; }
 
-        public string ? NotificationTypeName { get; set; }
+        public string NotificationTypeName { get; set; } = null!;
 
     }
 }
