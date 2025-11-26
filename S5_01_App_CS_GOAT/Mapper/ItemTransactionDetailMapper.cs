@@ -10,6 +10,7 @@ namespace S5_01_App_CS_GOAT.AutoMapper
         {
             // Entity -> DTO
             CreateMap<ItemTransaction, ItemTransactionDetailDTO>()
+                .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
                 .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn))
@@ -22,6 +23,7 @@ namespace S5_01_App_CS_GOAT.AutoMapper
 
             // DTO -> Entity
             CreateMap<ItemTransactionDetailDTO, ItemTransaction>()
+                .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.WalletValue, opt => opt.MapFrom(src => src.WalletValue))
                 .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn))
@@ -30,8 +32,6 @@ namespace S5_01_App_CS_GOAT.AutoMapper
                 .ForMember(dest => dest.NotificationId, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.Notification, opt => opt.Ignore())
-                .ForMember(dest => dest.UserIdItem, opt => opt.Ignore())
-                .ForMember(dest => dest.WearIdItem, opt => opt.Ignore())
                 .ForMember(dest => dest.InventoryItem, opt => opt.Ignore());
         }
     }

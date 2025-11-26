@@ -11,11 +11,16 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     public partial class InventoryItem
     {
         [Key]
-        [Column("usr_id", Order = 1)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("inv_id")]
+        public int InventoryItemId { get; set; }
+
+        [Required]
+        [Column("usr_id")]
         public int UserId { get; set; }
 
-        [Key]
-        [Column("wer_id", Order = 2)]
+        [Required]
+        [Column("wer_id")]
         public int WearId { get; set; }
 
         [Required]

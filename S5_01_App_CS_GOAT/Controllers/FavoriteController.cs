@@ -41,23 +41,21 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Remove a favorite by ID
+        /// Remove a favorite for the authenticated user
         /// </summary>
-        /// <param name="userId">The ID of the user</param>
         /// <param name="caseId">The ID of the case</param>
         /// <returns>No content on success</returns>
-        [HttpDelete("remove/{userId}/{caseId}")]
+        [HttpDelete("remove/{caseId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int userId, int caseId)
+        public async Task<IActionResult> Delete(int caseId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            if (userId != authResult.AuthUserId)
-                return Forbid();
 
-            Favorite? favorite = await manager.GetByIdsAsync(userId, caseId);
+            Favorite? favorite = await manager.GetByIdsAsync(authResult.AuthUserId.Value, caseId);
             if (favorite == null) return NotFound();
 
             await manager.DeleteAsync(favorite);

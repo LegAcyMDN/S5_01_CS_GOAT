@@ -7,12 +7,11 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     public partial class UpgradeResult
     {
         [Key]
-        [Column("usr_id", Order = 1)]
-        public int UserId { get; set; }
+        [Column("inv_id")]
+        public int InventoryItemId { get; set; }
 
-        [Key]
-        [Column("wer_id", Order = 2)]
-        public int WearId { get; set; }
+        [Column("tra_id")]
+        public int TransactionId { get; set; }
 
         [Required]
         [Column("upg_floatstart")]
@@ -48,11 +47,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("frn_id")]
         public int FairRandomId { get; set; }
 
-        [ForeignKey($"{nameof(UserId)},{nameof(WearId)}")]
+        [ForeignKey(nameof(InventoryItemId))]
         [InverseProperty(nameof(InventoryItem.UpgradeResults))]
         public virtual InventoryItem InventoryItem { get; set; } = null!;
 
-        [InverseProperty(nameof(RandomTransaction.UpgradeResult))]
+        [ForeignKey(nameof(TransactionId))]
+        [InverseProperty(nameof(RandomTransaction.UpgradeResults))]
         public virtual RandomTransaction RandomTransaction { get; set; } = null!;
 
         [ForeignKey(nameof(FairRandomId))]

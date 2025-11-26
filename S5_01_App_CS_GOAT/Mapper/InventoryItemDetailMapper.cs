@@ -10,8 +10,7 @@ public class InventoryItemDetailMapper : Profile
     {
         // Entity -> DTO
         CreateMap<InventoryItem, InventoryItemDetailDTO>()
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.WearId, opt => opt.MapFrom(src => src.WearId))
+            .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
             .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float))
             .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
             .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn))
@@ -25,12 +24,16 @@ public class InventoryItemDetailMapper : Profile
 
         // DTO -> Entity
         CreateMap<InventoryItemDetailDTO, InventoryItem>()
-            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserId))
-            .ForMember(dest => dest.WearId, opt => opt.MapFrom(src => src.WearId))
+            .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
+            .ForMember(dest => dest.UserId, opt => opt.Ignore())
+            .ForMember(dest => dest.WearId, opt => opt.Ignore())
             .ForMember(dest => dest.RemovedOn, opt => opt.Ignore())
             .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float)) 
             .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
             .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn))
-            .ForMember(dest => dest.Wear, opt => opt.Ignore());
+            .ForMember(dest => dest.Wear, opt => opt.Ignore())
+            .ForMember(dest => dest.User, opt => opt.Ignore())
+            .ForMember(dest => dest.UpgradeResults, opt => opt.Ignore())
+            .ForMember(dest => dest.ItemTransactions, opt => opt.Ignore());
     }
 }

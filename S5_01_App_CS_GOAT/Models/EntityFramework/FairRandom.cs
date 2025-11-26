@@ -35,7 +35,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Range(0.0, 1.0)]
         public double Fraction { get; set; }
 
-        [InverseProperty(nameof(RandomTransaction.FairRandoms))]
+        [InverseProperty(nameof(RandomTransaction.FairRandom))]
         public virtual RandomTransaction? RandomTransaction { get; set; }
 
         [InverseProperty(nameof(UpgradeResult.FairRandom))]

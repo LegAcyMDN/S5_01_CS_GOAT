@@ -14,7 +14,6 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int, string> manager,
-        IToggleRepository<InventoryItem> toggleManager,
         IMapper mapper,
         IConfiguration configuration
         ) : ControllerBase
@@ -40,21 +39,21 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get detailed inventory item information for the authenticated user
+        /// Get detailed inventory item information by InventoryItemId
         /// </summary>
-        /// <param name="wearId">The ID of the wear/item</param>
+        /// <param name="inventoryItemId">The ID of the inventory item</param>
         /// <returns>InventoryItemDetailDTO object</returns>
-        [HttpGet("details/{wearId}")]
+        [HttpGet("details/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetDetails(int wearId)
+        public async Task<IActionResult> GetDetails(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? item = await manager.GetByIdsAsync(authResult.AuthUserId, wearId);
-            if (item == null) return NotFound();
+            InventoryItem? item = await manager.GetByIdAsync(inventoryItemId);
+            if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
 
             InventoryItemDetailDTO? inventory = mapper.Map<InventoryItemDetailDTO>(item);
             return Ok(inventory);
@@ -72,42 +71,44 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Toggle favorite status of an inventory item
+        /// Toggle favorite status of an inventory item by InventoryItemId
         /// </summary>
-        /// <param name="wearId">The ID of the wear/item</param>
+        /// <param name="inventoryItemId">The ID of the inventory item</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("togglefavorite/{wearId}")]
+        [HttpPatch("togglefavorite/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ToggleFavorite(int wearId)
+        public async Task<IActionResult> ToggleFavorite(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? inventory = await manager.GetByIdsAsync(authResult.AuthUserId.Value, wearId);
+            InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null) return NotFound();
+            if (inventory.UserId != authResult.AuthUserId) return Forbid();
 
-            await toggleManager.ToggleByIdsAsync(authResult.AuthUserId.Value, wearId);
+            inventory.IsFavorite = !inventory.IsFavorite;
+            await manager.UpdateAsync(inventory, inventory);
             return NoContent();
         }
 
         /// <summary>
-        /// Sell an inventory item (marks it as removed)
+        /// Sell an inventory item by InventoryItemId (marks it as removed)
         /// </summary>
-        /// <param name="wearId">The ID of the wear/item</param>
+        /// <param name="inventoryItemId">The ID of the inventory item</param>
         /// <returns>No content on success</returns>
-        [HttpDelete("sell/{wearId}")]
+        [HttpDelete("sell/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Sell(int wearId)
+        public async Task<IActionResult> Sell(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? inventory = await manager.GetByIdsAsync(authResult.AuthUserId.Value, wearId);
-            if (inventory == null) return NotFound();
+            InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
+            if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
 
             inventory.RemovedOn = DateTime.Now;
             await manager.UpdateAsync(inventory, inventory);
