@@ -58,7 +58,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Get(int id)
+        public async Task<ActionResult<ItemTransactionDetailDTO>> Get(int id)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -66,7 +66,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             ItemTransaction? result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound();
-            return Ok(mapper.Map<ItemTransactionDTO>(result));
+            return Ok(mapper.Map<ItemTransactionDetailDTO>(result));
         }
 
         /// <summary>

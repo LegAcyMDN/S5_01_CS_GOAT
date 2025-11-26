@@ -3,12 +3,15 @@
     public class CaseDetailDTO
     {
         public int CaseId { get; set; }
+
         public string CaseName { get; set; } = null!;
+
         public string? CaseImage { get; set; }
+
         public double CasePrice { get; set; }
 
         public int Weight { get; set; }
-
+        
         public bool IsFavorite { get; set; } = false;
     }
 }

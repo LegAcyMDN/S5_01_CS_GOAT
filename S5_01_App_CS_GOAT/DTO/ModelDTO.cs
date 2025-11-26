@@ -3,8 +3,9 @@
     public class ModelDTO
     {
         public int Uuid { get; set; }
-        public int UvType { get; set; }
-        public string ItemModel { get; set; } = null!;
 
+        public int UvType { get; set; }
+
+        public string ItemModel { get; set; } = null!;
     }
 }
