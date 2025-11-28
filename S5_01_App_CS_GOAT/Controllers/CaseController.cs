@@ -15,6 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class CaseController(
         IMapper mapper,
         IReadableRepository<Case, int> manager,
+        ICaseRelatedRepository<Case> caseManager,
         IDataRepository<Favorite, (int,int)> favoriteManager,
         IConfiguration configuration) : ControllerBase
     {
@@ -55,9 +56,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
-            Case? result = await manager.GetByIdAsync(id);
+            Case? result = await caseManager.GetByIdWithContentsAsync(id);
             if (result == null) return NotFound();
-            CaseDetailDTO caseDetailDTO = mapper.Map<CaseDetailDTO>(result);
+            CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated) return Ok(caseDetailDTO);

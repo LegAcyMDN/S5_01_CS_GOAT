@@ -9,6 +9,8 @@ public class CaseDTO
     public string? CaseImage { get; set; }
 
     public double CasePrice { get; set; }
-    
-    public bool IsFavorite { get; set; }
+
+    public int? Weight { get; set; } // sum of weights of all skins in the case
+
+    public bool IsFavorite { get; set; } = false;
 }

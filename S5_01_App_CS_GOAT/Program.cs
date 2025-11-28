@@ -65,6 +65,7 @@ builder.Services.AddScoped<IDataRepository<User, int>, CrudRepository<User>>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
 // Specialized managers with custom interfaces
+builder.Services.AddScoped<ICaseRelatedRepository<Case>, CaseManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<INotificationRelatedRepository<int?>, UserNotificationManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, UserNotificationManager>();
