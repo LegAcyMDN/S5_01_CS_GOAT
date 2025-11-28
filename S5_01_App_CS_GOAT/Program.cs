@@ -39,6 +39,7 @@ builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHist
 builder.Services.AddScoped<IDataRepository<Notification, int, string>, NotificationManager>();
 builder.Services.AddScoped<INotificationRepository<Notification>, NotificationManager>();
 builder.Services.AddScoped<IDataRepository<UpgradeResult, int, string>, UpgradeResultManager>();
+builder.Services.AddScoped<IDataRepository<ItemTransaction, int, string>, ItemTransactionManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
