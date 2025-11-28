@@ -2,11 +2,6 @@
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
-public interface ISearchableRepository<TEntity, TKey>
-{
-    Task<TEntity?> GetByKeyAsync(TKey key);
-    //Task<TEntity?> GetByKeyAsync(TKey key, bool includeRelations);
-}
 
 public interface IReadableRepository<TEntity, TIdentifier>
 {
@@ -26,5 +21,5 @@ public interface IWriteRepository<TEntity>
 }
 
 public interface IDataRepository<TEntity, TIdentifier, TKey>
-    : ISearchableRepository<TEntity, TKey>, IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
+    : IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
 {}

@@ -9,10 +9,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
         }
 
-        public override async Task<Transaction?> GetByKeyAsync(string str)
-        {
-            return null;
-        }
+      
         public async Task SetCancelledOnAsync(int id)
         {
             Transaction? transaction = await GetByIdAsync(id);

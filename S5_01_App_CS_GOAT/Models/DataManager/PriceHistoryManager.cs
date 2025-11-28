@@ -11,10 +11,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
         }
 
-        public override async Task<PriceHistory?> GetByKeyAsync(string key)
-        {
-            return await _context.PriceHistories.FirstOrDefaultAsync(ph => ph.PriceHistoryId.ToString() == key);
-        }
+        
 
         public async Task<IEnumerable<PriceHistoryDTO>> GetByInventoryItemAsync(int wearId)
         {
