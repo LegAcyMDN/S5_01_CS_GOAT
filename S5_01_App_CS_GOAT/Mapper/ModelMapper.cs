@@ -10,7 +10,7 @@ public class ModelMapper : Profile
     {
         // Wear -> DTO
         CreateMap<Wear, ModelDTO>()
-            .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Skin.PaintIndex))
+            .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Uuid))
             .ForMember(dest => dest.UvType, opt => opt.MapFrom(src => src.Skin.UvType))
             .ForMember(dest => dest.ItemModel, opt => opt.MapFrom(src => src.Skin.Item.ItemModel));
 
@@ -18,7 +18,6 @@ public class ModelMapper : Profile
         CreateMap<ModelDTO, Skin>()
             .ForMember(dest => dest.SkinId, opt => opt.Ignore())
             .ForMember(dest => dest.SkinName, opt => opt.Ignore())
-            .ForMember(dest => dest.PaintIndex, opt => opt.MapFrom(src => src.Uuid))
             .ForMember(dest => dest.UvType, opt => opt.MapFrom(src => src.UvType))
             .ForMember(dest => dest.ItemId, opt => opt.Ignore())
             .ForMember(dest => dest.RarityId, opt => opt.Ignore())
