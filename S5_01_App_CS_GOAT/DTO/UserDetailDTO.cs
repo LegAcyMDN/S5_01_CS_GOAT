@@ -14,17 +14,17 @@ public class UserDetailDTO
 
     public string? Phone { get; set; }
 
-    public bool PhoneIsVerified { get; set; }
+    public bool PhoneIsVerified { get; set; } // has user verified is phone number for his account
 
-    public bool EmailIsVerified { get; set; }
+    public bool EmailIsVerified { get; set; } // has user verified is email for his account
 
-    public TwoFAmethod TwoFA { get; set; }
+    public TwoFAmethod TwoFA { get; set; } // method two factor authentication for the user account
 
     public DateTime CreationDate { get; set; }
 
-    public string Seed { get; set; } = null!;
+    public string Seed { get; set; } = null!; // seed of the user for the fair random
 
     public double Wallet { get; set; }
 
-    public bool IsSteamLogin { get; set; }
+    public bool IsSteamLogin { get; set; } // has the user link is account steam
 }

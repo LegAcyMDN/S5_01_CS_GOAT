@@ -4,7 +4,7 @@
     {
         public string Uuid { get; set; } = null!;
 
-        public int UvType { get; set; }
+        public int UvType { get; set; } // what model we hase to use for the item
 
         public string ItemModel { get; set; } = null!;
     }

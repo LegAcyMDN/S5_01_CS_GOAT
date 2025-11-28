@@ -16,5 +16,5 @@ public class SkinDTO
 
     public double WorstPrice { get; set; }
 
-    public string? AnyUuid { get; set; }
+    public string? AnyUuid { get; set; } // different wear of the skin
 }
