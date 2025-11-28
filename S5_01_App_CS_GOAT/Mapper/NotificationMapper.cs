@@ -20,14 +20,6 @@ public class NotificationMapper : Profile
         CreateMap<UserNotification, NotificationDTO>()
             .IncludeBase<Notification, NotificationDTO>();
 
-        // DTO → Entity
-        CreateMap<NotificationDTO, Notification>()
-            .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
-            .ForMember(dest => dest.NotificationSummary, opt => opt.MapFrom(src => src.NotificationSummary))
-            .ForMember(dest => dest.NotificationContent, opt => opt.MapFrom(src => src.NotificationContent))
-            .ForMember(dest => dest.NotificationDate, opt => opt.MapFrom(src => src.NotificationDate))
-            .ForMember(dest => dest.NotificationType, opt => opt.Ignore());
-
         // DTO → UserNotification
         CreateMap<NotificationDTO, UserNotification>()
             .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))

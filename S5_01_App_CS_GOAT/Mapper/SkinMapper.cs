@@ -33,17 +33,5 @@ public class SkinMapper : Profile
                 src.Wears != null && src.Wears.Any() 
                     ? src.Wears.FirstOrDefault().Uuid 
                     : null));
-
-        // DTO -> Entity
-        CreateMap<SkinDTO, Skin>()
-            .ForMember(dest => dest.SkinId, opt => opt.Ignore())
-            .ForMember(dest => dest.ItemId, opt => opt.Ignore())
-            .ForMember(dest => dest.RarityId, opt => opt.Ignore())
-            .ForMember(dest => dest.Item, opt => opt.Ignore())
-            .ForMember(dest => dest.Rarity, opt => opt.Ignore())
-            .ForMember(dest => dest.CaseContents, opt => opt.Ignore())
-            .ForMember(dest => dest.Wears, opt => opt.Ignore())
-            .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.SkinName))
-            .ForMember(dest => dest.PaintIndex, opt => opt.Ignore());
     }
 }
