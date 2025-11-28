@@ -1,0 +1,16 @@
+<div>
+    <h3>@CaseName</h3>
+    <img src="cases/@CaseImagePath"/>
+    <h3>@CasePrice</h3>
+</div>
+@code {
+    [Parameter]
+    public string CaseName { get; set; }
+    
+    [Parameter]
+    public string CaseImagePath { get; set; }
+    
+    [Parameter]
+    public double CasePrice { get; set; }
+    
+}

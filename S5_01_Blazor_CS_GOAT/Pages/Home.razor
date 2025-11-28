@@ -10,9 +10,22 @@
 
 
 @* <div class="bg-dark" id="home-container"> *@
-    <Header>
-        aaaaa
-    </Header>
+<Header>
+    <div style="color: white">
+        @if (cases.Count == 0)
+        {
+            <p><em>Loading...</em></p>    
+        } else
+        {
+            @foreach (Case singleCase in cases) {
+                <CaseComponent CaseName="@singleCase.CaseName" CaseImagePath="@singleCase.CaseImage" CasePrice="@singleCase.CasePrice"></CaseComponent>
+            }
+        }
+    </div>
+</Header>
+
+
+
 @* </div> *@
 
 
@@ -29,9 +42,11 @@
 </style>
 
 @code {
-
+    private List<Case> cases = new List<Case>();
     protected override async Task OnInitializedAsync()
     {
-        
+        Console.WriteLine("aaaaaaaa");
+        cases = await caseRepository.GetAllAsync();
+        Console.WriteLine(cases);
     }
 }
