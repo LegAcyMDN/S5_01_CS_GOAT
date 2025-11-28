@@ -7,7 +7,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     public class SkinManager(CSGOATDbContext context) : CrudRepository<Skin>(context), ISkinRelatedRepository<Skin>
     {
-        public async Task<IEnumerable<Skin>> GetByCase(int caseId, FilterOptions? filters = null, SortOptions? sorts = null)
+        public async Task<IEnumerable<CaseContent>> GetByCase(int caseId, FilterOptions? filters = null, SortOptions? sorts = null)
         {
             IEnumerable<CaseContent> caseContents = await _context.Set<CaseContent>()
                 .Include(cc => cc.Skin)
@@ -21,7 +21,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .Where(cc => cc.CaseId == caseId)
                 .ToListAsync();
    
-            return caseContents.Select(cc => cc.Skin);
+            return caseContents;
         }
 
     }

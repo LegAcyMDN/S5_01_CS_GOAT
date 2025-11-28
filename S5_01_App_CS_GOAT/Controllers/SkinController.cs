@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class SkinController(
         IMapper mapper,
         ISkinRelatedRepository<Skin> manager,
-        IDataRepository<Case, int> caseManager
+        IReadableRepository<Case, int> caseManager
         ) : ControllerBase
     {
         /// <summary>
@@ -30,8 +30,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             Case? caseExists = await caseManager.GetByIdAsync(id);
             if (caseExists == null) return NotFound();
 
-            IEnumerable<Skin?> skins = await manager.GetByCase(id);
-            IEnumerable<SkinDTO> skinDto = mapper.Map<IEnumerable<SkinDTO>>(skins);
+            IEnumerable<CaseContent> caseContents = await manager.GetByCase(id);
+            IEnumerable<SkinDTO> skinDto = mapper.Map<IEnumerable<SkinDTO>>(caseContents);
             return Ok(skinDto);
         }
     }

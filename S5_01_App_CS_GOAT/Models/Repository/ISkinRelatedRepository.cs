@@ -1,10 +1,11 @@
-﻿using S5_01_App_CS_GOAT.Services;
+﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface ISkinRelatedRepository<TEntity>
 {
-    Task<IEnumerable<TEntity>> GetByCase(
+    Task<IEnumerable<CaseContent>> GetByCase(
         int caseId,
         FilterOptions? filters = null,
         SortOptions? sorts = null);
