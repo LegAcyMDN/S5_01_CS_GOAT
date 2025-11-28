@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -16,7 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class ItemTransactionController(
        IMapper mapper,
-       IDataRepository<ItemTransaction, int, string> manager,
+       IDataRepository<ItemTransaction, int> manager,
        IConfiguration configuration
        ) : ControllerBase
     {

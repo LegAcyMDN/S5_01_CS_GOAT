@@ -14,8 +14,8 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class CaseController(
         IMapper mapper,
-        IDataRepository<Case, int, string> manager,
-        IDataRepository<Favorite, int, string> favoriteManager,
+        IReadableRepository<Case, int> manager,
+        IDataRepository<Favorite, (int,int)> favoriteManager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -35,9 +35,10 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             foreach (CaseDTO caseDto in caseDTO)
             {
-                Favorite? favorite = await favoriteManager.GetByIdsAsync(
-                    authResult.AuthUserId,
-                    caseDto.CaseId);
+                Favorite? favorite = await favoriteManager.GetByIdAsync(
+                    (authResult.AuthUserId.Value,
+                    caseDto.CaseId)
+                );
                 caseDto.IsFavorite = favorite != null;
             }
 
@@ -61,9 +62,10 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated) return Ok(caseDetailDTO);
 
-            Favorite? favorite = await favoriteManager.GetByIdsAsync(
-                authResult.AuthUserId,
-                caseDetailDTO.CaseId);
+            Favorite? favorite = await favoriteManager.GetByIdAsync(
+                (authResult.AuthUserId.Value,
+                caseDetailDTO.CaseId)
+            );
             caseDetailDTO.IsFavorite = favorite != null;
             return Ok(caseDetailDTO);
         }

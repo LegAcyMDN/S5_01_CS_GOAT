@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class UserController(
-        IDataRepository<User, int, string> manager,
+        IDataRepository<User, int> manager,
         IMapper mapper,
         IConfiguration configuration
     ) : ControllerBase

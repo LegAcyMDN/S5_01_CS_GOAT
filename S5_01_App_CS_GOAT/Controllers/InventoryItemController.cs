@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class InventoryItemController(
-        IDataRepository<InventoryItem, int, string> manager,
+        IDataRepository<InventoryItem, int> manager,
         IMapper mapper,
         IConfiguration configuration
         ) : ControllerBase

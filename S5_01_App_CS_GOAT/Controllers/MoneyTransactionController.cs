@@ -11,7 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class MoneyTransactionController(
-        IDataRepository<MoneyTransaction, int, string> manager,
+        IDataRepository<MoneyTransaction, int> manager,
         IConfiguration configuration
         ) : ControllerBase
     {

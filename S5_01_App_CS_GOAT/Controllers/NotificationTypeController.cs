@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class NotificationTypeController(
         IMapper mapper,
-        IDataRepository<NotificationType, int, string> manager
+        IDataRepository<NotificationType, int> manager
     ) : ControllerBase
     {
         /// <summary>

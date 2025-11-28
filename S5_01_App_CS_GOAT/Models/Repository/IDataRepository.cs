@@ -1,25 +1,19 @@
-﻿using S5_01_App_CS_GOAT.Services;
-
-namespace S5_01_App_CS_GOAT.Models.Repository;
-
+﻿namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface IReadableRepository<TEntity, TIdentifier>
 {
-    Task<IEnumerable<TEntity>> GetAllAsync(
-        FilterOptions? filters = null,
-        SortOptions? sorts = null);
+    Task<IEnumerable<TEntity>> GetAllAsync();
     Task<TEntity?> GetByIdAsync(TIdentifier id);
-    Task<TEntity?> GetByIdsAsync(params object[] keyValues);
 }
 
 public interface IWriteRepository<TEntity>
 {
     Task<TEntity> AddAsync(TEntity entity);
     Task UpdateAsync(TEntity existing, TEntity updated);
-    Task PatchAsync(TEntity entity, object patchData);
+    Task PatchAsync(TEntity entity, IDictionary<string, object> patchData);
     Task DeleteAsync(TEntity entity);
 }
 
-public interface IDataRepository<TEntity, TIdentifier, TKey>
+public interface IDataRepository<TEntity, TIdentifier>
     : IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
 {}

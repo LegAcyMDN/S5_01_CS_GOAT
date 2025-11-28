@@ -14,25 +14,23 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class NotificationController(
         IMapper mapper,
-        IDataRepository<Notification, int, string> manager,
-        IDataRepository<GlobalNotification, int, string> globalNotificationManager,
-        IDataRepository<UserNotification, int, string> userNotificationManager,
+        IDataRepository<Notification, int> manager,
+        IDataRepository<GlobalNotification, int> globalNotificationManager,
+        IDataRepository<UserNotification, int> userNotificationManager,
         IConfiguration configuration
     ) : ControllerBase
     {
         /// <summary>
         /// Get all notifications (admin only)
         /// </summary>
-        /// <param name="filters">Optional filter parameters</param>
-        /// <param name="sorts">Optional sort parameters</param>
         /// <returns>List of all NotificationDTO objects</returns>
         [HttpGet("all")]
         [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetAll([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
+        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetAll()
         {
-            IEnumerable<Notification> notifications = await manager.GetAllAsync(filters, sorts);
+            IEnumerable<Notification> notifications = await manager.GetAllAsync();
             if (!notifications.Any())
                 return NotFound();
 

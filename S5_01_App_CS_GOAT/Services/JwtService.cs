@@ -42,8 +42,8 @@ namespace S5_01_App_CS_GOAT.Services
         /// <param name="manager">The repository manager to use for retrieval</param>
         /// <param name="adminOverride">If true, admins will retrieve all objects</param>
         /// <returns>The list of IUserDependant objects belonging to the authenticated user</returns>
-        public async Task<IEnumerable<T1>> GetByUser<T1>(
-                IReadableRepository<T1, int> manager,
+        public async Task<IEnumerable<T1>> GetByUser<T1,T2>(
+                IReadableRepository<T1,T2> manager,
                 bool adminOverride)
                 where T1 : IUserDependant
         {

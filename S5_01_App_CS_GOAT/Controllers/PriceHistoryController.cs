@@ -12,7 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PriceHistoryController(
-        IDataRepository<PriceHistory, int, string> manager
+        IDataRepository<PriceHistory, int> manager
     ) : ControllerBase
     {
         private readonly PriceHistoryManager _manager = (PriceHistoryManager)manager;

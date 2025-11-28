@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -12,24 +11,21 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PromoCodeController(
-        IDataRepository<PromoCode, int, string> manager
+        IDataRepository<PromoCode, int> manager
     ) : ControllerBase
     {
-        private readonly PromoCodeManager _manager = (PromoCodeManager)manager;
 
         /// <summary>
         /// Get all promo codes (admin only)
         /// </summary>
-        /// <param name="filters">Optional filter parameters</param>
-        /// <param name="sorts">Optional sort parameters</param>
         /// <returns>List of all PromoCode objects</returns>
         [HttpGet("all")]
         [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetAll([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
+        public async Task<IActionResult> GetAll()
         {
-            IEnumerable<PromoCode> promoCodes = await _manager.GetAllAsync(filters, sorts);
+            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsync();
             return Ok(promoCodes);
         }
 
@@ -46,7 +42,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            PromoCode createdPromoCode = await _manager.AddAsync(promoCode);
+            PromoCode createdPromoCode = await manager.AddAsync(promoCode);
             return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdPromoCode);
         }
 
@@ -66,10 +62,10 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
 
-            PromoCode? existingPromoCode = await _manager.GetByIdAsync(id);
+            PromoCode? existingPromoCode = await manager.GetByIdAsync(id);
             if (existingPromoCode == null) return NotFound();
 
-            await _manager.UpdateAsync(existingPromoCode, updatedPromoCode);
+            await manager.UpdateAsync(existingPromoCode, updatedPromoCode);
             return NoContent();
         }
 
@@ -84,11 +80,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            var promoCode = await _manager.GetByIdAsync(id);
+            var promoCode = await manager.GetByIdAsync(id);
             if (promoCode == null) 
                 return NotFound();
 
-            await _manager.DeleteAsync(promoCode);
+            await manager.DeleteAsync(promoCode);
             return NoContent();
         }
     }

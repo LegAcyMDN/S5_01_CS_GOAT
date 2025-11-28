@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class SkinController(
         IMapper mapper,
         ISkinRelatedRepository<Skin> manager,
-        IDataRepository<Case, int, string> caseManager
+        IDataRepository<Case, int> caseManager
         ) : ControllerBase
     {
         /// <summary>

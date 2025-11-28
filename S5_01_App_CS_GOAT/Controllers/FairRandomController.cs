@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class FairRandomController(
         IMapper mapper,
-        IDataRepository<FairRandom, int, string> manager,
+        IDataRepository<FairRandom, int> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>

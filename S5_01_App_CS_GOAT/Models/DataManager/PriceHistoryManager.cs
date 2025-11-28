@@ -5,7 +5,7 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
-    public class PriceHistoryManager : CrudRepository<PriceHistory>, IDataRepository<PriceHistory, int, string>
+    public class PriceHistoryManager : CrudRepository<PriceHistory>, IDataRepository<PriceHistory, int>
     {
         public PriceHistoryManager(CSGOATDbContext context) : base(context)
         {

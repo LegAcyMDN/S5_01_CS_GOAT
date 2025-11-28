@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class GlobalNotificationController(
         IMapper mapper,
-        IDataRepository<GlobalNotification, int, string> manager
+        IDataRepository<GlobalNotification, int> manager
     ) : ControllerBase
     {
         /// <summary>

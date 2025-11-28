@@ -9,7 +9,7 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
-public class UserManager : CrudRepository<User>, IDataRepository<User, int, string>
+public class UserManager : CrudRepository<User>, IDataRepository<User, int>
 {
     public UserManager(CSGOATDbContext context) : base(context)
     { }

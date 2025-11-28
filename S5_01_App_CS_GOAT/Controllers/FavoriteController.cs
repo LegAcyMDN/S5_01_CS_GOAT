@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class FavoriteController(
         IMapper mapper,
-        IDataRepository<Favorite, int, string> manager,
+        IDataRepository<Favorite, (int, int)> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -55,7 +55,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            Favorite? favorite = await manager.GetByIdsAsync(authResult.AuthUserId.Value, caseId);
+            Favorite? favorite = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
             if (favorite == null) return NotFound();
 
             await manager.DeleteAsync(favorite);

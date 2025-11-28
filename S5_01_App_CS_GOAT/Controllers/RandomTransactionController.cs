@@ -14,9 +14,8 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class RandomTransactionController(
         IMapper mapper,
-        IDataRepository<ItemTransaction,int,string> manager,
-        IConfiguration configuration,
-         IDataRepository<ItemTransaction, int, string> randomManager
+        IDataRepository<ItemTransaction, int> manager,
+        IConfiguration configuration
     ) : ControllerBase
     {
         /// <summary>

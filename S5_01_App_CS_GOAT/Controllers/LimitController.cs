@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class LimitController(
        IMapper mapper,
-       IDataRepository<Limit, int, (int, int)> manager, 
+       IDataRepository<Limit, (int,int)> manager, 
        IConfiguration configuration
        ) : ControllerBase
     {
@@ -52,7 +52,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            Limit? existingLimit = await manager.GetByIdsAsync(userId, limitTypeId);
+            Limit? existingLimit = await manager.GetByIdAsync((userId, limitTypeId));
             
             if (existingLimit == null)
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitTypeId}");

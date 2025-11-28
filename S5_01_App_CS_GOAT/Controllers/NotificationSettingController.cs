@@ -1,7 +1,5 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -13,7 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class NotificationSettingController(
-        IDataRepository<NotificationSetting, int, string> manager,
+        IDataRepository<NotificationSetting, (int,int)> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -51,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (userId != authResult.AuthUserId)
                 return Forbid();
 
-            NotificationSetting? setting = await manager.GetByIdsAsync(userId, notificationTypeId);
+            NotificationSetting? setting = await manager.GetByIdAsync((userId, notificationTypeId));
             if (setting == null) return NotFound();
 
             await manager.PatchAsync(setting, patchData);

@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class BanController(
         IMapper mapper,
-        IDataRepository<Ban, int, string> manager,
+        IDataRepository<Ban, int> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>

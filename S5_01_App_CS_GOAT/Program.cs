@@ -35,28 +35,30 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddScoped<IDataRepository<Case, int, string>, CaseManager>();
-builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
-builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
-builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
-builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
-builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomManager>();
-builder.Services.AddScoped<IDataRepository<Favorite, int, string>, FavoriteManager>();
-builder.Services.AddScoped<IDataRepository<GlobalNotification, int, string>, GlobalNotificationManager>();
-builder.Services.AddScoped<IDataRepository<MoneyTransaction, int, string>, MoneyTransactionManager>();
-builder.Services.AddScoped<IDataRepository<Wear, int, string>, WearManager>();
+
+// Generic repositories for standard entities (sorted alphabetically)
+builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
+builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
+builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
+builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
+builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
+builder.Services.AddScoped<IDataRepository<InventoryItem, int>, CrudRepository<InventoryItem>>();
+builder.Services.AddScoped<IDataRepository<ItemTransaction, int>, CrudRepository<ItemTransaction>>();
+builder.Services.AddScoped<IDataRepository<Limit, int>, CrudRepository<Limit>>();
+builder.Services.AddScoped<IDataRepository<MoneyTransaction, int>, CrudRepository<MoneyTransaction>>();
+builder.Services.AddScoped<IReadableRepository<NotificationType, int>, CrudRepository<NotificationType>>();
+builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
+builder.Services.AddScoped<IDataRepository<PromoCode, int>, CrudRepository<PromoCode>>();
+
+// Specialized managers with custom interfaces or logic (existing managers)
+builder.Services.AddScoped<IDataRepository<User, int>, UserManager>();
+builder.Services.AddScoped<IDataRepository<Wear, int>, WearManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<INotificationRelatedRepository<int?>, UserNotificationManager>();
-builder.Services.AddScoped<IDataRepository<UserNotification, int, string>, UserNotificationManager>();
-builder.Services.AddScoped<IDataRepository<Limit, int, (int, int)>, LimitManager>();
-builder.Services.AddScoped<IDataRepository<PromoCode, int, string>, PromoCodeManager>();
+builder.Services.AddScoped<IDataRepository<UserNotification, int>, UserNotificationManager>();
 builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
-builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
-builder.Services.AddScoped<IDataRepository<Notification, int, string>, NotificationManager>();
-builder.Services.AddScoped<INotificationRepository<Notification>, NotificationManager>();
-builder.Services.AddScoped<IDataRepository<NotificationType, int, string>, NotificationTypeManager>();
-builder.Services.AddScoped<IDataRepository<UpgradeResult, int, string>, UpgradeResultManager>();
-builder.Services.AddScoped<IDataRepository<ItemTransaction, int, string>, ItemTransactionManager>();
+builder.Services.AddScoped<IDataRepository<PriceHistory, int>, PriceHistoryManager>();
+builder.Services.AddScoped<IDataRepository<UpgradeResult, int>, UpgradeResultManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));

@@ -1,14 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using S5_01_App_CS_GOAT.Services;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
-public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, string> where TEntity : class
+public class CrudRepository<TEntity, TIdentifier> :
+    IDataRepository<TEntity, TIdentifier>
+    where TEntity : class
+    where TIdentifier : struct
 {
     protected readonly CSGOATDbContext _context;
 
@@ -17,22 +16,26 @@ public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, st
         _context = context;
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync(FilterOptions? filters = null, SortOptions? sorts = null)
+    public async Task<IEnumerable<TEntity>> GetAllAsync()
     {
-        // Currently ignoring filters/sorts and returning all entities; implement filtering/sorting later if needed.
         return await _context.Set<TEntity>().ToListAsync();
     }
 
-    public async Task<TEntity?> GetByIdsAsync(params object[] keyValues)
+    public async Task<TEntity?> GetByIdAsync(TIdentifier id)
     {
-        return await _context.Set<TEntity>().FindAsync(keyValues);
-    }
-
-    public async Task<TEntity?> GetByIdAsync(int id)
-    {
+        if (typeof(TIdentifier).Name.StartsWith("ValueTuple"))
+        {
+            var fields = typeof(TIdentifier).GetFields();
+            var values = new object[fields.Length];
+            for (int i = 0; i < fields.Length; i++)
+            {
+                values[i] = fields[i].GetValue(id)!;
+            }
+            return await _context.Set<TEntity>().FindAsync(values);
+        }
+        
         return await _context.Set<TEntity>().FindAsync(id);
     }
-
 
     public async Task<TEntity> AddAsync(TEntity entity)
     {
@@ -48,17 +51,12 @@ public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, st
         await _context.SaveChangesAsync();
     }
 
-    public async Task PatchAsync(TEntity entityToUpdate, object patchData)
+    public async Task PatchAsync(TEntity entityToUpdate, IDictionary<string, object> patchData)
     {
-        if (patchData is not IDictionary<string, object> updates)
-        {
-            throw new ArgumentException("patchData must be an IDictionary<string, object>", nameof(patchData));
-        }
-
         _context.Set<TEntity>().Attach(entityToUpdate);
         EntityEntry<TEntity> entry = _context.Entry(entityToUpdate);
 
-        foreach (KeyValuePair<string, object> update in updates)
+        foreach (KeyValuePair<string, object> update in patchData)
         {
             PropertyEntry property = entry.Property(update.Key);
             if (property != null)
@@ -76,4 +74,10 @@ public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, st
         _context.Set<TEntity>().Remove(entity);
         await _context.SaveChangesAsync();
     }
+}
+
+public class CrudRepository<TEntity> : CrudRepository<TEntity, int>
+    where TEntity : class
+{
+    public CrudRepository(CSGOATDbContext context) : base(context) { }
 }
