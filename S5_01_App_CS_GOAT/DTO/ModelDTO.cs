@@ -2,7 +2,7 @@
 {
     public class ModelDTO
     {
-        public int Uuid { get; set; }
+        public string Uuid { get; set; } = null!;
 
         public int UvType { get; set; }
 
