@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -14,6 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class CaseController(
         IMapper mapper,
         IDataRepository<Case, int, string> manager,
+        IDataRepository<Favorite, int, string> favoriteManager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -25,9 +27,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
         {
-            IEnumerable<Case?> caseResult = await manager.GetAllAsync();
+            IEnumerable<Case> caseResult = await manager.GetAllAsync();
+            IEnumerable<CaseDTO> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
 
-            IEnumerable<CaseDTO?> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated) return Ok(caseDTO);
+
+            foreach (CaseDTO caseDto in caseDTO)
+            {
+                Favorite? favorite = await favoriteManager.GetByIdsAsync(
+                    authResult.AuthUserId,
+                    caseDto.CaseId);
+                caseDto.IsFavorite = favorite != null;
+            }
+
             return Ok(caseDTO);
         }
 
@@ -43,7 +56,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Case? result = await manager.GetByIdAsync(id);
             if (result == null) return NotFound();
-            return Ok(mapper.Map<CaseDetailDTO>(result));
+            CaseDetailDTO caseDetailDTO = mapper.Map<CaseDetailDTO>(result);
+
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated) return Ok(caseDetailDTO);
+
+            Favorite? favorite = await favoriteManager.GetByIdsAsync(
+                authResult.AuthUserId,
+                caseDetailDTO.CaseId);
+            caseDetailDTO.IsFavorite = favorite != null;
+            return Ok(caseDetailDTO);
         }
     }
 }

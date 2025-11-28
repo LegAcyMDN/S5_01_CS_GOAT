@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -7,48 +8,37 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 
-
 namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/UserNotification")]
     [ApiController]
+    [Authorize]
+    [AllowAnonymous]
     public class UserNotificationController(
         IMapper mapper,
-        INotificationRelatedRepository<int?> manager,
-        IConfiguration configuration,
-        CSGOATDbContext context
+        INotificationRelatedRepository<int?> manager
     ) : ControllerBase
     {
+        /// <summary>
+        /// Create a new user notification (admin only)
+        /// </summary>
+        /// <param name="notificationDto">The notification data to create</param>
+        /// <returns>The created NotificationDTO object</returns>
         [HttpPost("create")]
+        [Admin]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(NotificationDTO notificationDto)
         {
-
-            AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-                return Unauthorized();
-
-            if (!authResult.IsAdmin)
-                return Forbid();
-
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-
-            if(string.IsNullOrEmpty(notificationDto.NotificationTypeName))
-            {
-                return BadRequest("Le nom du type de notification est requis.");
-            }
-
-
             int? notificationTypeId = await manager.GetNotificationTypeIdByNameAsync(notificationDto.NotificationTypeName);
 
-            if (notificationTypeId == 0 )
+            if (notificationTypeId == null)
             {
-                return BadRequest($"Type de notification '{notificationDto.NotificationTypeName}' introuvable.");
+                return BadRequest($"Notification type '{notificationDto.NotificationTypeName}' not found.");
             }
-
 
             UserNotification userNotification = mapper.Map<UserNotification>(notificationDto);
 
@@ -56,7 +46,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             NotificationDTO resultDto = mapper.Map<NotificationDTO>(userNotification);
             return CreatedAtRoute(null, resultDto);
-
         }
     }
 }

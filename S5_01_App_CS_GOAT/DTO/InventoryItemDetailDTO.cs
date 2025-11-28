@@ -1,14 +1,8 @@
-﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace S5_01_App_CS_GOAT.DTO
+﻿namespace S5_01_App_CS_GOAT.DTO
 {
     public class InventoryItemDetailDTO
     {
-        public int UserId { get; set; }
-
-        public int WearId { get; set; }
+        public int InventoryItemId { get; set; }
 
         public float Float { get; set; }
 

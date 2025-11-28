@@ -6,14 +6,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     public class LimitManager(CSGOATDbContext context) : CrudRepository<Limit>(context), IDataRepository<Limit, int, (int, int)>
     {
-        public Task<Limit?> GetByKeyAsync((int, int) key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<Limit?> GetByKeyAsync(string str)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 }

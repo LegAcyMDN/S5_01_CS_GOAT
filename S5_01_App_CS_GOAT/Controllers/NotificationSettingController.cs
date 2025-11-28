@@ -1,4 +1,7 @@
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -7,6 +10,8 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/NotificationSetting")]
     [ApiController]
+    [Authorize]
+    [AllowAnonymous]
     public class NotificationSettingController(
         IDataRepository<NotificationSetting, int, string> manager,
         IConfiguration configuration) : ControllerBase
@@ -15,19 +20,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Get notification settings for the authenticated user
         /// </summary>
         /// <returns>List of notification settings for the user</returns>
-        [HttpGet("ByUser")]
+        [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetByUser()
+        public async Task<ActionResult<IEnumerable<NotificationSetting>>> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            int userId = authResult.AuthUserId;
-            IEnumerable<NotificationSetting> settings = await manager.GetAllAsync();
-            IEnumerable<NotificationSetting> userSettings = settings.Where(ns => ns.UserId == userId);
-
+            IEnumerable<NotificationSetting> userSettings = await authResult.GetByUser(manager, false);
+            
             return Ok(userSettings);
         }
 
@@ -38,23 +40,19 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="notificationTypeId">The ID of the notification type</param>
         /// <param name="patchData">The patch data with OnSite, ByEmail, ByPhone flags</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("Update/{userId}/{notificationTypeId}")]
+        [HttpPatch("update/{userId}/{notificationTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int userId, int notificationTypeId, [FromBody] Dictionary<string, object> patchData)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-
             if (userId != authResult.AuthUserId)
                 return Forbid();
 
             NotificationSetting? setting = await manager.GetByIdsAsync(userId, notificationTypeId);
-            if (setting == null)
-                return NotFound();
+            if (setting == null) return NotFound();
 
             await manager.PatchAsync(setting, patchData);
             return NoContent();

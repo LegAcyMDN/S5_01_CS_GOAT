@@ -15,24 +15,22 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.ProbIntact, opt => opt.MapFrom(src => src.ProbIntact))
                 .ForMember(dest => dest.ProbDegrade, opt => opt.MapFrom(src => src.ProbDegrade))
                 .ForMember(dest => dest.PropDestroy, opt => opt.MapFrom(src => src.PropDestroy))
-                .ForMember(dest => dest.DegradeFunction, opt => opt.MapFrom(src => src.DegradeFunction))
-                .ForMember(dest => dest.UserIdUpgrade, opt => opt.MapFrom(src => src.UserId))
-                .ForMember(dest => dest.WearIdUpgrade, opt => opt.MapFrom(src => src.WearId))
-                .ForMember(dest => dest.FairRandomId, opt => opt.MapFrom(src => src.FairRandomId))
-                .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.RandomTransaction.TransactionId));
+                .ForMember(dest => dest.DegradeFunction, opt => opt.MapFrom(src => src.DegradeFunction));
 
             // DTO -> Entity 
             CreateMap<UpgradeResultDTO, UpgradeResult>()
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.UserIdUpgrade))
-                .ForMember(dest => dest.WearId, opt => opt.MapFrom(src => src.WearIdUpgrade))
+                .ForMember(dest => dest.InventoryItemId, opt => opt.Ignore())
+                .ForMember(dest => dest.TransactionId, opt => opt.Ignore())
+                .ForMember(dest => dest.FairRandomId, opt => opt.Ignore())
                 .ForMember(dest => dest.FloatStart, opt => opt.MapFrom(src => src.FloatStart))
                 .ForMember(dest => dest.FloatEnd, opt => opt.MapFrom(src => src.FloatEnd))
                 .ForMember(dest => dest.ProbIntact, opt => opt.MapFrom(src => src.ProbIntact))
                 .ForMember(dest => dest.ProbDegrade, opt => opt.MapFrom(src => src.ProbDegrade))
                 .ForMember(dest => dest.PropDestroy, opt => opt.MapFrom(src => src.PropDestroy))
                 .ForMember(dest => dest.DegradeFunction, opt => opt.MapFrom(src => src.DegradeFunction))
-                .ForMember(dest => dest.FairRandomId, opt => opt.MapFrom(src => src.FairRandomId))
-                .ForMember(dest => dest.RandomTransaction, opt => opt.Ignore());
+                .ForMember(dest => dest.InventoryItem, opt => opt.Ignore())
+                .ForMember(dest => dest.RandomTransaction, opt => opt.Ignore())
+                .ForMember(dest => dest.FairRandom, opt => opt.Ignore());
         }
     }
 }

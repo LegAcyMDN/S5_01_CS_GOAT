@@ -9,9 +9,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         public PromoCodeManager(CSGOATDbContext context) : base(context) { }
 
-        public override async Task<PromoCode?> GetByKeyAsync(string code)
-        {
-            return await _context.PromoCodes.FirstOrDefaultAsync(p => p.Code == code);
-        }
+      
     }
 }

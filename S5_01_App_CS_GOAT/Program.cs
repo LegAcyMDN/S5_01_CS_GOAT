@@ -5,11 +5,6 @@ using S5_01_App_CS_GOAT.Models.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
-using Microsoft.Extensions.Options;
-using S5_01_App_CS_GOAT.Services;
 
 
 
@@ -41,10 +36,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IDataRepository<Case, int, string>, CaseManager>();
-builder.Services.AddScoped<IDataRepository<Item, int, string>, ItemManager>();
 builder.Services.AddScoped<IDataRepository<User, int, string>, UserManager>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int, string>, InventoryItemManager>();
-builder.Services.AddScoped<IToggleRepository<InventoryItem>, InventoryItemManager>();
 builder.Services.AddScoped<IDataRepository<PaymentMethod, int, string>, PaymentMethodManager>();
 builder.Services.AddScoped<IDataRepository<Ban, int, string>, BanManager>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int, string>, FairRandomManager>();
@@ -61,7 +54,8 @@ builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
 builder.Services.AddScoped<IDataRepository<PriceHistory, int, string>, PriceHistoryManager>();
 builder.Services.AddScoped<IDataRepository<Notification, int, string>, NotificationManager>();
 builder.Services.AddScoped<INotificationRepository<Notification>, NotificationManager>();
-builder.Services.AddScoped<IDataRepository<NotificationSetting, int, string>, NotificationSettingManager>();
+builder.Services.AddScoped<IDataRepository<UpgradeResult, int, string>, UpgradeResultManager>();
+builder.Services.AddScoped<IDataRepository<ItemTransaction, int, string>, ItemTransactionManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));

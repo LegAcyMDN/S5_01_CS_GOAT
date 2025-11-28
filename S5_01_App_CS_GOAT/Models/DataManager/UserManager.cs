@@ -14,11 +14,7 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
     public UserManager(CSGOATDbContext context) : base(context)
     { }
 
-    public override async Task<User?> GetByKeyAsync(string key)
-    {
-        // Search by login or email
-        return await _context.Set<User>().FirstOrDefaultAsync(u => u.Login == key || u.Email == key);
-    }
+    
 
     // Returns users that are not soft-deleted. Applies basic filters and sorts if provided.
     public async Task<IEnumerable<User>> GetAllForAdminAsync(FilterOptions? filters = null, SortOptions? sorts = null)
@@ -26,44 +22,8 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
         IQueryable<User> query = _context.Set<User>().AsQueryable();
         query = query.Where(u => u.DeleteOn == null);
 
-        if (filters?.Filters != null)
-        {
-            foreach (var f in filters.Filters)
-            {
-                if (f.Key.Equals("login", StringComparison.OrdinalIgnoreCase) && f.Value is string login)
-                    query = query.Where(u => u.Login.Contains(login));
-                if (f.Key.Equals("email", StringComparison.OrdinalIgnoreCase) && f.Value is string email)
-                    query = query.Where(u => u.Email.Contains(email));
-                if (f.Key.Equals("displayname", StringComparison.OrdinalIgnoreCase) && f.Value is string dn)
-                    query = query.Where(u => u.DisplayName.Contains(dn));
-            }
-
-            if (filters.Page.HasValue && filters.PageSize.HasValue && filters.PageSize > 0)
-            {
-                int skip = (filters.Page.Value - 1) * filters.PageSize.Value;
-                query = query.Skip(skip).Take(filters.PageSize.Value);
-            }
-        }
-
-        if (sorts?.Sorts != null)
-        {
-            // Support a small set of sortable fields
-            IOrderedQueryable<User>? ordered = null;
-            foreach (var s in sorts.Sorts)
-            {
-                bool desc = s.Value?.Equals("desc", StringComparison.OrdinalIgnoreCase) == true;
-                if (s.Key.Equals("creationdate", StringComparison.OrdinalIgnoreCase))
-                    ordered = ordered == null ? (desc ? query.OrderByDescending(u => u.CreationDate) : query.OrderBy(u => u.CreationDate)) : (desc ? ordered.ThenByDescending(u => u.CreationDate) : ordered.ThenBy(u => u.CreationDate));
-                if (s.Key.Equals("login", StringComparison.OrdinalIgnoreCase))
-                    ordered = ordered == null ? (desc ? query.OrderByDescending(u => u.Login) : query.OrderBy(u => u.Login)) : (desc ? ordered.ThenByDescending(u => u.Login) : ordered.ThenBy(u => u.Login));
-                if (s.Key.Equals("displayname", StringComparison.OrdinalIgnoreCase))
-                    ordered = ordered == null ? (desc ? query.OrderByDescending(u => u.DisplayName) : query.OrderBy(u => u.DisplayName)) : (desc ? ordered.ThenByDescending(u => u.DisplayName) : ordered.ThenBy(u => u.DisplayName));
-            }
-
-            if (ordered != null)
-                query = ordered;
-        }
-
+        // TODO: REMOVE
+        throw new NotImplementedException();
         return await query.ToListAsync();
     }
 
@@ -118,5 +78,10 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
         }
 
         return false;*/
+    }
+
+    internal async Task<User> GetByKeyAsync(string login)
+    {
+        throw new NotImplementedException();
     }
 }

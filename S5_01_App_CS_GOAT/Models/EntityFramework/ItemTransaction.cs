@@ -6,14 +6,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Table("t_e_itemtransaction_itr")]
     public class ItemTransaction : Transaction
     {
-        [Column("usr_id_item")]
-        public int? UserIdItem { get; set; }
+        [Required]
+        [Column("inv_id")]
+        public int InventoryItemId { get; set; }
 
-        [Column("wer_id")]
-        public int? WearIdItem { get; set; }
-
-        [ForeignKey($"{nameof(UserIdItem)},{nameof(WearIdItem)}")]
+        [ForeignKey(nameof(InventoryItemId))]
         [InverseProperty(nameof(InventoryItem.ItemTransactions))]
-        public virtual InventoryItem? InventoryItem { get; set; }
+        public virtual InventoryItem InventoryItem { get; set; } = null!;
     }
 }

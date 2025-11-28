@@ -12,25 +12,18 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("rtr_userseed")]
         public string UserSeed { get; set; } = null!;
 
-        [Column("usr_id_upgrade")]
-        public int? UserIdUpgrade { get; set; }
-
-        [Column("wer_id_upgrade")]
-        public int? WearIdUpgrade { get; set; }
-
         [Column("cas_id")]
         public int? CaseId { get; set; }
 
         [Column("frn_id")]
-        public int? FairRandomId { get; set; }
+        public int FairRandomId { get; set; }
 
         [ForeignKey(nameof(FairRandomId))]
         [InverseProperty(nameof(FairRandom.RandomTransaction))]
-        public virtual ICollection<FairRandom> FairRandoms { get; set; } = null!;
+        public virtual FairRandom FairRandom { get; set; } = null!;
 
-        [ForeignKey($"{nameof(UserIdUpgrade)},{nameof(WearIdUpgrade)}")]
         [InverseProperty(nameof(UpgradeResult.RandomTransaction))]
-        public virtual UpgradeResult? UpgradeResult { get; set; }
+        public virtual ICollection<UpgradeResult> UpgradeResults { get; set; } = null!;
 
         [ForeignKey(nameof(CaseId))]
         [InverseProperty(nameof(Case.RandomTransactions))]

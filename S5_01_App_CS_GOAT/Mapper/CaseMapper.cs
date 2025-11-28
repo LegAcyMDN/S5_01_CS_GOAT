@@ -14,7 +14,7 @@ public class CaseMapper : Profile
             .ForMember(dest => dest.CaseName, opt => opt.MapFrom(src => src.CaseName))
             .ForMember(dest => dest.CaseImage, opt => opt.MapFrom(src => src.CaseImage))
             .ForMember(dest => dest.CasePrice, opt => opt.MapFrom(src => src.CasePrice))
-            .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => false)); // À modifier plus tard pour le JWT
+            .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => false));
 
         // DTO -> Entity
         CreateMap<CaseDTO, Case>()

@@ -4,48 +4,43 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
-using S5_01_App_CS_GOAT.Services;
-using System.Threading.Tasks;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    [Route("api/PriceHistory")]
     [ApiController]
-    [Route("api/pricehistory")]
-    public class PriceHistoryController : ControllerBase
+    [Authorize]
+    [AllowAnonymous]
+    public class PriceHistoryController(
+        IDataRepository<PriceHistory, int, string> manager
+    ) : ControllerBase
     {
-        private readonly PriceHistoryManager _manager;
-        private readonly IConfiguration _configuration;
+        private readonly PriceHistoryManager _manager = (PriceHistoryManager)manager;
 
-        public PriceHistoryController(IDataRepository<PriceHistory, int, string> manager, IConfiguration configuration)
+        /// <summary>
+        /// Get price history by inventory item
+        /// </summary>
+        /// <param name="wearId">The ID of the wear/item</param>
+        /// <returns>Price history data for the inventory item</returns>
+        [HttpGet("byinvitem/{wearId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetByInventoryItem(int wearId)
         {
-            _manager = (PriceHistoryManager)manager;
-            _configuration = configuration;
-        }
-
-        [HttpGet("get/byinvitem")]
-        public async Task<IActionResult> GetByInventoryItem(int inventoryItemId)
-        {
-            var authResult = JwtService.JwtAuth(_configuration);
-            if (!authResult.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            var result = await _manager.GetByInventoryItemAsync(inventoryItemId, authResult);
+            IEnumerable<PriceHistoryDTO> result = await _manager.GetByInventoryItemAsync(wearId);
             return Ok(result);
         }
 
-        [HttpGet("get/aiprediction")]
-        public async Task<IActionResult> GetAiPrediction(int inventoryItemId)
+        /// <summary>
+        /// Get AI prediction for price history
+        /// </summary>
+        /// <param name="wearId">The ID of the wear/item</param>
+        /// <returns>AI prediction data</returns>
+        [HttpGet("aiprediction")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
+        public async Task<IActionResult> GetAiPrediction(int wearId)
         {
-            var authResult = JwtService.JwtAuth(_configuration);
-            if (!authResult.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            var result = await _manager.GetAiPredictionAsync(inventoryItemId, authResult);
-            return Ok(result);
+            throw new NotImplementedException();
         }
     }
 }
