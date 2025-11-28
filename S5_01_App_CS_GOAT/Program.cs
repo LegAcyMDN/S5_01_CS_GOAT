@@ -51,6 +51,7 @@ builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudReposito
 builder.Services.AddScoped<IDataRepository<PromoCode, int>, CrudRepository<PromoCode>>();
 
 // Specialized managers with custom interfaces or logic (existing managers)
+builder.Services.AddScoped<ICaseRelatedRepository<Case>, CaseManager>();
 builder.Services.AddScoped<IDataRepository<User, int>, UserManager>();
 builder.Services.AddScoped<IDataRepository<Wear, int>, WearManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
