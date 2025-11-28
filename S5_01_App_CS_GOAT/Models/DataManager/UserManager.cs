@@ -9,7 +9,7 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
-public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
+public class UserManager : CrudRepository<User>, IDataRepository<User, int, string>
 {
     public UserManager(CSGOATDbContext context) : base(context)
     { }
@@ -80,7 +80,7 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
         return false;*/
     }
 
-    internal async Task<User> GetByKeyAsync(string login)
+    public async Task<User> GetByKeyAsync(string login)
     {
         throw new NotImplementedException();
     }

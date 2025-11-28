@@ -14,9 +14,9 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class RandomTransactionController(
         IMapper mapper,
-        IRandomTransactiony<ItemTransaction> manager,
+        IDataRepository<ItemTransaction,int,string> manager,
         IConfiguration configuration,
-        IRandomTransactiony<RandomTransaction> randomManager
+         IDataRepository<ItemTransaction, int, string> randomManager
     ) : ControllerBase
     {
         /// <summary>
@@ -78,12 +78,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<RandomTransaction>>> LiveFeed(int count)
         {
-            AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-                return Unauthorized();
 
-            IEnumerable<RandomTransaction?> transactions = await randomManager.GetRandomTransactionsAsync(count);
-            return Ok(transactions);
+            throw new NotImplementedException();
+
+            //AuthResult authResult = JwtService.JwtAuth(configuration);
+            //if (!authResult.IsAuthenticated)
+            //    return Unauthorized();
+
+            //IEnumerable<RandomTransaction?> transactions = await randomManager.GetRandomTransactionsAsync(count);
+            //return Ok(transactions);
         }
 
         // TODO: Add OpenCase endpoint
