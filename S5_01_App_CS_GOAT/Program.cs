@@ -11,7 +11,23 @@ using System.Text.Encodings.Web;
 using Microsoft.Extensions.Options;
 using S5_01_App_CS_GOAT.Services;
 
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+
+// Enable CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorApp", policy =>
+    {
+        policy.WithOrigins("https://localhost:7030") // Your Blazor app URL
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // If you're using authentication/cookies
+    });
+});
+
 
 // Add services to the container.
 
@@ -81,6 +97,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowBlazorApp");
 
 app.UseAuthorization();
 
