@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -19,9 +18,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         IConfiguration configuration
     ) : ControllerBase
     {
-        private readonly UserManager _manager = (UserManager)manager;
-        private readonly IMapper _mapper = mapper;
-        private readonly IConfiguration _configuration = configuration;
 
         /// <summary>
         /// Get all users (admin only)
@@ -32,8 +28,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
-            IEnumerable<User> users = await _manager.GetAllForAdminAsync();
-            IEnumerable<UserDetailDTO> dtos = _mapper.Map<IEnumerable<UserDetailDTO>>(users);
+            IEnumerable<User> users = await manager.GetAllAsync();
+            IEnumerable<UserDetailDTO> dtos = mapper.Map<IEnumerable<UserDetailDTO>>(users);
             return Ok(dtos);
         }
 
@@ -47,17 +43,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
+            AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
             if (!auth.IsAdmin && auth.AuthUserId != id)
                 return Forbid();
 
-            var user = await _manager.GetByIdAsync(id);
+            User? user = await manager.GetByIdAsync(id);
             if (user == null)
                 return NotFound();
 
-            var dto = _mapper.Map<UserDetailDTO>(user);
+            UserDetailDTO dto = mapper.Map<UserDetailDTO>(user);
             return Ok(dto);
         }
 
@@ -75,9 +71,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var entity = _mapper.Map<User>(userDTO);
-            await _manager.AddAsync(entity);
-            var createdDto = _mapper.Map<UserDetailDTO>(entity);
+            User entity = mapper.Map<User>(userDTO);
+            await manager.AddAsync(entity);
+            UserDetailDTO createdDto = mapper.Map<UserDetailDTO>(entity);
             return CreatedAtAction(nameof(Get), new { id = entity.UserId }, createdDto);
         }
 
@@ -93,7 +89,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, [FromBody] UserDetailDTO userDTO)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
+            AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
             if (auth.AuthUserId != id)
@@ -102,12 +98,12 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existing = await _manager.GetByIdAsync(id);
+            User? existing = await manager.GetByIdAsync(id);
             if (existing == null)
                 return NotFound();
 
-            var updated = _mapper.Map<User>(userDTO);
-            await _manager.UpdateAsync(existing, updated);
+            User? updated = mapper.Map<User>(userDTO);
+            await manager.UpdateAsync(existing, updated);
             return NoContent();
         }
 
@@ -120,19 +116,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPatch("seed/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PatchSeed(int id, [FromBody] SeedPatch model)
+        public async Task<IActionResult> PatchSeed(int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated)
-                return Unauthorized();
-            if (auth.AuthUserId != id)
-                return Forbid();
-
-            if (model == null || string.IsNullOrEmpty(model.Seed))
-                return BadRequest();
-
-            await _manager.PatchSeedAsync(id, model.Seed);
-            return NoContent();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -144,27 +130,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPatch("password/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PatchPassword(int id, [FromBody] PasswordPatch model)
+        public async Task<IActionResult> PatchPassword(int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated || !auth.AuthUserId.HasValue)
-                return Unauthorized();
-            if (auth.AuthUserId != id)
-                return Forbid();
-
-            if (model == null || string.IsNullOrEmpty(model.Hash) || string.IsNullOrEmpty(model.CurrentPassword))
-                return BadRequest();
-
-            var callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
-            if (callingUser == null)
-                return Unauthorized();
-
-            // Placeholder password verification: compare raw values
-            if (callingUser.HashPassword != model.CurrentPassword)
-                return Unauthorized();
-
-            await _manager.PatchPasswordAsync(id, model.Salt, model.Hash);
-            return NoContent();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -177,31 +145,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int id, [FromBody] PasswordConfirm model)
+        public async Task<IActionResult> Delete(int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated || !auth.AuthUserId.HasValue)
-                return Unauthorized();
-            if (!auth.IsAdmin && auth.AuthUserId != id)
-                return Forbid();
-
-            if (model == null || string.IsNullOrEmpty(model.Password))
-                return BadRequest();
-
-            User? callingUser = await _manager.GetByIdAsync(auth.AuthUserId.Value);
-            if (callingUser == null)
-                return Unauthorized();
-
-            // Placeholder password verification
-            if (callingUser.HashPassword != model.Password)
-                return Unauthorized();
-
-            var user = await _manager.GetByIdAsync(id);
-            if (user == null)
-                return NotFound();
-
-            await _manager.SoftDeleteAsync(id);
-            return NoContent();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -233,14 +179,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> VerifyPhone([FromQuery] int id, [FromQuery] string code)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated)
-                return Unauthorized();
-            if (auth.AuthUserId != id)
-                return Forbid();
-
-            var ok = await _manager.VerifyAsync(id, code);
-            return ok ? NoContent() : NotFound();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -254,14 +193,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> VerifyMail([FromQuery] int id, [FromQuery] string code)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
-            if (!auth.IsAuthenticated)
-                return Unauthorized();
-            if (auth.AuthUserId != id)
-                return Forbid();
-
-            var ok = await _manager.VerifyAsync(id, code);
-            return ok ? NoContent() : NotFound();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -274,13 +206,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ExportData([FromQuery] int id)
         {
-            AuthResult auth = JwtService.JwtAuth(_configuration);
+            AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
             if (!auth.IsAdmin && auth.AuthUserId != id)
                 return Forbid();
 
-            var user = await _manager.GetByIdAsync(id);
+            User? user = await manager.GetByIdAsync(id);
             if (user == null)
                 return NotFound();
 
@@ -297,16 +229,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login()
         {
-            if (model == null || string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password))
-                return BadRequest();
-
-            var user = await _manager.GetByKeyAsync(model.Login);
-            if (user == null) return Unauthorized();
-
-            // TODO: Replace with proper password hashing and verification
-            return Ok(new { Token = JwtService.GenerateJwtToken(user, _configuration) });
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -318,20 +243,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("remember")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Remember([FromBody] RememberModel model)
+        public IActionResult Remember()
         {
-            if (model == null || string.IsNullOrEmpty(model.RememberToken))
-                return BadRequest();
-
-            // Placeholder: associate remember token with user
-            return NoContent();
+            throw new NotImplementedException();
         }
 
-        // Simple models used by endpoints
-        public class SeedPatch { public string Seed { get; set; } = null!; }
-        public class PasswordPatch { public string? Salt { get; set; } public string Hash { get; set; } = null!; public string CurrentPassword { get; set; } = null!; }
-        public class LoginModel { public string Login { get; set; } = null!; public string Password { get; set; } = null!; }
-        public class RememberModel { public string RememberToken { get; set; } = null!; }
-        public class PasswordConfirm { public string Password { get; set; } = null!; }
     }
 }
