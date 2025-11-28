@@ -80,13 +80,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
 
             throw new NotImplementedException();
-
-            //AuthResult authResult = JwtService.JwtAuth(configuration);
-            //if (!authResult.IsAuthenticated)
-            //    return Unauthorized();
-
-            //IEnumerable<RandomTransaction?> transactions = await randomManager.GetRandomTransactionsAsync(count);
-            //return Ok(transactions);
         }
 
         // TODO: Add OpenCase endpoint

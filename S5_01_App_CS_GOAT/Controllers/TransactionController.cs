@@ -17,7 +17,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         IDataRepository<Transaction, int, string> manager
     ) : ControllerBase
     {
-        private readonly TransactionManager _transactionManager = (TransactionManager)manager;
 
         /// <summary>
         /// Cancel/remove a transaction (admin only)
@@ -30,11 +29,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            Transaction? transaction = await _transactionManager.GetByIdAsync(id);
-            if (transaction == null) return NotFound();
-
-            await _transactionManager.SetCancelledOnAsync(id);
-            return NoContent();
+          throw new NotImplementedException();
         }
     }
 }
