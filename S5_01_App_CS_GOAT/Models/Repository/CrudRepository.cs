@@ -33,7 +33,6 @@ public abstract class CrudRepository<TEntity> : IDataRepository<TEntity, int, st
         return await _context.Set<TEntity>().FindAsync(id);
     }
 
-    public abstract Task<TEntity?> GetByKeyAsync(string str);
 
     public async Task<TEntity> AddAsync(TEntity entity)
     {

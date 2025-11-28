@@ -6,10 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     public class UpgradeResultManager(CSGOATDbContext context) : CrudRepository<UpgradeResult>(context)
     {
-        public override async Task<UpgradeResult?> GetByKeyAsync(string str)
-        {
-            return null;
-        }
+        
 
         public async Task<IEnumerable<UpgradeResult>> GetByInventoryItemAsync(int inventoryItemId)
         {

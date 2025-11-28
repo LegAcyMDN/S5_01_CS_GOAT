@@ -14,11 +14,7 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
     public UserManager(CSGOATDbContext context) : base(context)
     { }
 
-    public override async Task<User?> GetByKeyAsync(string key)
-    {
-        // Search by login or email
-        return await _context.Set<User>().FirstOrDefaultAsync(u => u.Login == key || u.Email == key);
-    }
+    
 
     // Returns users that are not soft-deleted. Applies basic filters and sorts if provided.
     public async Task<IEnumerable<User>> GetAllForAdminAsync(FilterOptions? filters = null, SortOptions? sorts = null)
@@ -82,5 +78,10 @@ public class UserManager : CrudRepository<User>, IVerifiableRepository<User>
         }
 
         return false;*/
+    }
+
+    internal async Task<User> GetByKeyAsync(string login)
+    {
+        throw new NotImplementedException();
     }
 }

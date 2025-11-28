@@ -14,9 +14,5 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return caseContents.Select(cc => cc.Skin);
         }
 
-        public override async Task<Skin?> GetByKeyAsync(string name)
-        {
-            return await _context.Set<Skin>().FirstOrDefaultAsync(s => s.SkinName == name);
-        }
     }
 }

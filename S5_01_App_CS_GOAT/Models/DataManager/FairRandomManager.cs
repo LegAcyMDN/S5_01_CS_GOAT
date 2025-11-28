@@ -10,9 +10,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     public class FairRandomManager(CSGOATDbContext context) : CrudRepository<FairRandom>(context)
     {
-        public override async Task<FairRandom?> GetByKeyAsync(string combinedHash)
-        {
-            return await _context.Set<FairRandom>().FirstOrDefaultAsync(f => f.CombinedHash == combinedHash);
-        }
+      
     }
 }

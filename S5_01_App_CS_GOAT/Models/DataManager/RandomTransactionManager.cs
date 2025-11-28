@@ -7,10 +7,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     public class RandomTransactionManager(CSGOATDbContext context) : CrudRepository<RandomTransaction>(context), IRandomTransactiony<RandomTransaction>
     {
-        public override Task<RandomTransaction?> GetByKeyAsync(string str)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public async Task<IEnumerable<RandomTransaction>> GetRandomTransactionsAsync(int count)
         {

@@ -8,11 +8,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     public class NotificationManager(CSGOATDbContext context) 
         : CrudRepository<Notification>(context), INotificationRepository<Notification>
     {
-        public override async Task<Notification?> GetByKeyAsync(string name)
-        {
-            return await _context.Set<Notification>()
-                .FirstOrDefaultAsync(n => n.NotificationSummary == name);
-        }
+       
 
         public async Task<IEnumerable<Notification>> GetByUserAsync(
             int userId, 
