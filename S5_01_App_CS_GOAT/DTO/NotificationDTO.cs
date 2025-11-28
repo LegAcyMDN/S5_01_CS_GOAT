@@ -11,6 +11,5 @@
         public DateTime NotificationDate { get; set; }
 
         public string NotificationTypeName { get; set; } = null!;
-
     }
 }

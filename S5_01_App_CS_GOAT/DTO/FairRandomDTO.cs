@@ -1,21 +1,20 @@
-﻿namespace S5_01_App_CS_GOAT.DTO
+﻿namespace S5_01_App_CS_GOAT.DTO;
+
+public class FairRandomDTO
 {
-    public class FairRandomDTO
-    {
-        public string ServerSeed { get; set; } = null!;
-   
-        public string ServerHash { get; set; } = null!;
+    public string ServerSeed { get; set; } = null!;
 
-        public int UserNonce { get; set; }
-      
-        public string CombinedHash { get; set; } = null!;
+    public string ServerHash { get; set; } = null!;
 
-        public double Fraction { get; set; }
+    public int UserNonce { get; set; } // number of time the user open case and/or upgrade his item
+  
+    public string CombinedHash { get; set; } = null!; // serverseed + userseed + usernonce
 
-        public int? TransactionId { get; set; }
+    public double Fraction { get; set; } // combinedhash transform between 0 and 1
 
-        public int? ItemWearId { get; set; }
+    public int? TransactionId { get; set; }
 
-        public int? ItemUserId { get; set; }
-    }
+    public int? ItemWearId { get; set; }
+
+    public int? ItemUserId { get; set; }
 }
