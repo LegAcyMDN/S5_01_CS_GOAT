@@ -15,6 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class BanController(
         IMapper mapper,
         IDataRepository<Ban, int> manager,
+        ITypeRepository<BanType> typeManager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -63,7 +64,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            BanType? banType = await typeManager.GetTypeByNameAsync(banDTO.BanTypeName);
+            if (banType == null)
+                return BadRequest($"Invalid ban type: {banDTO.BanTypeName}");
+
             Ban ban = mapper.Map<Ban>(banDTO);
+            ban.BanTypeId = banType.BanTypeId;
+
             await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);

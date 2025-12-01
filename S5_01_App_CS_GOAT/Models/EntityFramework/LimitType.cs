@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_limittype_lmt")]
     [Index(nameof(LimitTypeName), IsUnique = true)]
-    public class LimitType
+    public partial class LimitType
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -23,8 +23,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.BanType, opt => opt.Ignore())
                 .ForMember(dest => dest.BanReason, opt => opt.MapFrom(src => src.BanReason))
                 .ForMember(dest => dest.BanDate, opt => opt.MapFrom(src => src.BanDate))
-                .ForMember(dest => dest.BanDuration, opt => opt.MapFrom(src => src.BanDuration))
-                .ForPath(dest => dest.BanType.BanTypeName, opt => opt.MapFrom(src => src.BanTypeName));
+                .ForMember(dest => dest.BanDuration, opt => opt.MapFrom(src => src.BanDuration));
         }
     }
 }

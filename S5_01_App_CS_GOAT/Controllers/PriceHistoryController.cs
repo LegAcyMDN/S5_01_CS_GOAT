@@ -1,7 +1,7 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
@@ -12,21 +12,21 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PriceHistoryController(
-        IDataRepository<PriceHistory, int> manager
+        IDataRepository<PriceHistory, int> manager,
+        IMapper mapper
     ) : ControllerBase
     {
-        private readonly PriceHistoryManager _manager = (PriceHistoryManager)manager;
-
         /// <summary>
         /// Get price history by inventory item
         /// </summary>
-        /// <param name="wearId">The ID of the wear/item</param>
-        /// <returns>Price history data for the inventory item</returns>
-        [HttpGet("byinvitem/{wearId}")]
+        /// <param name="wearId">The ID of the wear</param>
+        /// <returns>Price history data for wear</returns>
+        [HttpGet("bywear/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByInventoryItem(int wearId)
+        public async Task<ActionResult<IEnumerable<PriceHistoryDTO>>> GetByInventoryItem(int wearId)
         {
-            IEnumerable<PriceHistoryDTO> result = await _manager.GetByInventoryItemAsync(wearId);
+            IEnumerable<PriceHistory> result = await manager.GetAllAsync(ph => ph.WearId == wearId);
+            IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
             return Ok(result);
         }
 

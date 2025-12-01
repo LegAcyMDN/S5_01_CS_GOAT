@@ -14,7 +14,8 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class UserNotificationController(
         IMapper mapper,
-        INotificationRelatedRepository<int?> manager
+        IDataRepository<UserNotification, int> manager,
+        ITypeRepository<NotificationType> typeManager
     ) : ControllerBase
     {
         /// <summary>
@@ -31,14 +32,11 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            int? notificationTypeId = await manager.GetNotificationTypeIdByNameAsync(notificationDto.NotificationTypeName);
-
-            if (notificationTypeId == null)
-            {
-                return BadRequest($"Notification type '{notificationDto.NotificationTypeName}' not found.");
-            }
-
+            NotificationType? notificationType = await typeManager.GetTypeByNameAsync(notificationDto.NotificationTypeName);
+            if (notificationType == null)
+                return BadRequest($"Invalid notification type: {notificationDto.NotificationTypeName}");
             UserNotification userNotification = mapper.Map<UserNotification>(notificationDto);
+            userNotification.NotificationTypeId = notificationType.NotificationTypeId;
 
             await manager.AddAsync(userNotification);
 
