@@ -43,4 +43,4 @@ jobs:
           app-name: 'blazorcsgoat'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.BLAZOR_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
