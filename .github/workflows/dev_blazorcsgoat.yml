@@ -19,13 +19,13 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Publish ONLY Blazor Project
-        run: dotnet publish S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj -c Release -o ${{env.DOTNET_ROOT}}/blazorapp
+        run: dotnet publish S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj -c Release -o ./published
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: blazor-app
-          path: ${{env.DOTNET_ROOT}}/blazorapp/wwwroot  # CRITICAL: wwwroot only!
+          path: ./published/wwwroot
 
   deploy:
     runs-on: windows-latest
@@ -40,7 +40,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'blazorcsgoat'  # Your Blazor app name from the logs
+          app-name: 'blazorcsgoat'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.BLAZOR_PUBLISH_PROFILE }}  # Make sure this is the BLAZOR publish profile, not API
+          publish-profile: ${{ secrets.BLAZOR_PUBLISH_PROFILE }}
