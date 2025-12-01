@@ -49,8 +49,7 @@ namespace S5_01_App_CS_GOAT.Services
         {
             IEnumerable<T1> allObjects = await manager.GetAllAsync();
             AuthResult self = this;
-            return allObjects.Where(o => self.IsAllowed(o, adminOverride)
-            );
+            return allObjects.Where(o => self.IsAllowed(o, adminOverride));
         }
     }
 

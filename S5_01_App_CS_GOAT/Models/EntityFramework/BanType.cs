@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_bantype_bnt")]
     [Index(nameof(BanTypeName), IsUnique = true)]
-    public class BanType
+    public partial class BanType
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

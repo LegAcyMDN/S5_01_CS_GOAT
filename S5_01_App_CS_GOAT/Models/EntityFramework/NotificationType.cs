@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_notificationtype_ntt")]
     [Index(nameof(NotificationTypeName), IsUnique = true)]
-    public class NotificationType
+    public partial class NotificationType
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

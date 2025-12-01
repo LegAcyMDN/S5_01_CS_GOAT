@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using System.Linq.Expressions;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
@@ -16,9 +17,15 @@ public class CrudRepository<TEntity, TIdentifier> :
         _context = context;
     }
 
-    public async Task<IEnumerable<TEntity>> GetAllAsync()
+    public async Task<IEnumerable<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>>? where = null,
+        params string[] includes)
     {
-        return await _context.Set<TEntity>().ToListAsync();
+        IQueryable<TEntity> query = _context.Set<TEntity>();
+        foreach (var include in includes)
+            query = query.Include(include);
+        if (where != null) query = query.Where(where);
+        return await query.ToListAsync();
     }
 
     public async Task<TEntity?> GetByIdAsync(TIdentifier id)
@@ -35,6 +42,23 @@ public class CrudRepository<TEntity, TIdentifier> :
         }
         
         return await _context.Set<TEntity>().FindAsync(id);
+    }
+
+    public async Task<TEntity?> GetByIdAsync(int id, params string[] includes)
+    {
+        IQueryable<TEntity> query = _context.Set<TEntity>();
+        foreach (var include in includes)
+            query = query.Include(include);
+        string? keyName = _context.Model
+            .FindEntityType(typeof(TEntity))?
+            .FindPrimaryKey()?
+            .Properties
+            .Select(x => x.Name)
+            .FirstOrDefault();
+        if (keyName == null) throw new InvalidOperationException(
+            $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
+        return await query.FirstOrDefaultAsync(
+            e => EF.Property<int>(e, keyName) == id);
     }
 
     public async Task<TEntity> AddAsync(TEntity entity)

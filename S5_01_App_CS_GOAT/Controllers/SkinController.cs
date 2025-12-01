@@ -13,26 +13,30 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class SkinController(
         IMapper mapper,
-        ISkinRelatedRepository<Skin> manager,
         IReadableRepository<Case, int> caseManager
         ) : ControllerBase
     {
         /// <summary>
         /// Get skins by case ID
         /// </summary>
-        /// <param name="id">The ID of the case</param>
+        /// <param name="caseid">The ID of the case</param>
         /// <returns>List of SkinDTO objects for the case</returns>
-        [HttpGet("bycase/{id}")]
+        [HttpGet("bycase/{caseid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<SkinDTO>>> GetByCase(int id)
+        public async Task<ActionResult<IEnumerable<SkinDTO>>> GetByCase(int caseid)
         {
-            Case? caseExists = await caseManager.GetByIdAsync(id);
-            if (caseExists == null) return NotFound();
-
-            IEnumerable<CaseContent> caseContents = await manager.GetByCase(id);
-            IEnumerable<SkinDTO> skinDto = mapper.Map<IEnumerable<SkinDTO>>(caseContents);
-            return Ok(skinDto);
+            Case? _case = await caseManager.GetByIdAsync(caseid, "CaseContents.Skin.Rarity", "CaseContents.Skin.Wears.PriceHistories");
+            if (_case == null) return NotFound();
+            
+            IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 
+            {
+                var skinDto = mapper.Map<SkinDTO>(cc.Skin);
+                skinDto.Weight = cc.Weight;
+                return skinDto;
+            });
+            
+            return Ok(skins);
         }
     }
 }
