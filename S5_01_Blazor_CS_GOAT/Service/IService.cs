@@ -8,4 +8,6 @@ public interface IService<TEntity>
     Task UpdateAsync(TEntity updatedEntity);
     Task DeleteAsync(int id);
     Task<TEntity?> GetByNameAsync(string name);
+    
+    Task<List<TEntity>?> GetByCaseIdAsync(int id);
 }

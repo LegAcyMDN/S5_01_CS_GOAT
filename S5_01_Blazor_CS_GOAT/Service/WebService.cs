@@ -42,6 +42,11 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TEntity>();
     }
+    
+    public async Task<List<TEntity>?> GetByCaseIdAsync(int id)
+    {
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/bycase/{id}");
+    }
 
     public async Task UpdateAsync(TEntity updatedEntity)
     {
