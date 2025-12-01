@@ -58,7 +58,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Case? result = await caseManager.GetByIdWithContentsAsync(id);
             if (result == null) return NotFound();
-            CaseDetailDTO caseDetailDTO = mapper.Map<CaseDetailDTO>(result);
+            CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated) return Ok(caseDetailDTO);

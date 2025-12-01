@@ -36,24 +36,36 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Generic repositories for standard entities (sorted alphabetically)
-builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
+// Readonly repositories for lookup entities
+builder.Services.AddScoped<IReadableRepository<BanType, int>, CrudRepository<BanType>>();
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
+builder.Services.AddScoped<IReadableRepository<CaseContent, int>, CrudRepository<CaseContent>>();
+builder.Services.AddScoped<IReadableRepository<NotificationType, int>, CrudRepository<NotificationType>>();
+builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
+builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
+builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
+
+// Generic repositories for standard entities
+builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
 builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int>, CrudRepository<InventoryItem>>();
 builder.Services.AddScoped<IDataRepository<ItemTransaction, int>, CrudRepository<ItemTransaction>>();
-builder.Services.AddScoped<IDataRepository<Limit, int>, CrudRepository<Limit>>();
+builder.Services.AddScoped<IDataRepository<Limit, (int,int)>, CrudRepository<Limit, (int,int)>>();
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int>, CrudRepository<MoneyTransaction>>();
-builder.Services.AddScoped<IReadableRepository<NotificationType, int>, CrudRepository<NotificationType>>();
-builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
+builder.Services.AddScoped<IDataRepository<Notification, int>, CrudRepository<Notification>>();
+builder.Services.AddScoped<IDataRepository<NotificationSetting, int>, CrudRepository<NotificationSetting>>();
 builder.Services.AddScoped<IDataRepository<PromoCode, int>, CrudRepository<PromoCode>>();
+builder.Services.AddScoped<IDataRepository<RandomTransaction, int>, CrudRepository<RandomTransaction>>();
+builder.Services.AddScoped<IDataRepository<Token, int>, CrudRepository<Token>>();
+builder.Services.AddScoped<IDataRepository<Transaction, int>, CrudRepository<Transaction>>();
+builder.Services.AddScoped<IDataRepository<UpgradeResult, int>, CrudRepository<UpgradeResult>>();
+builder.Services.AddScoped<IDataRepository<User, int>, CrudRepository<User>>();
+builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
-// Specialized managers with custom interfaces or logic (existing managers)
+// Specialized managers with custom interfaces
 builder.Services.AddScoped<ICaseRelatedRepository<Case>, CaseManager>();
-builder.Services.AddScoped<IDataRepository<User, int>, UserManager>();
-builder.Services.AddScoped<IDataRepository<Wear, int>, WearManager>();
 builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
 builder.Services.AddScoped<INotificationRelatedRepository<int?>, UserNotificationManager>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, UserNotificationManager>();
