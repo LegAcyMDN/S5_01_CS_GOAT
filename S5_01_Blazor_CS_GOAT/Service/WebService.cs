@@ -11,7 +11,11 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     {
         _httpClient = new HttpClient
         {
+#if DEBUG
             BaseAddress = new Uri("https://localhost:7009/api/")
+#else
+            BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/")
+#endif
         };
         this._endpoint = endpoint;
     }
