@@ -5,6 +5,7 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using System.Collections;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -25,7 +26,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("all")]
         [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<BanDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             IEnumerable<Ban> bans = await manager.GetAllAsync();
 
@@ -39,7 +40,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of BanDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<BanDTO>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
