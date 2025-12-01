@@ -1,4 +1,4 @@
-﻿namespace S5_01_App_CS_GOAT.DTO
+﻿namespace S5_01_App_CS_GOAT.DTO.Helpers
 {
     public class ModelDTO
     {

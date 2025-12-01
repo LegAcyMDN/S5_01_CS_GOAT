@@ -111,7 +111,7 @@ namespace S5_01_App_CS_GOAT.Services
             string? bypassAuth = configuration?["JWT_BYPASS"];
             if (!string.IsNullOrEmpty(bypassAuth))
             {
-                bool spoofIsAdmin = bypassAuth.StartsWith("@");
+                bool spoofIsAdmin = bypassAuth.StartsWith('@');
                 int? spoofUserId = int.Parse(bypassAuth.TrimStart('@'));
                 return new AuthResult(spoofUserId, spoofIsAdmin);
             }
@@ -132,6 +132,27 @@ namespace S5_01_App_CS_GOAT.Services
             bool isAdmin = bool.Parse(isAdminClaim.Value);
             int userId = int.Parse(userIdClaim.Value);
             return new AuthResult(userId, isAdmin);
+        }
+
+        /// <summary>
+        /// Authentifies a controller with the given user
+        /// </summary>
+        /// <param name="controller">The controller to authentify</param>
+        /// <param name="user">The user to authentify as</param>
+        public static void AuthentifyController(ControllerBase controller, User user)
+        {
+            ClaimsIdentity identity = new ClaimsIdentity(GetClaims(user), "Bearer");
+            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+
+            HttpContext httpContext = new DefaultHttpContext();
+            httpContext.User = principal;
+            Thread.CurrentPrincipal = principal;
+
+            ControllerContext controllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext
+            };
+            controller.ControllerContext = controllerContext;
         }
     }
 
@@ -155,24 +176,6 @@ namespace S5_01_App_CS_GOAT.Services
                 context.Result = new ForbidResult();
                 return;
             }
-        }
-
-        /// <summary>
-        /// Authentifies a controller with the given user
-        /// </summary>
-        /// <param name="controller">The controller to authentify</param>
-        /// <param name="user">The user to authentify as</param>
-        public static void AuthentifyController(ControllerBase controller, User user)
-        {
-            ClaimsIdentity identity = new ClaimsIdentity(JwtService.GetClaims(user), "Bearer");
-            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-            HttpContext httpContext = new DefaultHttpContext();
-            httpContext.User = principal;
-            ControllerContext ControllerContext = new ControllerContext()
-            {
-                HttpContext = httpContext
-            };
-            controller.ControllerContext = ControllerContext;
         }
     }
 }

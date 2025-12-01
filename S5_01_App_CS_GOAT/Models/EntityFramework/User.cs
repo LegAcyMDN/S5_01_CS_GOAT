@@ -78,8 +78,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public string? SteamId { get; set; }
 
         [Required]
-        [StringLength(16)]
         [Column("usr_seed")]
+        [StringLength(16)]
+        [RegularExpression("^[A-Za-z0-9]{16}$")]
         public string Seed { get; set; } = GenerateRandomSeed();
 
         [Required]
