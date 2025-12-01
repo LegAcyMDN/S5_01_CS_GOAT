@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -56,6 +57,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 banTypeRepositoryMock.Object,
                 configurationMock.Object
             );
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            Thread.CurrentPrincipal = null;
         }
 
         #region GET Tests

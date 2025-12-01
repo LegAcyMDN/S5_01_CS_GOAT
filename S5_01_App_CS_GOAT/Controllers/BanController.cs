@@ -24,10 +24,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all BanDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+            
             IEnumerable<Ban> bans = await manager.GetAllAsync();
 
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
@@ -58,11 +63,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="banDTO">The BanDTO object to create</param>
         /// <returns>The created BanDTO object</returns>
         [HttpPost("create")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(BanDTO banDTO)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             BanType? banType = await typeManager.GetTypeByNameAsync(banDTO.BanTypeName);
@@ -85,12 +95,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="banDTO">The updated BanDTO object</param>
         /// <returns>No content on success</returns>
         [HttpPut("update/{id}")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, BanDTO banDTO)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             Ban? banToUpdate = await manager.GetByIdAsync(id);
