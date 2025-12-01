@@ -11,7 +11,11 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     {
         _httpClient = new HttpClient
         {
+#if DEBUG
             BaseAddress = new Uri("https://localhost:7009/api/")
+#else
+            BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/")
+#endif
         };
         this._endpoint = endpoint;
     }
@@ -41,6 +45,11 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         var response = await _httpClient.PostAsJsonAsync($"{_endpoint}/search", name);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TEntity>();
+    }
+    
+    public async Task<List<TEntity>?> GetByCaseIdAsync(int id)
+    {
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/bycase/{id}");
     }
 
     public async Task UpdateAsync(TEntity updatedEntity)

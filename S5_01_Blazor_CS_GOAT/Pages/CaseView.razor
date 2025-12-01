@@ -1,0 +1,39 @@
+@page "/caseview/{CaseId:int}"
+@using S5_01_Blazor_CS_GOAT.Service
+@inject IService<Skin> skinRepository
+@inject IService<Case> caseRepository
+
+<Header>
+    <div id="case-to-open">
+        <img src=""/>
+    </div>
+    
+    <div style="color: white">
+        @foreach (Skin skin in skinsList)
+        {
+            <ul>
+                <li>@skin.ItemName</li>
+            </ul>
+        }
+    </div>
+</Header>
+
+
+
+
+@code {
+    [Parameter]
+    public required int CaseId { get; set; }
+
+    private List<Skin> skinsList = new List<Skin>();
+    private Case activeCase = null;
+    
+    
+    protected override async Task OnInitializedAsync()
+    {
+        
+        Console.WriteLine(CaseId);
+        skinsList = await skinRepository.GetByCaseIdAsync(CaseId);
+        
+    }
+}

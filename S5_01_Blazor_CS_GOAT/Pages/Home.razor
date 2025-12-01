@@ -18,7 +18,7 @@
         } else
         {
             @foreach (Case singleCase in cases) {
-                <CaseComponent CaseName="@singleCase.CaseName" CaseImagePath="@singleCase.CaseImage" CasePrice="@singleCase.CasePrice"></CaseComponent>
+                <CaseComponent CaseObject="@singleCase"></CaseComponent>
             }
         }
     </div>
@@ -45,7 +45,6 @@
     private List<Case> cases = new List<Case>();
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("aaaaaaaa");
         cases = await caseRepository.GetAllAsync();
         Console.WriteLine(cases);
     }
