@@ -23,10 +23,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all ItemTransactionDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<ItemTransactionDTO>>> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             IEnumerable<ItemTransaction?> transactions = await manager.GetAllAsync();
             IEnumerable<ItemTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(transactions);
             return Ok(transactionsDTO);

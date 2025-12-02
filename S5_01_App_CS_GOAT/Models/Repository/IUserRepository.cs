@@ -6,7 +6,15 @@ namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface IUserRepository : IDataRepository<User, int>
 {
-    Task UpdateUserDetails(User existing, UserDetailDTO userDTO);
+    Task UpdateUserDetails(User existing, UpdateUserDTO userDTO);
 
-    Task<User> CreateUser(NewAccountDTO newAccount);
+    Task<User> CreateUser(CreateUserDTO newAccount);
+
+    Task InitializeUser(User user);
+
+    Task<AuthDTO> Auth(User user, IConfiguration config, int? remember = null);
+
+    Task<User?> Login(LoginDTO loginDTO);
+
+    Task<User?> Recall(RememberDTO rememberDTO);
 }

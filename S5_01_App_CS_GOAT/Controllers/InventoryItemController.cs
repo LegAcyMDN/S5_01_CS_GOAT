@@ -67,6 +67,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Upgrade()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+
             throw new NotImplementedException();
         }
 
@@ -110,9 +114,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
 
-            inventory.RemovedOn = DateTime.Now;
-            await manager.UpdateAsync(inventory, inventory);
-            return NoContent();
+            throw new NotImplementedException();
         }
     }
 }

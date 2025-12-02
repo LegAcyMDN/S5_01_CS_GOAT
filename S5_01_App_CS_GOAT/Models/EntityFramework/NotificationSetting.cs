@@ -16,15 +16,15 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("nts_onsite")]
-        public bool OnSite { get; set; }
+        public bool OnSite { get; set; } = true;
 
         [Required]
         [Column("nts_byemail")]
-        public bool ByEmail { get; set; }
+        public bool ByEmail { get; set; } = false;
 
         [Required]
         [Column("nts_byphone")]
-        public bool ByPhone { get; set; }
+        public bool ByPhone { get; set; } = false;
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.NotificationSettings))]
