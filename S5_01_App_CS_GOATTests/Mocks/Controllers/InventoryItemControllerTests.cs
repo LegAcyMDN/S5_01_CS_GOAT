@@ -72,6 +72,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
         }
 
         [TestMethod]
@@ -102,6 +103,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(1), Times.Never);
         }
 
         [TestMethod]
@@ -139,6 +141,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
         }
 
         [TestMethod]
@@ -156,6 +159,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
         }
 
         #endregion
@@ -184,6 +188,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(1), Times.Never);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(inventoryItem, inventoryItem), Times.Never);
         }
 
         [TestMethod]
@@ -222,6 +228,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(inventoryItem, inventoryItem), Times.Never);
         }
 
         [TestMethod]
@@ -239,6 +247,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(otherUserInventoryItem, otherUserInventoryItem), Times.Never);
         }
 
         #endregion
@@ -253,6 +263,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(1), Times.Never);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(inventoryItem, inventoryItem), Times.Never);
         }
 
         [TestMethod]
@@ -291,6 +303,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(inventoryItem, inventoryItem), Times.Never);
         }
 
         [TestMethod]
@@ -308,6 +322,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
+            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(otherUserInventoryItem, otherUserInventoryItem), Times.Never);
         }
 
         #endregion

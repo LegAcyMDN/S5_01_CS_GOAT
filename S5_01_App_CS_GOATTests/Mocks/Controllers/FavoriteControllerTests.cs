@@ -64,6 +64,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
         }
 
         [TestMethod]
@@ -94,6 +95,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
         }
 
         [TestMethod]
@@ -108,12 +110,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            favoriteRepositoryMock.Verify(r => r.AddAsync(otherUserFavorite), Times.Never);
         }
 
         #endregion
 
         #region Delete Tests
-
         [TestMethod]
         public void Delete_Unauthenticated_ReturnsUnauthorized()
         {
@@ -125,6 +127,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            favoriteKey = FavoriteFixture.GetFavoriteKey(2, caseId);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Never);
+            favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 
         [TestMethod]
@@ -165,6 +170,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 
         #endregion

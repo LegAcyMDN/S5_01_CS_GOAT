@@ -93,6 +93,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            banRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
         }
 
         [TestMethod]
@@ -120,6 +121,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            banRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
         }
 
         #endregion
@@ -156,6 +158,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            banRepositoryMock.Verify(r => r.AddAsync(ban), Times.Never);
         }
 
         [TestMethod]
@@ -170,6 +173,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            banTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(banDTO.BanTypeName), Times.Once);
+            banRepositoryMock.Verify(r => r.AddAsync(ban), Times.Never);
         }
 
         #endregion
@@ -224,7 +229,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
             banRepositoryMock.Verify(r => r.GetByIdAsync(ban.UserId), Times.Never);
-            banRepositoryMock.Verify(r => r.UpdateAsync(It.IsAny<Ban>(), It.IsAny<Ban>()), Times.Never);
+            Ban updatedBan = BanFixture.GetUpdatedBan();
+            banRepositoryMock.Verify(r => r.UpdateAsync(ban, updatedBan), Times.Never);
         }
 
         #endregion

@@ -206,6 +206,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            caseRepositoryMock.Verify(r => r.GetByIdAsync(caseId, "CaseContents"), Times.Once);
         }
 
         [TestMethod]
