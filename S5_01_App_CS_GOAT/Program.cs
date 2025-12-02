@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -37,12 +36,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Readonly repositories for lookup entities
-builder.Services.AddScoped<IReadableRepository<BanType, int>, CrudRepository<BanType>>();
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
 builder.Services.AddScoped<IReadableRepository<CaseContent, int>, CrudRepository<CaseContent>>();
-builder.Services.AddScoped<IReadableRepository<NotificationType, int>, CrudRepository<NotificationType>>();
 builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
 builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
+builder.Services.AddScoped<IReadableRepository<Skin, int>, CrudRepository<Skin>>();
 builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
 
 // Generic repositories for standard entities
@@ -64,14 +62,12 @@ builder.Services.AddScoped<IDataRepository<UpgradeResult, int>, CrudRepository<U
 builder.Services.AddScoped<IDataRepository<User, int>, CrudRepository<User>>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
-// Specialized managers with custom interfaces
-builder.Services.AddScoped<ICaseRelatedRepository<Case>, CaseManager>();
-builder.Services.AddScoped<IWearRelatedRepository<Wear>, WearManager>();
-builder.Services.AddScoped<INotificationRelatedRepository<int?>, UserNotificationManager>();
-builder.Services.AddScoped<IDataRepository<UserNotification, int>, UserNotificationManager>();
-builder.Services.AddScoped<ISkinRelatedRepository<Skin>, SkinManager>();
-builder.Services.AddScoped<IDataRepository<PriceHistory, int>, PriceHistoryManager>();
-builder.Services.AddScoped<IDataRepository<UpgradeResult, int>, UpgradeResultManager>();
+// Type Repositories for type entities
+builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
+builder.Services.AddScoped<ITypeRepository<ItemType>, TypeRepository<ItemType>>();
+builder.Services.AddScoped<ITypeRepository<LimitType>, TypeRepository<LimitType>>();
+builder.Services.AddScoped<ITypeRepository<NotificationType>, TypeRepository<NotificationType>>();
+builder.Services.AddScoped<ITypeRepository<PaymentMethod>, TypeRepository<PaymentMethod>>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));

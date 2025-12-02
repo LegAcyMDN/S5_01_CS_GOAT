@@ -15,7 +15,6 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class CaseController(
         IMapper mapper,
         IReadableRepository<Case, int> manager,
-        ICaseRelatedRepository<Case> caseManager,
         IDataRepository<Favorite, (int,int)> favoriteManager,
         IConfiguration configuration) : ControllerBase
     {
@@ -26,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             IEnumerable<Case> caseResult = await manager.GetAllAsync();
             IEnumerable<CaseDTO> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
@@ -56,7 +55,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
-            Case? result = await caseManager.GetByIdWithContentsAsync(id);
+            Case? result = await manager.GetByIdAsync(id, "CaseContents");
             if (result == null) return NotFound();
             CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 

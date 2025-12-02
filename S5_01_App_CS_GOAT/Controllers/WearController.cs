@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class WearController(
         IMapper mapper,
-        IWearRelatedRepository<Wear> manager
+        IReadableRepository<Wear, int> manager
     ) : ControllerBase
     {
         /// <summary>
@@ -26,12 +26,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<ModelDTO>> Get3dModelByWear(int wearId)
         {
-            var wear = await manager.GetBy3dModelAsync(wearId);
-            if (wear == null || !wear.Any())
-                return NotFound();
-
-            var firstWear = wear.First();
-            ModelDTO modelDto = mapper.Map<ModelDTO>(firstWear);
+            Wear? wear = await manager.GetByIdAsync(wearId, "Skin.Item");
+            if (wear == null) return NotFound();
+            ModelDTO modelDto = mapper.Map<ModelDTO>(wear);
             return Ok(modelDto);
         }
     }

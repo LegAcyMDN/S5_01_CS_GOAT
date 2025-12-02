@@ -5,6 +5,7 @@ using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using System.Collections;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -15,6 +16,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class BanController(
         IMapper mapper,
         IDataRepository<Ban, int> manager,
+        ITypeRepository<BanType> typeManager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -22,10 +24,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all BanDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<BanDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+            
             IEnumerable<Ban> bans = await manager.GetAllAsync();
 
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
@@ -38,7 +45,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of BanDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<BanDTO>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -56,14 +63,25 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="banDTO">The BanDTO object to create</param>
         /// <returns>The created BanDTO object</returns>
         [HttpPost("create")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(BanDTO banDTO)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            BanType? banType = await typeManager.GetTypeByNameAsync(banDTO.BanTypeName);
+            if (banType == null)
+                return BadRequest($"Invalid ban type: {banDTO.BanTypeName}");
+
             Ban ban = mapper.Map<Ban>(banDTO);
+            ban.BanTypeId = banType.BanTypeId;
+
             await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);
@@ -77,12 +95,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="banDTO">The updated BanDTO object</param>
         /// <returns>No content on success</returns>
         [HttpPut("update/{id}")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, BanDTO banDTO)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             Ban? banToUpdate = await manager.GetByIdAsync(id);

@@ -1,0 +1,49 @@
+name: Deploy Blazor to Azure
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Publish Blazor Project
+        run: dotnet publish S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj -c Release -o ./release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blazor-app
+          path: ./release/wwwroot  # Remove the /** - upload the entire folder
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: blazor-app
+          path: ./deploy  # Download to a specific path
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'blazorcsgoat'
+          slot-name: 'Production'
+          package: ./deploy  # Deploy from the download path
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}

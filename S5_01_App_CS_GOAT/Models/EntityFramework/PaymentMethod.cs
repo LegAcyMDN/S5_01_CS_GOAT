@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_paymentmethod_pmt")]
     [Index(nameof(PaymentMethodName), IsUnique = true)]
-    public class PaymentMethod
+    public partial class PaymentMethod
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -1,8 +1,15 @@
-﻿namespace S5_01_App_CS_GOAT.Models.Repository;
+﻿using System.Linq.Expressions;
+
+namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface IReadableRepository<TEntity, TIdentifier>
 {
-    Task<IEnumerable<TEntity>> GetAllAsync();
+    Task<IEnumerable<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>>? where = null,
+        params string[] includes
+        );
+    Task<TEntity?> GetByIdAsync(int id,
+        params string[] includes);
     Task<TEntity?> GetByIdAsync(TIdentifier id);
 }
 

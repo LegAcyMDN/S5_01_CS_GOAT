@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of LimitDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<LimitDTO>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -40,20 +40,24 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Update a limit for a user
         /// </summary>
-        /// <param name="userId">The user ID</param>
         /// <param name="limitTypeId">The limit type ID</param>
         /// <param name="limitDto">The updated limit data</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("update/{userId}/{limitTypeId}")]
+        [HttpPatch("update/{limitTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int userId, int limitTypeId, [FromBody] LimitDTO limitDto)
+        public async Task<IActionResult> Update(int limitTypeId, [FromBody] LimitDTO limitDto)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            int userId = authResult.AuthUserId!.Value;
             Limit? existingLimit = await manager.GetByIdAsync((userId, limitTypeId));
-            
+
             if (existingLimit == null)
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitTypeId}");
 

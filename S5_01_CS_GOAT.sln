@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_App_CS_GOAT", "S5_01_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_Blazor_CS_GOAT", "S5_01_Blazor_CS_GOAT\S5_01_Blazor_CS_GOAT.csproj", "{5A4B0666-254C-42B8-B88E-3B069068A6F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_App_CS_GOATTests", "S5_01_App_CS_GOATTests\S5_01_App_CS_GOATTests.csproj", "{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +23,10 @@ Global
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A4B0666-254C-42B8-B88E-3B069068A6F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C478A0C-0FB8-48F5-B803-45BF81D4E59B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
