@@ -22,7 +22,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<MoneyTransaction>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -40,8 +40,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<MoneyTransaction>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync();
             return Ok(transactions);
         }
