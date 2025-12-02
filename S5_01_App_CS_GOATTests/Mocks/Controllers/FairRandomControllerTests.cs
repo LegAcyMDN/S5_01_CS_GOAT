@@ -42,12 +42,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             fairRandomRepositoryMock = new Mock<IDataRepository<FairRandom, int>>();
             configurationMock = new Mock<IConfiguration>();
 
-            normalUser = TestFixture.GetNormalUser();
-            otherUser = TestFixture.GetAdminUser();
-            fairRandom = TestFixture.GetFairRandom();
-            fairRandomDTO = TestFixture.GetSingleFairRandomDTO();
-            fairRandomList = TestFixture.GetFairRandoms();
-            fairRandomDTOList = TestFixture.GetFairRandomDTOs();
+            normalUser = UserFixture.GetNormalUser();
+            otherUser = UserFixture.GetAdminUser();
+            fairRandom = FairRandomFixture.GetFairRandom();
+            fairRandomDTO = FairRandomFixture.GetSingleFairRandomDTO();
+            fairRandomList = FairRandomFixture.GetFairRandoms();
+            fairRandomDTOList = FairRandomFixture.GetFairRandomDTOs();
 
             controller = new FairRandomController(
                 mapperMock.Object,
@@ -81,7 +81,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             
-            List<FairRandom> mixedFairRandomList = TestFixture.GetFairRandoms();
+            List<FairRandom> mixedFairRandomList = FairRandomFixture.GetFairRandoms();
             fairRandomRepositoryMock.Setup(r => r.GetAllAsync(null))
                                     .ReturnsAsync(mixedFairRandomList);
             

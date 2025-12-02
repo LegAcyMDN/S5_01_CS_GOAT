@@ -37,11 +37,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             notificationTypeRepositoryMock = new Mock<ITypeRepository<NotificationType>>();
             configurationMock = new Mock<IConfiguration>();
 
-            admin = TestFixture.GetAdminUser();
-            normalUser = TestFixture.GetNormalUser();
-            notificationType = TestFixture.GetNotificationType();
-            notificationDTO = TestFixture.GetSingleNotificationDTO();
-            globalNotification = TestFixture.GetGlobalNotification();
+            admin = UserFixture.GetAdminUser();
+            normalUser = UserFixture.GetNormalUser();
+            notificationType = NotificationFixture.GetNotificationType();
+            notificationDTO = NotificationFixture.GetSingleNotificationDTO();
+            globalNotification = NotificationFixture.GetGlobalNotification();
 
             controller = new GlobalNotificationController(
                 mapperMock.Object,
@@ -92,6 +92,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
+            notificationTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName), Times.Never);
             globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
@@ -103,6 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            notificationTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName), Times.Never);
             globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
@@ -131,6 +133,21 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // When
             IActionResult? result = controller.Create(notificationDTO).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
+        }
+
+        [TestMethod]
+        public void Create_InvalidModel_ReturnsBadRequest()
+        {
+            JwtService.AuthentifyController(controller, admin);
+            controller.ModelState.AddModelError("NotificationSummary", "Required");
+            NotificationDTO emptyNotificationDTO = NotificationFixture.GetEmptyNotificationDTO();
+
+            // When
+            IActionResult? result = controller.Create(emptyNotificationDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
