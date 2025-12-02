@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
@@ -81,7 +81,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("usr_seed")]
         [StringLength(16)]
         [RegularExpression("^[A-Za-z0-9]{16}$")]
-        public string Seed { get; set; } = GenerateRandomSeed();
+        public string Seed { get; set; } = SecurityService.GenerateRandomSeed();
 
         [Required]
         [Column("usr_nonce")]
