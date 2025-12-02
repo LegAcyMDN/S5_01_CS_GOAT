@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -11,7 +12,8 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PromoCodeController(
-        IDataRepository<PromoCode, int> manager
+        IDataRepository<PromoCode, int> manager,
+        IConfiguration configuration
     ) : ControllerBase
     {
 
@@ -20,11 +22,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all PromoCode objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             IEnumerable<PromoCode> promoCodes = await manager.GetAllAsync();
             return Ok(promoCodes);
         }
@@ -40,6 +46,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] PromoCode promoCode)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             PromoCode createdPromoCode = await manager.AddAsync(promoCode);
@@ -59,6 +70,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, [FromBody] PromoCode updatedPromoCode)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
 
@@ -75,11 +91,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="id">The ID of the promo code to delete</param>
         /// <returns>No content on success</returns>
         [HttpDelete("delete/{id}")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             var promoCode = await manager.GetByIdAsync(id);
             if (promoCode == null) 
                 return NotFound();

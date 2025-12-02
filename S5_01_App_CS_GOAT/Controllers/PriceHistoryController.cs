@@ -23,7 +23,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>Price history data for wear</returns>
         [HttpGet("bywear/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<PriceHistoryDTO>>> GetByInventoryItem(int wearId)
+        public async Task<IActionResult> GetByInventoryItem(int wearId)
         {
             IEnumerable<PriceHistory> result = await manager.GetAllAsync(ph => ph.WearId == wearId);
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
