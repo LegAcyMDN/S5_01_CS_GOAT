@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
@@ -17,7 +18,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Required]
         [Column("prc_code")]
         [StringLength(50)]
-        public string Code { get; set; } = null!;
+        public string Code { get; set; } = SecurityService.GenerateSeed(8);
 
         [Required]
         [Column("prc_discountpercentage")]

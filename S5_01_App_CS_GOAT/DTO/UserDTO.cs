@@ -2,7 +2,7 @@
 
 namespace S5_01_App_CS_GOAT.DTO;
 
-public class UserDetailDTO
+public class UserDTO
 {
     public int UserId { get; set; }
 

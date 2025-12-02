@@ -14,10 +14,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("lmt_id")]
         public int LimitTypeId { get; set; }
 
-        [Required]
         [Column("lim_limitamount")]
         [Range(0.0, double.MaxValue)]
-        public double LimitAmount { get; set; }
+        public double? LimitAmount { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.Limits))]

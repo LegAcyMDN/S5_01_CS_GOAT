@@ -8,25 +8,25 @@ namespace S5_01_App_CS_GOAT.Services
         /// <summary>
         /// Create a new (non-cryptographically secure) random seed
         /// </summary>
-        /// <returns>A random seed string of 16 characters</returns>
-        public static string GenerateRandomSeed()
+        /// <returns>A random string</returns>
+        public static string GenerateSeed(int lenght = 16)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, 16)
+            return new string(Enumerable.Repeat(chars, lenght)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         /// <summary>
-        /// Generates a new random salt
+        /// Generates a new random token
         /// </summary>
-        /// <returns>A Base64 encoded random salt</returns>
-        public static string GenerateSalt()
+        /// <returns>A Base64 encoded random token</returns>
+        public static string GenerateToken(int lenght = 64)
         {
-            byte[] saltBytes = new byte[16];
+            byte[] bytes = new byte[lenght];
             using (var rng = RandomNumberGenerator.Create())
-                rng.GetBytes(saltBytes);
-            return Convert.ToBase64String(saltBytes);
+                rng.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
         }
 
         /// <summary>
@@ -57,8 +57,10 @@ namespace S5_01_App_CS_GOAT.Services
         /// <param name="hash">The stored hash to compare against</param>
         /// <param name="salt">The salt used for hashing</param>
         /// <returns>True if the password matches, false otherwise</returns>
-        public static bool VerifyPassword(string password, string hash, string salt)
+        public static bool? VerifyPassword(string? password, string? hash, string? salt)
         {
+            if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hash) || string.IsNullOrEmpty(salt))
+                return null;
             string hashedInput = HashAndSalt(password, salt);
             return hashedInput == hash;
         }

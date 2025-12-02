@@ -30,7 +30,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> GetAll()
         {
             IEnumerable<User> users = await manager.GetAllAsync();
-            IEnumerable<UserDetailDTO> dtos = mapper.Map<IEnumerable<UserDetailDTO>>(users);
+            IEnumerable<UserDTO> dtos = mapper.Map<IEnumerable<UserDTO>>(users);
             return Ok(dtos);
         }
 
@@ -54,7 +54,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (user == null)
                 return NotFound();
 
-            UserDetailDTO dto = mapper.Map<UserDetailDTO>(user);
+            UserDTO dto = mapper.Map<UserDTO>(user);
             return Ok(dto);
         }
 
@@ -67,7 +67,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] NewAccountDTO userDTO)
+        public async Task<IActionResult> Create([FromBody] CreateUserDTO userDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -75,7 +75,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             try
             {
                 User newUser = await manager.CreateUser(userDTO);
-                return CreatedAtAction(nameof(Get), new { id = newUser.UserId }, newUser);
+                AuthDTO authDTO = await manager.Auth(newUser, configuration, userDTO.Remember);
+                return CreatedAtAction(nameof(Get), new { id = newUser.UserId }, authDTO);
             }
             catch (Exception ex)
             {
@@ -93,7 +94,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int id, [FromBody] UserDetailDTO userDTO)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO userDTO)
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
@@ -121,77 +122,86 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Update user's password
+        /// Authenticate user with login credentials
         /// </summary>
-        /// <param name="id">The ID of the user</param>
-        /// <param name="model">The password patch model with current and new password</param>
-        /// <returns>No content on success</returns>
-        [HttpPatch("password/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        /// <param name="loginDTO">The login credentials</param>
+        /// <returns>Auth token on successful authentication</returns>
+        [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PatchPassword(int id)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
-            throw new NotImplementedException();
+            User? user = await manager.Login(loginDTO);
+            if (user == null) return Unauthorized();
+            AuthDTO authDTO = await manager.Auth(user, configuration, loginDTO.Remember);
+            return Ok(authDTO);
         }
 
         /// <summary>
-        /// Soft delete a user account
+        /// Authenticate user with rememberme token
         /// </summary>
-        /// <param name="id">The ID of the user to delete</param>
-        /// <param name="model">Password confirmation model</param>
-        /// <returns>No content on success</returns>
-        [HttpDelete("remove/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        /// <param name="rememberDTO">The login credentials</param>
+        /// <returns>Auth token on successful authentication</returns>
+        [HttpPost("recall")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Delete(int id)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Recall([FromBody] RememberDTO rememberDTO)
         {
-            throw new NotImplementedException();
+            User? user = await manager.Recall(rememberDTO);
+            if (user == null) return Unauthorized();
+            AuthDTO authDTO = await manager.Auth(user, configuration);
+            return Ok(authDTO);
         }
 
         /// <summary>
         /// Request password reset for a user
         /// </summary>
-        /// <param name="emailOrLogin">The email or login of the user</param>
+        /// <param name="identifier">The email or login of the user</param>
         /// <returns>No content (always returns success for security)</returns>
-        [AllowAnonymous]
         [HttpHead("resetpassword")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ResetPassword([FromQuery] string emailOrLogin)
+        public IActionResult ResetPassword([FromQuery] string identifier)
         {
-            if (string.IsNullOrEmpty(emailOrLogin))
+            if (string.IsNullOrEmpty(identifier))
                 return BadRequest();
 
-            // In real implementation: find user and send reset email
-            return NoContent();
+            throw new NotImplementedException();
         }
 
         /// <summary>
         /// Verify user's phone number with code
         /// </summary>
-        /// <param name="id">The ID of the user</param>
         /// <param name="code">The verification code</param>
         /// <returns>No content on success</returns>
         [HttpHead("verifyphone")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> VerifyPhone([FromQuery] int id, [FromQuery] string code)
+        public async Task<IActionResult> VerifyPhone([FromQuery] string code)
         {
+            AuthResult auth = JwtService.JwtAuth(configuration);
+            if (!auth.IsAuthenticated)
+                return Unauthorized();
+
             throw new NotImplementedException();
         }
 
         /// <summary>
         /// Verify user's email address with code
         /// </summary>
-        /// <param name="id">The ID of the user</param>
         /// <param name="code">The verification code</param>
         /// <returns>No content on success</returns>
         [HttpHead("verifymail")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> VerifyMail([FromQuery] int id, [FromQuery] string code)
+        public async Task<IActionResult> VerifyMail([FromQuery] string code)
         {
+            AuthResult auth = JwtService.JwtAuth(configuration);
+            if (!auth.IsAuthenticated)
+                return Unauthorized();
+
             throw new NotImplementedException();
         }
 
@@ -212,40 +222,25 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Forbid();
 
             User? user = await manager.GetByIdAsync(id);
-            if (user == null)
-                return NotFound();
+            if (user == null) return NotFound();
 
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Authenticate user with login credentials
-        /// </summary>
-        /// <param name="model">Login credentials (login and password)</param>
-        /// <returns>JWT token on successful authentication</returns>
-        [AllowAnonymous]
-        [HttpPost("login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Login()
-        {
             throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Set remember token for user session
+        /// Soft delete a user account
         /// </summary>
-        /// <param name="model">Remember token model</param>
         /// <returns>No content on success</returns>
-        [AllowAnonymous]
-        [HttpPost("remember")]
+        [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Remember()
+        public async Task<IActionResult> Delete()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+
             throw new NotImplementedException();
         }
-
     }
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
@@ -18,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Required]
         [StringLength(255)]
         [Column("tkn_token")]
-        public string TokenValue { get; set; } = null!;
+        public string TokenValue { get; set; } = SecurityService.GenerateToken(255);
 
         [Required]
         [Column("tkn_tokencreationdate")]

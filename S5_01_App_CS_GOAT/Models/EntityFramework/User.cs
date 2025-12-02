@@ -79,7 +79,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("usr_seed")]
         [StringLength(16)]
         [RegularExpression("^[A-Za-z0-9]{16}$")]
-        public string Seed { get; set; } = SecurityService.GenerateRandomSeed();
+        public string Seed { get; set; } = SecurityService.GenerateSeed();
 
         [Required]
         [Column("usr_nonce")]

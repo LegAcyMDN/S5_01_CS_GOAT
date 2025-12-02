@@ -93,7 +93,7 @@ namespace S5_01_App_CS_GOAT.Services
                 issuer: configuration["JWT_ISSUER"],
                 audience: configuration["JWT_AUDIENCE"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.Now.AddDays(30),
                 signingCredentials: credentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);

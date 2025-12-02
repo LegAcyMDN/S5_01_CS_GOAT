@@ -169,11 +169,24 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Upgrade_CallsMethod_ReturnsOk()
         {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+
             // When
             IActionResult? result = controller.Upgrade().GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkResult));
+        }
+
+        [TestMethod]
+        public void Upgrade_Unauthenticated_ReturnsUnauthorized()
+        {
+            // When
+            IActionResult? result = controller.Upgrade().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
         }
 
         #endregion
