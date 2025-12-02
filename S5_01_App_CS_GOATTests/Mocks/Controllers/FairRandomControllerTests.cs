@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace S5_01_App_CS_GOATTests.Controllers
+namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
     [TestClass()]
     public class FairRandomControllerTests
@@ -76,26 +76,7 @@ namespace S5_01_App_CS_GOATTests.Controllers
         }
 
         [TestMethod]
-        public void GetByUser_AuthenticatedUser_ReturnsOwnFairRandoms()
-        {
-            // Given
-            JwtService.AuthentifyController(controller, normalUser);
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(null))
-                                    .ReturnsAsync(fairRandomList);
-            mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(fairRandomList))
-                      .Returns(fairRandomDTOList);
-
-            // When
-            IActionResult? result = controller.GetByUser().GetAwaiter().GetResult();
-
-            // Then
-            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
-            mapperMock.Verify(m => m.Map<IEnumerable<FairRandomDTO>>(fairRandomList), Times.Once);
-        }
-
-        [TestMethod]
-        public void GetByUser_AuthenticatedUser_ReturnsOnlyUserFairRandoms()
+        public void GetByUser_AuthenticatedUser_ReturnsFairRandoms()
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);

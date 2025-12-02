@@ -15,7 +15,7 @@ using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
 using System.Threading;
 
-namespace S5_01_App_CS_GOATTests.Controllers
+namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
     [TestClass()]
     public class FavoriteControllerTests
