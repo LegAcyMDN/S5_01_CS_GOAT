@@ -8,6 +8,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Table("t_e_user_usr")]
     [Index(nameof(Login), IsUnique = true)]
     [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(Phone), IsUnique = true)]
     [Index(nameof(SteamId), IsUnique = true)]
     [Index(nameof(LastLogin))]
     [Index(nameof(IsAdmin))]
@@ -19,21 +20,18 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("usr_id")]
         public int UserId { get; set; }
 
-        [Required]
         [StringLength(50)]
         [Column("usr_login")]
-        public string Login { get; set; } = null!;
+        public string? Login { get; set; }
 
-        [Required]
         [StringLength(100)]
         [Column("usr_displayname")]
-        public string DisplayName { get; set; } = null!;
+        public string? DisplayName { get; set; }
 
-        [Required]
         [StringLength(255)]
         [EmailAddress]
         [Column("usr_email")]
-        public string Email { get; set; } = null!;
+        public string? Email { get; set; }
 
         [StringLength(20)]
         [Phone]

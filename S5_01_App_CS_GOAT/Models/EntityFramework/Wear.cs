@@ -6,7 +6,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_wear_wer")]
     [Index(nameof(Uuid))]
-    public class Wear
+    public partial class Wear
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

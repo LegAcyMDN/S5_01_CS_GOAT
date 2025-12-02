@@ -7,5 +7,7 @@
         public int UvType { get; set; } // what model we hase to use for the item
 
         public string ItemModel { get; set; } = null!;
+
+        public byte[]?[] Texture { get; set; } = Array.Empty<byte[]>();
     }
 }

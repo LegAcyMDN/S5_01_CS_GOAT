@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -13,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class UserController(
-        IDataRepository<User, int> manager,
+        IUserRepository manager,
         IMapper mapper,
         IConfiguration configuration
     ) : ControllerBase
@@ -66,15 +67,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] UserDetailDTO userDTO)
+        public async Task<IActionResult> Create([FromBody] NewAccountDTO userDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User entity = mapper.Map<User>(userDTO);
-            await manager.AddAsync(entity);
-            UserDetailDTO createdDto = mapper.Map<UserDetailDTO>(entity);
-            return CreatedAtAction(nameof(Get), new { id = entity.UserId }, createdDto);
+            try
+            {
+                User newUser = await manager.CreateUser(userDTO);
+                return CreatedAtAction(nameof(Get), new { id = newUser.UserId }, newUser);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -102,23 +108,16 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (existing == null)
                 return NotFound();
 
-            User? updated = mapper.Map<User>(userDTO);
-            await manager.UpdateAsync(existing, updated);
-            return NoContent();
-        }
+            try
+            {
+                await manager.UpdateUserDetails(existing, userDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
-        /// <summary>
-        /// Update user's random seed
-        /// </summary>
-        /// <param name="id">The ID of the user</param>
-        /// <param name="model">The seed patch model</param>
-        /// <returns>No content on success</returns>
-        [HttpPatch("seed/{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> PatchSeed(int id)
-        {
-            throw new NotImplementedException();
+            return NoContent();
         }
 
         /// <summary>
