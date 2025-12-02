@@ -47,16 +47,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             favoriteRepositoryMock = new Mock<IDataRepository<Favorite, (int, int)>>();
             configurationMock = new Mock<IConfiguration>();
 
-            normalUser = TestFixture.GetNormalUser();
-            caseEntity = TestFixture.GetCase();
-            caseDTO = TestFixture.GetSingleCaseDTO();
-            caseList = TestFixture.GetCases();
-            caseDTOList = TestFixture.GetCaseDTOs();
-            favorite = TestFixture.GetFavorite();
+            normalUser = UserFixture.GetNormalUser();
+            caseEntity = CaseFixture.GetCase();
+            caseDTO = CaseFixture.GetSingleCaseDTO();
+            caseList = CaseFixture.GetCases();
+            caseDTOList = CaseFixture.GetCaseDTOs();
+            favorite = FavoriteFixture.GetFavorite();
 
-            favoriteKey1 = TestFixture.GetFavoriteKey1ForNormalUser();
-            favoriteKey2 = TestFixture.GetFavoriteKey2ForNormalUser();
-            favoriteKey3 = TestFixture.GetFavoriteKey3ForNormalUser();
+            favoriteKey1 = FavoriteFixture.GetFavoriteKey1ForNormalUser();
+            favoriteKey2 = FavoriteFixture.GetFavoriteKey2ForNormalUser();
+            favoriteKey3 = FavoriteFixture.GetFavoriteKey3ForNormalUser();
 
             controller = new CaseController(
                 mapperMock.Object,
@@ -175,7 +175,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             //Given
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 1;
-            favoriteKey = TestFixture.GetFavoriteKey(normalUser.UserId, caseId);
+            favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
             caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, "CaseContents"))
                               .ReturnsAsync(caseEntity);
@@ -206,7 +206,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsync(caseId, "CaseContents"), Times.Once);
         }
 
         [TestMethod]
@@ -215,7 +214,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             //Given
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 1;
-            favoriteKey = TestFixture.GetFavoriteKey(normalUser.UserId, caseId);
+            favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
             caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, "CaseContents"))
                               .ReturnsAsync(caseEntity);

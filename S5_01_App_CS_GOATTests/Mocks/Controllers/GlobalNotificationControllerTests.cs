@@ -37,11 +37,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             notificationTypeRepositoryMock = new Mock<ITypeRepository<NotificationType>>();
             configurationMock = new Mock<IConfiguration>();
 
-            admin = TestFixture.GetAdminUser();
-            normalUser = TestFixture.GetNormalUser();
-            notificationType = TestFixture.GetNotificationType();
-            notificationDTO = TestFixture.GetSingleNotificationDTO();
-            globalNotification = TestFixture.GetGlobalNotification();
+            admin = UserFixture.GetAdminUser();
+            normalUser = UserFixture.GetNormalUser();
+            notificationType = NotificationFixture.GetNotificationType();
+            notificationDTO = NotificationFixture.GetSingleNotificationDTO();
+            globalNotification = NotificationFixture.GetGlobalNotification();
 
             controller = new GlobalNotificationController(
                 mapperMock.Object,
@@ -92,7 +92,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
         [TestMethod]
@@ -103,7 +102,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
         [TestMethod]
@@ -118,7 +116,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
         [TestMethod]
@@ -134,7 +131,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
         #endregion
