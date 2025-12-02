@@ -151,6 +151,46 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             };
         }
 
+        public static List<NotificationType> GetNotificationTypes()
+        {
+            return new List<NotificationType>
+            {
+                new NotificationType
+                {
+                    NotificationTypeId = 1,
+                    NotificationTypeName = "System"
+                },
+                new NotificationType
+                {
+                    NotificationTypeId = 2,
+                    NotificationTypeName = "User"
+                }
+            };
+        }
+
+        public static NotificationTypeDTO GetNotificationTypeDTO()
+        {
+            return new NotificationTypeDTO
+            {
+                NotificationTypeName = "System"
+            };
+        }
+
+        public static List<NotificationTypeDTO> GetNotificationTypeDTOs()
+        {
+            return new List<NotificationTypeDTO>
+            {
+                new NotificationTypeDTO
+                {
+                    NotificationTypeName = "System"
+                },
+                new NotificationTypeDTO
+                {
+                    NotificationTypeName = "User"
+                }
+            };
+        }
+
         public static NotificationDTO GetSingleNotificationDTO()
         {
             return new NotificationDTO
@@ -165,6 +205,74 @@ namespace S5_01_App_CS_GOATTests.Fixtures
         public static NotificationDTO GetEmptyNotificationDTO()
         {
             return new NotificationDTO();
+        }
+
+        // NotificationSetting fixtures
+        public static NotificationSetting GetNotificationSetting()
+        {
+            return new NotificationSetting
+            {
+                UserId = 2,
+                NotificationTypeId = 1,
+                OnSite = true,
+                ByEmail = true,
+                ByPhone = false
+            };
+        }
+
+        public static NotificationSetting GetOtherUserNotificationSetting()
+        {
+            return new NotificationSetting
+            {
+                UserId = 1,
+                NotificationTypeId = 1,
+                OnSite = true,
+                ByEmail = false,
+                ByPhone = false
+            };
+        }
+
+        public static List<NotificationSetting> GetNotificationSettings()
+        {
+            return new List<NotificationSetting>
+            {
+                new NotificationSetting
+                {
+                    UserId = 2,
+                    NotificationTypeId = 1,
+                    OnSite = true,
+                    ByEmail = true,
+                    ByPhone = false
+                },
+                new NotificationSetting
+                {
+                    UserId = 2,
+                    NotificationTypeId = 2,
+                    OnSite = true,
+                    ByEmail = false,
+                    ByPhone = true
+                }
+            };
+        }
+
+        public static Dictionary<string, object> GetNotificationSettingPatchData()
+        {
+            return new Dictionary<string, object>
+            {
+                { "OnSite", false },
+                { "ByEmail", true },
+                { "ByPhone", true }
+            };
+        }
+
+        public static (int, int) GetNotificationSettingKey(int userId, int notificationTypeId)
+        {
+            return (userId, notificationTypeId);
+        }
+
+        public static (int, int) GetNotificationSettingKeyForNormalUser()
+        {
+            return (2, 1);
         }
     }
 }

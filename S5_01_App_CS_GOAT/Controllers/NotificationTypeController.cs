@@ -23,7 +23,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<NotificationTypeDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             IEnumerable<NotificationType> notificationTypes = await manager.GetAllAsync();
             IEnumerable<NotificationTypeDTO> notificationTypesDTO = mapper.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes);

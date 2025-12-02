@@ -37,9 +37,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
-            moneyTransaction = MoneyTransactionFixture.GetMoneyTransaction();
-            moneyTransactions = MoneyTransactionFixture.GetMoneyTransactions();
-            allMoneyTransactions = MoneyTransactionFixture.GetAllMoneyTransactions();
+            moneyTransaction = TransactionFixture.GetMoneyTransaction();
+            moneyTransactions = TransactionFixture.GetMoneyTransactions();
+            allMoneyTransactions = TransactionFixture.GetAllMoneyTransactions();
 
             controller = new MoneyTransactionController(
                 moneyTransactionRepositoryMock.Object,

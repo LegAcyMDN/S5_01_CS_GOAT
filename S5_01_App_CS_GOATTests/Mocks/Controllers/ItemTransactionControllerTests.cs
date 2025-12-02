@@ -42,12 +42,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
-            itemTransaction = ItemTransactionFixture.GetItemTransaction();
-            otherUserItemTransaction = ItemTransactionFixture.GetOtherUserItemTransaction();
-            itemTransactions = ItemTransactionFixture.GetItemTransactions();
-            itemTransactionDTO = ItemTransactionFixture.GetItemTransactionDTO();
-            itemTransactionDetailDTO = ItemTransactionFixture.GetItemTransactionDetailDTO();
-            itemTransactionDTOs = ItemTransactionFixture.GetItemTransactionDTOs();
+            itemTransaction = TransactionFixture.GetItemTransaction();
+            otherUserItemTransaction = TransactionFixture.GetOtherUserItemTransaction();
+            itemTransactions = TransactionFixture.GetItemTransactions();
+            itemTransactionDTO = TransactionFixture.GetItemTransactionDTO();
+            itemTransactionDetailDTO = TransactionFixture.GetItemTransactionDetailDTO();
+            itemTransactionDTOs = TransactionFixture.GetItemTransactionDTOs();
 
             controller = new ItemTransactionController(
                 mapperMock.Object,
