@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<CaseDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             IEnumerable<Case> caseResult = await manager.GetAllAsync();
             IEnumerable<CaseDTO> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
