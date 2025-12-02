@@ -1,0 +1,195 @@
+@page "/viewModel/{WearId:int}"
+@using HomagGroup.Blazor3D.Enums
+@using HomagGroup.Blazor3D.Events
+@using HomagGroup.Blazor3D.Lights
+@using HomagGroup.Blazor3D.Maths
+@using HomagGroup.Blazor3D.Scenes
+@using HomagGroup.Blazor3D.Settings
+@using HomagGroup.Blazor3D.Viewers
+@using S5_01_Blazor_CS_GOAT.Service
+@* @rendermode @(new InteractiveServerRenderMode(prerender: false)) *@
+@implements IDisposable
+@inject IThreeDModelService<ThreeDModel> ThreeDModelRepository
+@inject CacheService CacheService
+@inject IJSRuntime JS
+
+
+<h3>3DView</h3>
+
+<div class="row justify-content-center">
+    <div class="col-6" style="height:500px;">
+        <Viewer @ref="View3D1" Scene=scene />
+    </div>
+
+    <div>@msg</div>
+</div>
+
+@if (modelUrl != null)
+{
+    <h1>@modelUrl</h1>
+}
+
+
+
+<script src="js/cacheHelper.js"></script>
+
+@code {
+    [Parameter]
+    public required int WearId { get; set; }
+
+
+    private Viewer View3D1 = null!;
+    private Scene scene = new Scene();
+    private Guid loadedObjectGuid = Guid.NewGuid();
+    private string msg = string.Empty;
+    
+    private string? modelUrl;
+    private string? textureUrl;
+    
+    
+
+    public void Dispose()
+    {
+        View3D1.ObjectLoaded -= OnObjectLoaded;
+        View3D1.JsModuleLoaded -= OnJsModuleLoaded;
+    }
+    
+    protected override Task OnInitializedAsync()
+    {
+        AddLights();
+        return base.OnInitializedAsync();
+    }
+    
+    private void AddLights(){
+        scene.Add(new AmbientLight());
+        scene.Add(new PointLight()
+        {
+            Intensity = 0.5f,
+            Position = new Vector3(100, 200, 100)
+        });
+        scene.Add(new PointLight()
+        {
+            Intensity = 1f,
+            Position = new Vector3(5, 5, 5)
+        });
+    }
+
+    
+    
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // subscribe events only once
+            View3D1.ObjectLoaded += OnObjectLoaded;
+            View3D1.JsModuleLoaded += OnJsModuleLoaded;
+        }
+
+        return base.OnAfterRenderAsync(firstRender);
+    }
+    private record CacheResult(bool ok, string message);
+    
+    private async Task OnJsModuleLoaded()
+    {
+        ThreeDModel weapon3DModelObject = await ThreeDModelRepository.GetByIdAsync(WearId);
+        string weaponName = weapon3DModelObject.ItemModel;
+        string pathModelOrLegacy = weapon3DModelObject.UvType == 1 ? "models/legacy/" : "models/model/";
+    
+        // STEP 1: Cache BIN file first and get its blob URL
+        await CacheService.CacheLocalFile("/" + pathModelOrLegacy + weaponName + ".bin", weaponName + ".bin");
+        var binBlobUrl = await CacheService.GetCachedUrl(weaponName + ".bin");
+    
+        // STEP 2: Fetch and cache texture from API
+        await CacheService.FetchAndCacheImage(
+#if DEBUG
+            "https://localhost:7009/api/wear/get3dmodel/" + WearId,
+#else
+        "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/" + WearId,
+#endif
+            "applied_texture.png"
+        );
+        var textureBlobUrl = await CacheService.GetCachedUrl("applied_texture.png");
+    
+        // STEP 3: Cache GLTF with modified URIs pointing to blob URLs
+        await CacheService.CacheGltfWithBlobUrls(
+            "/" + pathModelOrLegacy + weaponName + ".gltf",
+            weaponName + ".gltf",
+            binBlobUrl,
+            textureBlobUrl
+        );
+    
+        // STEP 4: Get the modified GLTF blob URL
+        modelUrl = await CacheService.GetCachedUrl(weaponName + ".gltf");
+    
+        Console.WriteLine($"Model URL: {modelUrl}");
+        Console.WriteLine($"Texture URL: {textureBlobUrl}");
+        Console.WriteLine($"Bin URL: {binBlobUrl}");
+    
+        // STEP 5: Load the model
+        var settings = new ImportSettings
+        {
+            Format = Import3DFormats.Gltf,
+            FileURL = modelUrl,
+        };
+        loadedObjectGuid = await View3D1.Import3DModelAsync(settings);
+        await View3D1.SetCameraPositionAsync(new Vector3(45, 30, 0), new Vector3(0, 0, 0));
+    }
+    
+    private Task OnObjectLoaded(Object3DArgs e)
+    {
+        // After object is loaded to component scene, you can locate it's C# clone in the scene.Children
+        // At the moment, only  Object3D.Uuid and Object3D.Type properties are syncronized.
+        foreach (var item in scene.Children)
+        {
+            if (item.Uuid == e.UUID)
+            {
+                this.msg = $"loaded object with id = {e.UUID} and type {item.Type}. Initial guid was {loadedObjectGuid}";
+                StateHasChanged();
+                break;
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+}
+
+@* @code { *@
+@*     private bool isLoading = true; *@
+@*     private string? modelUrl; *@
+@*     private string? textureUrl; *@
+@* *@
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         await LoadAndCacheAssets(); *@
+@*     } *@
+@* *@
+@*     private async Task LoadAndCacheAssets() *@
+@*     { *@
+@*         try *@
+@*         { *@
+@*             // Cache the GLTF file (assuming it's in wwwroot/models/) *@
+@*             await CacheService.CacheLocalFile("models/mymodel.gltf", "model.gltf"); *@
+@*              *@
+@*             // Cache the BIN file *@
+@*             await CacheService.CacheLocalFile("models/mymodel.bin", "model.bin"); *@
+@*              *@
+@*             // Fetch and cache the image from API *@
+@*             await CacheService.FetchAndCacheImage( *@
+@*                 "https://your-api.com/api/textures/123",  *@
+@*                 "texture.png" *@
+@*             ); *@
+@* *@
+@*             // Get the cached URLs (blob URLs) to use in your 3D viewer *@
+@*             modelUrl = await CacheService.GetCachedUrl("model.gltf"); *@
+@*             textureUrl = await CacheService.GetCachedUrl("texture.png"); *@
+@* *@
+@*             isLoading = false; *@
+@*             StateHasChanged(); *@
+@*         } *@
+@*         catch (Exception ex) *@
+@*         { *@
+@*             Console.WriteLine($"Error loading assets: {ex.Message}"); *@
+@*             isLoading = false; *@
+@*         } *@
+@*     } *@
+@* } *@

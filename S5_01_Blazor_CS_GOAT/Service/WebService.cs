@@ -47,6 +47,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return await response.Content.ReadFromJsonAsync<TEntity>();
     }
     
+    //TODO remove that and make the system better
     public async Task<List<TEntity>?> GetByCaseIdAsync(int id)
     {
         return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/bycase/{id}");
