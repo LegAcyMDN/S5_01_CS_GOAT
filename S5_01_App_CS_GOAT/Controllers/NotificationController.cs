@@ -28,8 +28,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
             IEnumerable<Notification> notifications = await manager.GetAllAsync();
             if (!notifications.Any())
                 return NotFound();
@@ -47,7 +52,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("relevant")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<NotificationDTO>>> GetRelevant([FromQuery] FilterOptions? filters, [FromQuery] SortOptions? sorts)
+        public async Task<IActionResult> GetRelevant([FromQuery] FilterOptions? filters = null, [FromQuery] SortOptions? sorts = null)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -74,7 +79,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<NotificationDTO>> GetDetails(int id)
+        public async Task<IActionResult> GetDetails(int id)
         {
             Notification? notification = await manager.GetByIdAsync(id);
             if (notification == null)

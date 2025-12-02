@@ -20,7 +20,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of notification settings for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<NotificationSetting>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -38,16 +38,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="notificationTypeId">The ID of the notification type</param>
         /// <param name="patchData">The patch data with OnSite, ByEmail, ByPhone flags</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("update/{userId}/{notificationTypeId}")]
+        [HttpPatch("update/{notificationTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int userId, int notificationTypeId, [FromBody] Dictionary<string, object> patchData)
+        public async Task<IActionResult> Update(int notificationTypeId, [FromBody] Dictionary<string, object> patchData)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            if (userId != authResult.AuthUserId)
-                return Forbid();
+            int userId = authResult.AuthUserId.Value;
 
             NotificationSetting? setting = await manager.GetByIdAsync((userId, notificationTypeId));
             if (setting == null) return NotFound();

@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all PaymentMethod objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<PaymentMethod>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             IEnumerable<PaymentMethod> payments = await manager.GetAllAsync();
             return Ok(payments);
