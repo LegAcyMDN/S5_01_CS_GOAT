@@ -131,7 +131,24 @@ private async Task OnJsModuleLoaded()
         textureUrls["applied_texture_r.png"] = textureRBlobUrl;
     }
     
-    // STEP 4: Cache GLTF with modified URIs pointing to blob URLs
+    // STEP 4: Handle SSG08 special case - add static textures
+    if (weaponName == "weapon_snip_ssg08" && weapon3DModelObject.UvType == 1)
+    {
+        // Cache the static lens texture
+        await CacheService.CacheLocalFile("/models/ssg_lens.png", "ssg_lens.png");
+        var lensUrl = await CacheService.GetCachedUrl("ssg_lens.png");
+        textureUrls["ssg_lens.png"] = lensUrl;
+        
+        // Cache the static scope texture
+        await CacheService.CacheLocalFile("/models/ssg_scope.png", "ssg_scope.png");
+        var scopeUrl = await CacheService.GetCachedUrl("ssg_scope.png");
+        textureUrls["ssg_scope.png"] = scopeUrl;
+        
+        Console.WriteLine($"SSG08 Lens URL: {lensUrl}");
+        Console.WriteLine($"SSG08 Scope URL: {scopeUrl}");
+    }
+    
+    // STEP 5: Cache GLTF with modified URIs pointing to blob URLs
     await CacheService.CacheGltfWithBlobUrls(
         "/" + pathModelOrLegacy + weaponName + ".gltf",
         weaponName + ".gltf",
@@ -139,7 +156,7 @@ private async Task OnJsModuleLoaded()
         textureUrls
     );
     
-    // STEP 5: Get the modified GLTF blob URL
+    // STEP 6: Get the modified GLTF blob URL
     modelUrl = await CacheService.GetCachedUrl(weaponName + ".gltf");
     
     Console.WriteLine($"Model URL: {modelUrl}");
@@ -149,7 +166,7 @@ private async Task OnJsModuleLoaded()
         Console.WriteLine($"Texture {texture.Key}: {texture.Value}");
     }
     
-    // STEP 6: Load the model
+    // STEP 7: Load the model
     var settings = new ImportSettings
     {
         Format = Import3DFormats.Gltf,
