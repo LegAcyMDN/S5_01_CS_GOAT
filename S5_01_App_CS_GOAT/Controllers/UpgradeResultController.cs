@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class UpgradeResultController(
         IMapper mapper,
-        IDataRepository<UpgradeResult, int> manager,
+        IDataRepository<UpgradeResult, (int,int)> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>

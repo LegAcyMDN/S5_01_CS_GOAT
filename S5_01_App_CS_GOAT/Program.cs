@@ -4,6 +4,7 @@ using S5_01_App_CS_GOAT.Models.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using S5_01_App_CS_GOAT.Models.DataManager;
 
 
 
@@ -35,16 +36,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Readonly repositories for lookup entities
+// Readonly repositories for web-scraped entities entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
-builder.Services.AddScoped<IReadableRepository<CaseContent, int>, CrudRepository<CaseContent>>();
+builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, CrudRepository<CaseContent, (int,int)>>();
 builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
 builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
 builder.Services.AddScoped<IReadableRepository<Skin, int>, CrudRepository<Skin>>();
 builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
 
+// Type Repositories for type entities
+builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
+builder.Services.AddScoped<ITypeRepository<ItemType>, TypeRepository<ItemType>>();
+builder.Services.AddScoped<ITypeRepository<LimitType>, TypeRepository<LimitType>>();
+builder.Services.AddScoped<ITypeRepository<NotificationType>, TypeRepository<NotificationType>>();
+builder.Services.AddScoped<ITypeRepository<PaymentMethod>, TypeRepository<PaymentMethod>>();
+
 // Generic repositories for standard entities
-builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
+builder.Services.AddScoped<IDataRepository<Ban, (int,int)>, CrudRepository<Ban, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
 builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
@@ -53,21 +61,16 @@ builder.Services.AddScoped<IDataRepository<ItemTransaction, int>, CrudRepository
 builder.Services.AddScoped<IDataRepository<Limit, (int,int)>, CrudRepository<Limit, (int,int)>>();
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int>, CrudRepository<MoneyTransaction>>();
 builder.Services.AddScoped<IDataRepository<Notification, int>, CrudRepository<Notification>>();
-builder.Services.AddScoped<IDataRepository<NotificationSetting, int>, CrudRepository<NotificationSetting>>();
+builder.Services.AddScoped<IDataRepository<NotificationSetting, (int, int)>, CrudRepository<NotificationSetting, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<PromoCode, int>, CrudRepository<PromoCode>>();
 builder.Services.AddScoped<IDataRepository<RandomTransaction, int>, CrudRepository<RandomTransaction>>();
 builder.Services.AddScoped<IDataRepository<Token, int>, CrudRepository<Token>>();
 builder.Services.AddScoped<IDataRepository<Transaction, int>, CrudRepository<Transaction>>();
-builder.Services.AddScoped<IDataRepository<UpgradeResult, int>, CrudRepository<UpgradeResult>>();
-builder.Services.AddScoped<IDataRepository<User, int>, CrudRepository<User>>();
+builder.Services.AddScoped<IDataRepository<UpgradeResult, (int,int)>, CrudRepository<UpgradeResult, (int,int)>>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
-// Type Repositories for type entities
-builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
-builder.Services.AddScoped<ITypeRepository<ItemType>, TypeRepository<ItemType>>();
-builder.Services.AddScoped<ITypeRepository<LimitType>, TypeRepository<LimitType>>();
-builder.Services.AddScoped<ITypeRepository<NotificationType>, TypeRepository<NotificationType>>();
-builder.Services.AddScoped<ITypeRepository<PaymentMethod>, TypeRepository<PaymentMethod>>();
+// Custom managers for complex entities
+builder.Services.AddScoped<IUserRepository, UserManager>();
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));

@@ -20,7 +20,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class UpgradeResultControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<UpgradeResult, int>>? upgradeResultRepositoryMock;
+        private Mock<IDataRepository<UpgradeResult, (int,int)>>? upgradeResultRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private UpgradeResultController? controller;
 
@@ -33,7 +33,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            upgradeResultRepositoryMock = new Mock<IDataRepository<UpgradeResult, int>>();
+            upgradeResultRepositoryMock = new Mock<IDataRepository<UpgradeResult, (int,int)>>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();

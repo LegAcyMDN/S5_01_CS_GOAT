@@ -22,7 +22,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class BanControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<Ban, int>>? banRepositoryMock;
+        private Mock<IDataRepository<Ban, (int,int)>>? banRepositoryMock;
         private Mock<ITypeRepository<BanType>> banTypeRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private BanController? controller;
@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            banRepositoryMock = new Mock<IDataRepository<Ban, int>>();
+            banRepositoryMock = new Mock<IDataRepository<Ban, (int,int)>>();
             banTypeRepositoryMock = new Mock<ITypeRepository<BanType>>();
             configurationMock = new Mock<IConfiguration>();
 
