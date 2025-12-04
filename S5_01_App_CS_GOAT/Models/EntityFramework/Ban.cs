@@ -9,11 +9,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     public partial class Ban
     {
         [Key]
-        [Column("usr_id", Order = 1)]
+        [Column("ban_id")]
+        public int BanId { get; set; }
+
+        [Column("usr_id")]
         public int UserId { get; set; }
 
-        [Key]
-        [Column("bnt_id", Order = 2)]
+        [Column("bnt_id")]
         public int BanTypeId { get; set; }
 
         [Required]

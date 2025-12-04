@@ -15,7 +15,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class BanController(
         IMapper mapper,
-        IDataRepository<Ban, (int,int)> manager,
+        IDataRepository<Ban, int> manager,
         ITypeRepository<BanType> typeManager,
         IConfiguration configuration) : ControllerBase
     {
@@ -85,7 +85,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);
-            return CreatedAtAction("GetAll", new { id = ban.UserId }, createdBanDTO);
+            return CreatedAtAction("GetAll", new { id = ban.BanId }, createdBanDTO);
         }
 
         /// <summary>

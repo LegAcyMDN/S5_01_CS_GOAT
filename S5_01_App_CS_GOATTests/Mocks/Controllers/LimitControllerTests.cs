@@ -23,12 +23,15 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     {
         private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<Limit, (int, int)>>? limitRepositoryMock;
+        private Mock<ITypeRepository<LimitType>>? limitTypeRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private LimitController? controller;
 
         private User? normalUser;
         private Limit? limit;
         private List<Limit>? limits;
+        private LimitType? limitType;
+        private List<LimitType>? limitTypes;
         private LimitDTO? limitDTO;
         private LimitDTO? updatedLimitDTO;
         private List<LimitDTO>? limitDTOs;
@@ -40,11 +43,14 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             mapperMock = new Mock<IMapper>();
             limitRepositoryMock = new Mock<IDataRepository<Limit, (int, int)>>();
+            limitTypeRepositoryMock = new Mock<ITypeRepository<LimitType>>();
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();
             limit = LimitFixture.GetLimit();
             limits = LimitFixture.GetLimits();
+            limitType = LimitTypeFixture.GetLimitType();
+            limitTypes = LimitTypeFixture.GetLimitTypes();
             limitDTO = LimitFixture.GetLimitDTO();
             updatedLimitDTO = LimitFixture.GetUpdatedLimitDTO();
             limitDTOs = LimitFixture.GetLimitDTOs();
@@ -54,8 +60,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             controller = new LimitController(
                 mapperMock.Object,
                 limitRepositoryMock.Object,
+                limitTypeRepositoryMock.Object,
                 configurationMock.Object
             );
+
+            limitTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(limitType.LimitTypeName))
+                               .ReturnsAsync(limitType);
         }
 
         [TestCleanup]
@@ -106,7 +116,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int limitTypeId = 1;
 
             // When
-            IActionResult? result = controller.Update(limitTypeId, updatedLimitDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
@@ -126,7 +136,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                                .Returns(Task.CompletedTask);
 
             // When
-            IActionResult? result = controller.Update(limitTypeId, updatedLimitDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
@@ -145,11 +155,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                                .ReturnsAsync((Limit?)null);
 
             // When
-            IActionResult? result = controller.Update(limitTypeId, updatedLimitDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingLimitKey), Times.Once);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingLimitKey), Times.Never);
         }
 
         [TestMethod]
@@ -161,7 +171,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int limitTypeId = 1;
 
             // When
-            IActionResult? result = controller.Update(limitTypeId, updatedLimitDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));

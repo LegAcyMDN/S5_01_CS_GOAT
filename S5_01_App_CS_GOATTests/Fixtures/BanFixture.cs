@@ -13,6 +13,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             {
                 new BanDTO
                 {
+                    BanId = 1,
                     BanReason = "Violation des conditions d'utilisation",
                     BanDate = new DateTime(2025, 11, 1),
                     BanDuration = 7,
@@ -20,6 +21,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 },
                 new BanDTO
                 {
+                    BanId = 2,
                     BanReason = "Comportement abusif envers d'autres utilisateurs",
                     BanDate = new DateTime(2025, 11, 15),
                     BanDuration = 30,
@@ -27,6 +29,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 },
                 new BanDTO
                 {
+                    BanId = 3,
                     BanReason = "Tentative de fraude",
                     BanDate = new DateTime(2025, 10, 20),
                     BanDuration = 14,
@@ -34,6 +37,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 },
                 new BanDTO
                 {
+                    BanId = 4,
                     BanReason = "Activité suspecte détectée",
                     BanDate = new DateTime(2025, 12, 1),
                     BanDuration = 3,
@@ -41,6 +45,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 },
                 new BanDTO
                 {
+                    BanId = 5,
                     BanReason = "Spam et publicité non autorisée",
                     BanDate = new DateTime(2025, 11, 25),
                     BanDuration = 60,
@@ -53,6 +58,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
         {
             return new BanDTO
             {
+                BanId = 1,
                 BanReason = "Test ban reason",
                 BanDate = new DateTime(2025, 12, 1),
                 BanDuration = 7,
@@ -74,6 +80,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             BanDTO banDTO = GetSingleBanDTO();
             return new Ban
             {
+                BanId = 1,
                 UserId = 2,
                 BanTypeId = 1,
                 BanReason = banDTO.BanReason,

@@ -46,13 +46,12 @@ builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>
 
 // Type Repositories for type entities
 builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
-builder.Services.AddScoped<ITypeRepository<ItemType>, TypeRepository<ItemType>>();
 builder.Services.AddScoped<ITypeRepository<LimitType>, TypeRepository<LimitType>>();
 builder.Services.AddScoped<ITypeRepository<NotificationType>, TypeRepository<NotificationType>>();
 builder.Services.AddScoped<ITypeRepository<PaymentMethod>, TypeRepository<PaymentMethod>>();
 
 // Generic repositories for standard entities
-builder.Services.AddScoped<IDataRepository<Ban, (int,int)>, CrudRepository<Ban, (int, int)>>();
+builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
 builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
 builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();

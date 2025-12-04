@@ -17,9 +17,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     UserNonce = 1,
                     CombinedHash = "combined123hash456",
                     Fraction = 0.12345,
-                    TransactionId = 1,
-                    ItemWearId = null,
-                    ItemUserId = null
+                    TransactionId = 1
                 },
                 new FairRandomDTO
                 {
@@ -28,9 +26,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     UserNonce = 2,
                     CombinedHash = "combined789hash012",
                     Fraction = 0.67890,
-                    TransactionId = 2,
-                    ItemWearId = null,
-                    ItemUserId = null
+                    TransactionId = 2
                 },
                 new FairRandomDTO
                 {
@@ -38,10 +34,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash456def789jkl",
                     UserNonce = 3,
                     CombinedHash = "combined456hash789",
-                    Fraction = 0.98765,
-                    TransactionId = null,
-                    ItemWearId = 1,
-                    ItemUserId = 2
+                    Fraction = 0.98765
                 }
             };
         }
@@ -55,9 +48,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 UserNonce = 1,
                 CombinedHash = "testcombinedhash",
                 Fraction = 0.5,
-                TransactionId = 1,
-                ItemWearId = null,
-                ItemUserId = null
+                TransactionId = 1
             };
         }
 
