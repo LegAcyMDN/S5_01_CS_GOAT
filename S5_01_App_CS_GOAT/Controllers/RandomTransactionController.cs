@@ -24,7 +24,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all ItemTransactionDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<ItemTransactionDTO>>> GetAll()
+        public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -42,7 +42,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of ItemTransactionDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<ItemTransactionDTO>>> GetByUser()
+        public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -61,7 +61,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ItemTransactionDetailDTO>> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -79,7 +79,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of RandomTransaction objects</returns>
         [HttpGet("livefeed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<RandomTransaction>>> LiveFeed(int count)
+        public async Task<IActionResult> LiveFeed(int count)
         {
 
             throw new NotImplementedException();

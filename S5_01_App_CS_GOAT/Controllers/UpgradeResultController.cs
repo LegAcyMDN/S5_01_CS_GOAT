@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("byinventoryitem/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<UpgradeResultDTO>>> GetByInventoryItem(int inventoryItemId)
+        public async Task<IActionResult> GetByInventoryItem(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -44,7 +44,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("byrandomtransaction/{transactionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<UpgradeResultDTO>>> GetByRandomTransaction(int transactionId)
+        public async Task<IActionResult> GetByRandomTransaction(int transactionId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
