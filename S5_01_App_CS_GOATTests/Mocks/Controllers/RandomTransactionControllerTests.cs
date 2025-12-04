@@ -19,30 +19,30 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class RandomTransactionControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<ItemTransaction, int>>? transactionRepositoryMock;
+        private Mock<IDataRepository<RandomTransaction, int>>? transactionRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private RandomTransactionController? controller;
 
         private User? admin;
         private User? normalUser;
-        private List<ItemTransaction>? transactions;
-        private List<ItemTransactionDTO>? transactionDTOs;
-        private ItemTransaction? transaction;
-        private ItemTransactionDetailDTO? transactionDetailDTO;
+        private List<RandomTransaction>? transactions;
+        private List<RandomTransactionDTO>? transactionDTOs;
+        private RandomTransaction? transaction;
+        private RandomTransactionDetailDTO? transactionDetailDTO;
 
         [TestInitialize]
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            transactionRepositoryMock = new Mock<IDataRepository<ItemTransaction, int>>();
+            transactionRepositoryMock = new Mock<IDataRepository<RandomTransaction, int>>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
-            transactions = TransactionFixture.GetItemTransactions();
-            transactionDTOs = TransactionFixture.GetItemTransactionDTOs();
-            transaction = TransactionFixture.GetItemTransaction();
-            transactionDetailDTO = TransactionFixture.GetItemTransactionDetailDTO();
+            transactions = TransactionFixture.GetRandomTransactions();
+            transactionDTOs = TransactionFixture.GetRandomTransactionDTOs();
+            transaction = TransactionFixture.GetRandomTransaction();
+            transactionDetailDTO = TransactionFixture.GetRandomTransactionDetailDTO();
 
             controller = new RandomTransactionController(
                 mapperMock.Object,
@@ -64,7 +64,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             JwtService.AuthentifyController(controller, admin);
             transactionRepositoryMock.Setup(r => r.GetAllAsync(null)).ReturnsAsync(transactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDTO>>(transactions))
+            mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
             // When
@@ -104,7 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             JwtService.AuthentifyController(controller, normalUser);
             transactionRepositoryMock.Setup(r => r.GetAllAsync(null)).ReturnsAsync(transactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDTO>>(transactions))
+            mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
             // When
@@ -131,7 +131,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             JwtService.AuthentifyController(controller, normalUser);
             transactionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(transaction);
-            mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(transaction))
+            mapperMock.Setup(m => m.Map<RandomTransactionDetailDTO>(transaction))
                        .Returns(transactionDetailDTO);
 
             // When
@@ -146,7 +146,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            transactionRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((ItemTransaction?)null);
+            transactionRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((RandomTransaction?)null);
 
             // When
             IActionResult? result = controller.Get(999).GetAwaiter().GetResult();

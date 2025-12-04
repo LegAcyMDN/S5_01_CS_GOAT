@@ -275,8 +275,32 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             };
         }
 
-        // Generic Transaction fixtures - Removed because Transaction is abstract
-        // Use MoneyTransaction, ItemTransaction or RandomTransaction instead
+        public static RandomTransactionDetailDTO GetRandomTransactionDetailDTO()
+        {
+            return new RandomTransactionDetailDTO
+            {
+                TransactionDate = DateTime.Now.AddDays(-3),
+                WalletValue = -10.00,
+                UserSeed = "seed-12345"
+            };
+        }
+
+        public static List<RandomTransactionDTO> GetRandomTransactionDTOs()
+        {
+            return new List<RandomTransactionDTO>
+            {
+                new RandomTransactionDTO
+                {
+                    TransactionDate = DateTime.Now.AddDays(-3),
+                    WalletValue = -10.00
+                },
+                new RandomTransactionDTO
+                {
+                    TransactionDate = DateTime.Now.AddDays(-1),
+                    WalletValue = -12.50
+                }
+            };
+        }
 
         // UpgradeResult fixtures
         public static UpgradeResult GetUpgradeResult()

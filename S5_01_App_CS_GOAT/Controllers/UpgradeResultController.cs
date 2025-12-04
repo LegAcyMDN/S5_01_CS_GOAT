@@ -50,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.InventoryItemId == transactionId);
+            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.TransactionId == transactionId);
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults);
             return Ok(upgradeResultsDTO);
         }
