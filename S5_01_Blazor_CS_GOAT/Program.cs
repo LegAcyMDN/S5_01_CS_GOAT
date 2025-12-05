@@ -12,6 +12,7 @@ builder.Services.AddScoped<IService<Case>>(sp => new WebService<Case>("case"));
 builder.Services.AddScoped<IService<Skin>>(sp => new WebService<Skin>("skin"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
 builder.Services.AddScoped<CacheService>();
+builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

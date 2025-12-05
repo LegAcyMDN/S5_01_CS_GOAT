@@ -1,0 +1,151 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using S5_01_Blazor_CS_GOAT.Service
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h3>Créer un compte</h3>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label for="login" class="form-label">Login *</label>
+                    <InputText id="login" @bind-Value="registerModel.Login" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.Login)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="displayName" class="form-label">Nom d'affichage *</label>
+                    <InputText id="displayName" @bind-Value="registerModel.DisplayName" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.DisplayName)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mot de passe *</label>
+                    <InputText id="password" type="password" @bind-Value="registerModel.Password" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.Password)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirmer le mot de passe *</label>
+                    <InputText id="confirmPassword" type="password" @bind-Value="registerModel.ConfirmPassword" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText id="email" type="email" @bind-Value="registerModel.Email" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.Email)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Téléphone</label>
+                    <InputText id="phone" @bind-Value="registerModel.Phone" class="form-control" />
+                    <ValidationMessage For="@(() => registerModel.Phone)" />
+                    <small class="form-text text-muted">Un email ou un téléphone est requis</small>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox id="remember" @bind-Value="registerModel.Remember" class="form-check-input" />
+                    <label for="remember" class="form-check-label">Se rappeler de moi pendant 30 jours</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                    @(isLoading ? "Création du compte..." : "S'inscrire")
+                </button>
+
+                <div class="mt-3">
+                    <a href="/login">Vous avez déjà un compte ? Se connecter</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(registerModel.Email) && string.IsNullOrWhiteSpace(registerModel.Phone))
+            {
+                errorMessage = "Veuillez fournir un email ou un numéro de téléphone";
+                return;
+            }
+
+            if (registerModel.Password != registerModel.ConfirmPassword)
+            {
+                errorMessage = "Les mots de passe ne correspondent pas";
+                return;
+            }
+
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var rememberDays = registerModel.Remember ? 30 : 0;
+            var result = await AuthService.RegisterAsync(
+                registerModel.Login,
+                registerModel.DisplayName,
+                registerModel.Password,
+                registerModel.Email,
+                registerModel.Phone,
+                rememberDays
+            );
+
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Inscription échouée";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Une erreur est survenue: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Le login est requis")]
+        [MinLength(3, ErrorMessage = "Le login doit contenir au moins 3 caractères")]
+        public string Login { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le nom d'affichage est requis")]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le mot de passe est requis")]
+        [MinLength(6, ErrorMessage = "Le mot de passe doit contenir au moins 6 caractères")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Veuillez confirmer le mot de passe")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [EmailAddress(ErrorMessage = "Format d'email invalide")]
+        public string? Email { get; set; }
+
+        [Phone(ErrorMessage = "Format de téléphone invalide")]
+        public string? Phone { get; set; }
+
+        public bool Remember { get; set; } = false;
+    }
+}

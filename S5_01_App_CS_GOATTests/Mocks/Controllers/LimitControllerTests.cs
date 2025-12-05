@@ -49,8 +49,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             normalUser = UserFixture.GetNormalUser();
             limit = LimitFixture.GetLimit();
             limits = LimitFixture.GetLimits();
-            limitType = LimitTypeFixture.GetLimitType();
-            limitTypes = LimitTypeFixture.GetLimitTypes();
+            limitType = LimitFixture.GetLimitType();
+            limitTypes = LimitFixture.GetLimitTypes();
             limitDTO = LimitFixture.GetLimitDTO();
             updatedLimitDTO = LimitFixture.GetUpdatedLimitDTO();
             limitDTOs = LimitFixture.GetLimitDTOs();
