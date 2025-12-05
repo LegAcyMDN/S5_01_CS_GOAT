@@ -1,0 +1,80 @@
+@page "/login"
+@using S5_01_Blazor_CS_GOAT.Service
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h3>Login</h3>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+                <div class="mb-3">
+                    <label for="identifier" class="form-label">Identifiant</label>
+                    <InputText id="identifier" @bind-Value="loginModel.Identifier" class="form-control" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mot de passe</label>
+                    <InputText id="password" type="password" @bind-Value="loginModel.Password" class="form-control" />
+                </div>
+
+                <div class="mb-3 form-check">
+                    <InputCheckbox id="remember" @bind-Value="loginModel.Remember" class="form-check-input" />
+                    <label for="remember" class="form-check-label">Se rappeler de moi pendant 30 jours</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                    @(isLoading ? "Connexion..." : "Se connecter")
+                </button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var rememberDays = loginModel.Remember ? 30 : 0;
+            var result = await AuthService.LoginAsync(loginModel.Identifier, loginModel.Password, rememberDays);
+
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Login failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Identifier { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool Remember { get; set; } = false;
+    }
+}
