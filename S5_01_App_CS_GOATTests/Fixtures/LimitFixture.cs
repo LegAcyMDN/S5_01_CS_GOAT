@@ -6,6 +6,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
 {
     public static class LimitFixture
     {
+        // Limit fixtures
         public static Limit GetLimit()
         {
             return new Limit
@@ -97,6 +98,46 @@ namespace S5_01_App_CS_GOATTests.Fixtures
         public static (int, int) GetLimitKeyForNormalUser()
         {
             return (2, 1);
+        }
+
+        // LimitType fixtures
+        public static LimitType GetLimitType()
+        {
+            return new LimitType
+            {
+                LimitTypeId = 1,
+                LimitTypeName = "Daily",
+                Duration = 1,
+                DurationName = "Day"
+            };
+        }
+
+        public static List<LimitType> GetLimitTypes()
+        {
+            return new List<LimitType>
+            {
+                new LimitType
+                {
+                    LimitTypeId = 1,
+                    LimitTypeName = "Daily",
+                    Duration = 1,
+                    DurationName = "Day"
+                },
+                new LimitType
+                {
+                    LimitTypeId = 2,
+                    LimitTypeName = "Weekly",
+                    Duration = 7,
+                    DurationName = "Week"
+                },
+                new LimitType
+                {
+                    LimitTypeId = 3,
+                    LimitTypeName = "Monthly",
+                    Duration = 30,
+                    DurationName = "Month"
+                }
+            };
         }
     }
 }
