@@ -1,8 +1,5 @@
-/*#home-container {
-    height: 100vh;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    
+.display-cases { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 20px;
 }

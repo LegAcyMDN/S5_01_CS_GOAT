@@ -1,16 +1,18 @@
 ﻿@inherits LayoutComponentBase
-@* <div class="page"> *@
-    @* <div class="sidebar"> *@
-    @*     <NavMenu /> *@
-    @* </div> *@
-    @* *@
-    @* <main> *@
-    @*     <div class="top-row px-4"> *@
-    @*         <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a> *@
-    @*     </div> *@
-    @* *@
-    @*     <article class="content px-4"> *@
+<div class="main-header">
+    <div class="header-layout">
+        <div class="header-menu">
+            <NavMenu />
+            <ConnectMenu />
+        </div>
+        <hr>
+        <LiveFeed />
+    </div>
+
+    <main>
+        <article class="container-page">
             @Body
-    @*     </article> *@
-    @* </main> *@
-@* </div> *@
+            <FooterLayout />
+        </article>
+    </main>
+</div>

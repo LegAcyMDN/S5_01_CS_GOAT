@@ -1,32 +1,22 @@
 ﻿@page "/"
+@using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.Service
 @inject IService<Case> caseRepository
 
+<PageTitle>CS:GOAT</PageTitle>
 
-
-
-
-<PageTitle>Home</PageTitle>
-
-
-@* <div class="bg-dark" id="home-container"> *@
-<Header>
-    <div style="color: white">
-        @if (cases.Count == 0)
-        {
-            <p><em>Loading...</em></p>    
-        } else
-        {
-            @foreach (Case singleCase in cases) {
-                <CaseComponent CaseObject="@singleCase"></CaseComponent>
-            }
+<div class="display-cases">
+    @if (cases.Count == 0)
+    {
+        <p><em>Loading...</em></p>    
+    } else
+    {
+        @foreach (Case singleCase in cases) {
+            <CaseComponent CaseObject="@singleCase"></CaseComponent>
         }
-    </div>
-</Header>
-
-
-
-@* </div> *@
+    }
+</div>
 
 @code {
     private List<Case> cases = new List<Case>();
