@@ -1,10 +1,11 @@
+@using S5_01_Blazor_CS_GOAT.Models
 @inject NavigationManager Navigation
 
-<div @onclick="NavigateToCase" style="cursor: pointer; width: fit-content">
-        <img src="cases/@CaseObject.CaseImage" width="256px"/>
-        <h3>@CaseObject.CaseName</h3>
-    <h3 style="background-color: limegreen; width: fit-content">@CaseObject.CasePrice</h3>
+<div class="case-format" @onclick="NavigateToCase">
+    <img src="cases/@CaseObject.CaseImage"/>
+    <h3>@CaseObject.CaseName | @CaseObject.CasePrice€</h3>
 </div>
+
 @code {
     [Parameter]
     public required Case CaseObject { get; set; }

@@ -1,0 +1,24 @@
+.connect-btn {
+    display: flex;
+    justify-content: center;
+}
+
+.style-btn {
+    margin: auto 10px;
+    display: flex;
+}
+
+.style-btn svg {
+    height: 40px;
+    width: 40px;
+    margin: 0 10px 0 0;
+}
+
+.style-btn button {
+    all: unset;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 1.2em;
+}

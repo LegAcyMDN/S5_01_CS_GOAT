@@ -1,0 +1,26 @@
+.live-feed {
+    margin: 10px 10px 0 0;
+    width: fit-content;
+    height: 100%;
+}
+
+.select-feed {
+    display: flex;
+}
+
+.feed-best svg, .feed-all svg {
+    height: 20px;
+    width: 20px;
+    margin: 5px 20px;
+}
+
+.live-feed p {
+    color: white;
+    font-size: 0.9em;
+}
+
+.armes {
+    width: 100px;
+    border: 1px solid white;
+    margin: 1px 5px 1px 5px;    
+}
