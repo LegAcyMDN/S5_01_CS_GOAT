@@ -1,0 +1,47 @@
+@using S5_01_Blazor_CS_GOAT.Models
+
+<div style="height: @Height; width: @Width">
+    <div id="weapon-container">
+        <img id="weapon-img" src="@ImageLink"/>
+    </div>
+    <div id="weapon-rarity" style="background-color: @WeaponSkin.RarityColor">
+        
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required string ImageLink { get; set; }
+    [Parameter]
+    public required Skin WeaponSkin { get; set; }
+
+    [Parameter] public string? Height { get; set; } = "160px"; // default 160px
+    [Parameter] public string? Width { get; set; } = "100px"; // default 100px
+
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    }
+
+
+    private string GetRarityHexColorFromInt(int rarityInt)
+    {
+        string rarityHexColor = "#afafaf";
+        switch (rarityInt)
+        {
+            case 1: rarityHexColor = "#afafaf"; break;
+            case 2: rarityHexColor = "#6496e1"; break;
+            case 3: rarityHexColor = "#4b69cd"; break;
+            case 4: rarityHexColor = "#8847ff"; break;
+            case 5: rarityHexColor = "#d32ce6"; break;
+            case 6: rarityHexColor = "#eb4b4b"; break;
+            case 7: rarityHexColor = "#afafaf"; break;
+        }
+        return rarityHexColor;
+    }
+    
+    
+}

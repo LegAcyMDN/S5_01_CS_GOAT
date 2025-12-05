@@ -1,0 +1,12 @@
+#weapon-container {
+    height: 90%;
+}
+
+#weapon-rarity {
+    height: 10%;
+}
+
+#weapon-img {
+    width: 100px;
+    height: 80px;
+}
