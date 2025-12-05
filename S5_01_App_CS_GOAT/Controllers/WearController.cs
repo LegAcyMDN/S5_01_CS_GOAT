@@ -24,7 +24,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("get3dmodel/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ModelDTO>> Get3dModelByWear(int wearId)
+        public async Task<IActionResult> Get3dModelByWear(int wearId)
         {
             Wear? wear = await manager.GetByIdAsync(wearId, "Skin.Item");
             if (wear == null) return NotFound();

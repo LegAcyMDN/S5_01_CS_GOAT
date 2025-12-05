@@ -85,7 +85,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);
-            return CreatedAtAction("GetAll", new { id = ban.UserId }, createdBanDTO);
+            return CreatedAtAction("GetAll", new { id = ban.BanId }, createdBanDTO);
         }
 
         /// <summary>

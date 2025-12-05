@@ -187,7 +187,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, admin);
             Ban updatedBan = BanFixture.GetUpdatedBan();
 
-            banRepositoryMock.Setup(r => r.GetByIdAsync(ban.UserId))
+            banRepositoryMock.Setup(r => r.GetByIdAsync(ban.BanId))
                               .ReturnsAsync(ban);
             mapperMock.Setup(m => m.Map<Ban>(banDTO))
                        .Returns(updatedBan);
@@ -195,11 +195,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                               .Returns(Task.CompletedTask);
 
             // When
-            IActionResult? result = controller.Update(ban.UserId, banDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(ban.BanId, banDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            banRepositoryMock.Verify(r => r.GetByIdAsync(ban.UserId), Times.Once);
+            banRepositoryMock.Verify(r => r.GetByIdAsync(ban.BanId), Times.Once);
             banRepositoryMock.Verify(r => r.UpdateAsync(ban, updatedBan), Times.Once);
         }
 
@@ -224,11 +224,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             controller.ModelState.AddModelError("BanReason", "Required");
 
             // When
-            IActionResult? result = controller.Update(ban.UserId, banDTO).GetAwaiter().GetResult();
+            IActionResult? result = controller.Update(ban.BanId, banDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            banRepositoryMock.Verify(r => r.GetByIdAsync(ban.UserId), Times.Never);
+            banRepositoryMock.Verify(r => r.GetByIdAsync(ban.BanId), Times.Never);
             Ban updatedBan = BanFixture.GetUpdatedBan();
             banRepositoryMock.Verify(r => r.UpdateAsync(ban, updatedBan), Times.Never);
         }

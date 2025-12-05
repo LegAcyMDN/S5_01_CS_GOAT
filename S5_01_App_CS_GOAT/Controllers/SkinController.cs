@@ -24,7 +24,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("bycase/{caseid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<SkinDTO>>> GetByCase(int caseid)
+        public async Task<IActionResult> GetByCase(int caseid)
         {
             Case? _case = await caseManager.GetByIdAsync(caseid, "CaseContents.Skin.Rarity", "CaseContents.Skin.Wears.PriceHistories");
             if (_case == null) return NotFound();

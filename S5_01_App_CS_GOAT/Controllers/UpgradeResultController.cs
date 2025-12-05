@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class UpgradeResultController(
         IMapper mapper,
-        IDataRepository<UpgradeResult, int> manager,
+        IDataRepository<UpgradeResult, (int,int)> manager,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("byinventoryitem/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<UpgradeResultDTO>>> GetByInventoryItem(int inventoryItemId)
+        public async Task<IActionResult> GetByInventoryItem(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -44,13 +44,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("byrandomtransaction/{transactionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<IEnumerable<UpgradeResultDTO>>> GetByRandomTransaction(int transactionId)
+        public async Task<IActionResult> GetByRandomTransaction(int transactionId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.InventoryItemId == transactionId);
+            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.TransactionId == transactionId);
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults);
             return Ok(upgradeResultsDTO);
         }

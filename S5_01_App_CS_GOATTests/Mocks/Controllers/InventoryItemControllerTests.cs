@@ -167,7 +167,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         #region Upgrade Tests
 
         [TestMethod]
-        public void Upgrade_CallsMethod_ReturnsOk()
+        public void Upgrade_Authentificated_ReturnsOk()
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);

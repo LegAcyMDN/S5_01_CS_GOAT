@@ -2,6 +2,8 @@
 
 public class BanDTO
 {
+    public int BanId { get; set; }
+
     public string BanReason { get; set; } = null!;
 
     public DateTime BanDate { get; set; } // start day of the ban

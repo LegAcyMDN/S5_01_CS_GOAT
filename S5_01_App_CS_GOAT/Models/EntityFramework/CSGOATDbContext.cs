@@ -325,7 +325,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             // Configure UpgradeResult
             modelBuilder.Entity<UpgradeResult>(e =>
             {
-                e.HasKey(p => p.InventoryItemId);
+                e.HasKey(p => new { p.InventoryItemId, p.TransactionId });
                 e.HasOne(p => p.InventoryItem)
                     .WithMany(m => m.UpgradeResults)
                     .OnDelete(DeleteBehavior.ClientSetNull)

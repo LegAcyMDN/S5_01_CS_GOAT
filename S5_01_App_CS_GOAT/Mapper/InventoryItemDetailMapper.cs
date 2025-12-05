@@ -21,19 +21,5 @@ public class InventoryItemDetailMapper : Profile
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Wear.Skin.Rarity.RarityName))
             .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemName))
             .ForMember(dest => dest.ItemTypeName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemType.ItemTypeName));
-
-        // DTO -> Entity
-        CreateMap<InventoryItemDetailDTO, InventoryItem>()
-            .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
-            .ForMember(dest => dest.UserId, opt => opt.Ignore())
-            .ForMember(dest => dest.WearId, opt => opt.Ignore())
-            .ForMember(dest => dest.RemovedOn, opt => opt.Ignore())
-            .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float)) 
-            .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
-            .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn))
-            .ForMember(dest => dest.Wear, opt => opt.Ignore())
-            .ForMember(dest => dest.User, opt => opt.Ignore())
-            .ForMember(dest => dest.UpgradeResults, opt => opt.Ignore())
-            .ForMember(dest => dest.ItemTransactions, opt => opt.Ignore());
     }
 }

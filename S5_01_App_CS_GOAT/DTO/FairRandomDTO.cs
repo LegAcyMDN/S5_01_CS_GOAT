@@ -12,9 +12,5 @@ public class FairRandomDTO
 
     public double Fraction { get; set; } // combinedhash transform between 0 and 1
 
-    public int? TransactionId { get; set; }
-
-    public int? ItemWearId { get; set; }
-
-    public int? ItemUserId { get; set; }
+    public int TransactionId { get; set; }
 }

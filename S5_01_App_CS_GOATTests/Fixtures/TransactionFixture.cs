@@ -218,5 +218,174 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 }
             };
         }
+
+        // RandomTransaction fixtures
+        public static RandomTransaction GetRandomTransaction()
+        {
+            return new RandomTransaction
+            {
+                TransactionId = 1,
+                UserId = 2,
+                TransactionDate = DateTime.Now.AddDays(-3),
+                WalletValue = -10.00,
+                UserSeed = "seed-12345",
+                CaseId = 1,
+                FairRandomId = 1
+            };
+        }
+
+        public static RandomTransaction GetOtherUserRandomTransaction()
+        {
+            return new RandomTransaction
+            {
+                TransactionId = 2,
+                UserId = 1,
+                TransactionDate = DateTime.Now.AddDays(-2),
+                WalletValue = -15.00,
+                UserSeed = "seed-67890",
+                CaseId = 2,
+                FairRandomId = 2
+            };
+        }
+
+        public static List<RandomTransaction> GetRandomTransactions()
+        {
+            return new List<RandomTransaction>
+            {
+                new RandomTransaction
+                {
+                    TransactionId = 1,
+                    UserId = 2,
+                    TransactionDate = DateTime.Now.AddDays(-3),
+                    WalletValue = -10.00,
+                    UserSeed = "seed-12345",
+                    CaseId = 1,
+                    FairRandomId = 1
+                },
+                new RandomTransaction
+                {
+                    TransactionId = 3,
+                    UserId = 2,
+                    TransactionDate = DateTime.Now.AddDays(-1),
+                    WalletValue = -12.50,
+                    UserSeed = "seed-11111",
+                    CaseId = 1,
+                    FairRandomId = 3
+                }
+            };
+        }
+
+        public static RandomTransactionDetailDTO GetRandomTransactionDetailDTO()
+        {
+            return new RandomTransactionDetailDTO
+            {
+                TransactionDate = DateTime.Now.AddDays(-3),
+                WalletValue = -10.00,
+                UserSeed = "seed-12345"
+            };
+        }
+
+        public static List<RandomTransactionDTO> GetRandomTransactionDTOs()
+        {
+            return new List<RandomTransactionDTO>
+            {
+                new RandomTransactionDTO
+                {
+                    TransactionDate = DateTime.Now.AddDays(-3),
+                    WalletValue = -10.00
+                },
+                new RandomTransactionDTO
+                {
+                    TransactionDate = DateTime.Now.AddDays(-1),
+                    WalletValue = -12.50
+                }
+            };
+        }
+
+        // UpgradeResult fixtures
+        public static UpgradeResult GetUpgradeResult()
+        {
+            return new UpgradeResult
+            {
+                InventoryItemId = 1,
+                TransactionId = 1,
+                FairRandomId = 1,
+                FloatStart = 0.15f,
+                FloatEnd = 0.18f,
+                ProbIntact = 0.70,
+                ProbDegrade = 0.25,
+                PropDestroy = 0.05,
+                DegradeFunction = "Linear"
+            };
+        }
+
+        public static List<UpgradeResult> GetUpgradeResults()
+        {
+            return new List<UpgradeResult>
+            {
+                new UpgradeResult
+                {
+                    InventoryItemId = 1,
+                    TransactionId = 1,
+                    FairRandomId = 1,
+                    FloatStart = 0.15f,
+                    FloatEnd = 0.18f,
+                    ProbIntact = 0.70,
+                    ProbDegrade = 0.25,
+                    PropDestroy = 0.05,
+                    DegradeFunction = "Linear"
+                },
+                new UpgradeResult
+                {
+                    InventoryItemId = 1,
+                    TransactionId = 2,
+                    FairRandomId = 2,
+                    FloatStart = 0.18f,
+                    FloatEnd = 0.22f,
+                    ProbIntact = 0.65,
+                    ProbDegrade = 0.30,
+                    PropDestroy = 0.05,
+                    DegradeFunction = "Linear"
+                }
+            };
+        }
+
+        public static UpgradeResultDTO GetUpgradeResultDTO()
+        {
+            return new UpgradeResultDTO
+            {
+                FloatStart = 0.15f,
+                FloatEnd = 0.18f,
+                ProbIntact = 0.70,
+                ProbDegrade = 0.25,
+                PropDestroy = 0.05,
+                DegradeFunction = "Linear"
+            };
+        }
+
+        public static List<UpgradeResultDTO> GetUpgradeResultDTOs()
+        {
+            return new List<UpgradeResultDTO>
+            {
+                new UpgradeResultDTO
+                {
+                    FloatStart = 0.15f,
+                    FloatEnd = 0.18f,
+                    ProbIntact = 0.70,
+                    ProbDegrade = 0.25,
+                    PropDestroy = 0.05,
+                    DegradeFunction = "Linear"
+                },
+                new UpgradeResultDTO
+                {
+                    FloatStart = 0.18f,
+                    FloatEnd = 0.22f,
+                    ProbIntact = 0.65,
+                    ProbDegrade = 0.30,
+                    PropDestroy = 0.05,
+                    DegradeFunction = "Linear"
+                }
+            };
+        }
     }
 }

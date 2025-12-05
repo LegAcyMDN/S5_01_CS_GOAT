@@ -14,11 +14,12 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class LimitController(
        IMapper mapper,
-       IDataRepository<Limit, (int,int)> manager, 
+       IDataRepository<Limit, (int,int)> manager,
+       ITypeRepository<LimitType> typeManager,
        IConfiguration configuration
        ) : ControllerBase
     {
-
+        
         /// <summary>
         /// Get limits for the authenticated user
         /// </summary>
@@ -40,14 +41,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Update a limit for a user
         /// </summary>
-        /// <param name="limitTypeId">The limit type ID</param>
         /// <param name="limitDto">The updated limit data</param>
         /// <returns>No content on success</returns>
         [HttpPatch("update/{limitTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int limitTypeId, [FromBody] LimitDTO limitDto)
+        public async Task<IActionResult> Update([FromBody] LimitDTO limitDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -56,10 +56,13 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             int userId = authResult.AuthUserId!.Value;
-            Limit? existingLimit = await manager.GetByIdAsync((userId, limitTypeId));
+            LimitType? limitType = await typeManager.GetTypeByNameAsync(limitDto.LimitTypeName);
+            if (limitType == null)
+                return NotFound($"LimitType not found: {limitDto.LimitTypeName}");
 
+            Limit? existingLimit = await manager.GetByIdAsync((userId, limitType.LimitTypeId));
             if (existingLimit == null)
-                return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitTypeId}");
+                return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitType.LimitTypeId}");
 
             Dictionary<string, object> patchData = new Dictionary<string, object>
             {

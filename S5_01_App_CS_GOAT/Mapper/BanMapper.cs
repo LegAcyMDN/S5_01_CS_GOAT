@@ -10,6 +10,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         {
             // Entity -> DTO
             CreateMap<Ban, BanDTO>()
+                .ForMember(dest => dest.BanId, opt => opt.MapFrom(src => src.BanId))
                 .ForMember(dest => dest.BanReason, opt => opt.MapFrom(src => src.BanReason))
                 .ForMember(dest => dest.BanDate, opt => opt.MapFrom(src => src.BanDate))
                 .ForMember(dest => dest.BanDuration, opt => opt.MapFrom(src => src.BanDuration))
@@ -17,6 +18,7 @@ namespace S5_01_App_CS_GOAT.Mapper
 
             // DTO -> Entity
             CreateMap<BanDTO, Ban>()
+                .ForMember(dest => dest.BanId, opt => opt.MapFrom(src => src.BanId))
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.BanTypeId, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())

@@ -10,6 +10,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("inv_id")]
         public int InventoryItemId { get; set; }
 
+        [Key]
         [Column("tra_id")]
         public int TransactionId { get; set; }
 
