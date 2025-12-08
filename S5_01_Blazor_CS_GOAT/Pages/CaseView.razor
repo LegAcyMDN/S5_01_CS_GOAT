@@ -1,5 +1,6 @@
 ﻿@page "/caseview/{CaseId:int}"
 @using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.Service
 @inject IService<Skin> skinRepository
 @inject IService<Case> caseRepository
@@ -48,10 +49,11 @@
         <h2>Contenu de la caisse</h2>
         <div class="skins-list">
             @foreach (Skin skin in skinsList) {
-                <div class="display-skin">
-                    <img src="" alt="armes"/>
-                    <h4>@skin.SkinName</h4>
-                </div>
+                @* <div class="display-skin"> *@
+                @*     <img src="" alt="armes"/> *@
+                @*     <h4>@skin.SkinName</h4> *@
+                @* </div> *@
+                <WeaponDisplayComponent WeaponSkin=@skin ImageLink=@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")></WeaponDisplayComponent>
             }
         </div>
     </div>
