@@ -14,19 +14,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public int WearId { get; set; }
 
         [Required]
-        [Column("wer_wearname")]
-        [StringLength(50)]
-        public string WearName { get; set; } = null!;
+        [Column("wrt_id")]
+        public int WearTypeId { get; set; }
 
         [Required]
-        [Column("wer_floatlow")]
+        [Column("wer_wearfloat")]
         [Range(0.0, 1.0)]
-        public float FloatLow { get; set; }
-
-        [Required]
-        [Column("wer_floathigh")]
-        [Range(0.0, 1.0)]
-        public float FloatHigh { get; set; }
+        public float WearFloat { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -37,12 +31,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("skn_id")]
         public int SkinId { get; set; }
 
+        [ForeignKey(nameof(WearTypeId))]
+        [InverseProperty(nameof(WearType.Wears))]
+        public virtual WearType WearType { get; set; } = null!;
+
         [ForeignKey(nameof(SkinId))]
         [InverseProperty(nameof(Skin.Wears))]
         public virtual Skin Skin { get; set; } = null!;
-
-        [InverseProperty(nameof(PriceHistory.Wear))]
-        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = null!;
 
         [InverseProperty(nameof(InventoryItem.Wear))]
         public virtual ICollection<InventoryItem> InventoryItems { get; set; } = null!;

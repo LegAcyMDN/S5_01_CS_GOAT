@@ -12,6 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PriceHistoryController(
+        IReadableRepository<Wear, int> wearManager,
         IDataRepository<PriceHistory, int> manager,
         IMapper mapper
     ) : ControllerBase
@@ -25,7 +26,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByInventoryItem(int wearId)
         {
-            IEnumerable<PriceHistory> result = await manager.GetAllAsync(ph => ph.WearId == wearId);
+            Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
+            if (wear == null) return NotFound();
+            IEnumerable<PriceHistory> result = wear.PriceHistories;
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
             return Ok(result);
         }

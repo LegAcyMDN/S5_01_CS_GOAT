@@ -36,7 +36,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
-// Readonly repositories for web-scraped entities entities
+// Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
 builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, CrudRepository<CaseContent, (int,int)>>();
 builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
@@ -49,6 +49,7 @@ builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
 builder.Services.AddScoped<ITypeRepository<LimitType>, TypeRepository<LimitType>>();
 builder.Services.AddScoped<ITypeRepository<NotificationType>, TypeRepository<NotificationType>>();
 builder.Services.AddScoped<ITypeRepository<PaymentMethod>, TypeRepository<PaymentMethod>>();
+builder.Services.AddScoped<ITypeRepository<WearType>, TypeRepository<WearType>>();
 
 // Generic repositories for standard entities
 builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();

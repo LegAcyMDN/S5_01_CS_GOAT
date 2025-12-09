@@ -16,9 +16,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class PriceHistoryControllerTests
     {
         private Mock<IDataRepository<PriceHistory, int>>? priceHistoryRepositoryMock;
+        private Mock<IDataRepository<Wear, int>>? wearRepositoryMock;
         private Mock<IMapper>? mapperMock;
         private PriceHistoryController? controller;
 
+        private Wear? wear;
         private List<PriceHistory>? priceHistories;
         private List<PriceHistoryDTO>? priceHistoryDTOs;
 
@@ -26,12 +28,15 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             priceHistoryRepositoryMock = new Mock<IDataRepository<PriceHistory, int>>();
+            wearRepositoryMock = new Mock<IDataRepository<Wear, int>>();
             mapperMock = new Mock<IMapper>();
 
+            wear = WearFixture.GetWear();
             priceHistories = PriceHistoryFixture.GetPriceHistories();
             priceHistoryDTOs = PriceHistoryFixture.GetPriceHistoryDTOs();
 
             controller = new PriceHistoryController(
+                wearRepositoryMock.Object,
                 priceHistoryRepositoryMock.Object,
                 mapperMock.Object
             );
@@ -43,18 +48,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_ReturnsOk()
         {
             // Given
-            int wearId = 1;
-            priceHistoryRepositoryMock.Setup(r => r.GetAllAsync(ph => ph.WearId == wearId))
-                                      .ReturnsAsync(priceHistories);
+            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"))
+                                  .ReturnsAsync(wear);
             mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
                       .Returns(priceHistoryDTOs);
 
             // When
-            IActionResult? result = controller.GetByInventoryItem(wearId).GetAwaiter().GetResult();
+            IActionResult? result = controller.GetByInventoryItem(wear.WearId).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            priceHistoryRepositoryMock.Verify(r => r.GetAllAsync(ph => ph.WearId == wearId), Times.Once);
         }
 
         #endregion

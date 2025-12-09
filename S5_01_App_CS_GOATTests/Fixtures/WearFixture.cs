@@ -12,9 +12,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             {
                 WearId = 1,
                 SkinId = 1,
-                WearName = "Field-Tested",
-                FloatLow = 0.15f,
-                FloatHigh = 0.38f,
+                WearTypeId = 1,
+                WearFloat = 0.25f,
                 Uuid = "test-uuid-1",
                 Skin = new Skin
                 {
@@ -28,6 +27,21 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                         ItemModel = "ak47_model",
                         ItemTypeId = 1
                     }
+                },
+                WearType = new WearType
+                {
+                    WearTypeId = 1,
+                    WearTypeName = "Field-Tested",
+                    PriceHistories = new List<PriceHistory>
+                    {
+                        new PriceHistory
+                        {
+                            PriceHistoryId = 1,
+                            SkinId = 1,
+                            WearTypeId = 1,
+                            PriceValue = 150.0
+                        }
+                    }
                 }
             };
         }
@@ -38,9 +52,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             {
                 WearId = 1,
                 SkinId = 1,
-                WearName = "Field-Tested",
-                FloatLow = 0.15f,
-                FloatHigh = 0.38f,
+                WearTypeId = 1,
+                WearFloat = 0.25f,
                 Uuid = "test-uuid-1",
                 Skin = new Skin
                 {
@@ -66,18 +79,16 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 {
                     WearId = 1,
                     SkinId = 1,
-                    WearName = "Field-Tested",
-                    FloatLow = 0.15f,
-                    FloatHigh = 0.38f,
+                    WearTypeId = 1,
+                    WearFloat = 0.25f,
                     Uuid = "test-uuid-1"
                 },
                 new Wear
                 {
                     WearId = 2,
                     SkinId = 1,
-                    WearName = "Factory New",
-                    FloatLow = 0.00f,
-                    FloatHigh = 0.07f,
+                    WearTypeId = 2,
+                    WearFloat = 0.75f,
                     Uuid = "test-uuid-2"
                 }
             };

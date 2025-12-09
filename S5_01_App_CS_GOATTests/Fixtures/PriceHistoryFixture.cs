@@ -15,7 +15,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 PriceDate = DateTime.Now.AddDays(-30),
                 PriceValue = 25.50,
                 GuessDate = null,
-                WearId = 1
+                WearTypeId = 1,
+                SkinId = 1
             };
         }
 
@@ -29,7 +30,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     PriceDate = DateTime.Now.AddDays(-30),
                     PriceValue = 25.50,
                     GuessDate = null,
-                    WearId = 1
+                    WearTypeId = 1,
+                    SkinId = 1
                 },
                 new PriceHistory
                 {
@@ -37,7 +39,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     PriceDate = DateTime.Now.AddDays(-15),
                     PriceValue = 28.75,
                     GuessDate = null,
-                    WearId = 1
+                    WearTypeId = 1,
+                    SkinId = 1
                 },
                 new PriceHistory
                 {
@@ -45,7 +48,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     PriceDate = DateTime.Now,
                     PriceValue = 30.00,
                     GuessDate = null,
-                    WearId = 1
+                    WearTypeId = 1,
+                    SkinId = 1
                 }
             };
         }

@@ -26,11 +26,19 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DateTime? GuessDate { get; set; }
 
         [Required]
-        [Column("wer_id")]
-        public int WearId { get; set; }
+        [Column("wrt_id")]
+        public int WearTypeId { get; set; }
 
-        [ForeignKey(nameof(WearId))]
-        [InverseProperty(nameof(Wear.PriceHistories))]
-        public virtual Wear Wear { get; set; } = null!;
+        [Required]
+        [Column("skn_id")]
+        public int SkinId { get; set; } 
+
+        [ForeignKey(nameof(WearTypeId))]
+        [InverseProperty(nameof(WearType.PriceHistories))]
+        public virtual WearType WearType { get; set; } = null!;
+
+        [ForeignKey(nameof(SkinId))]
+        [InverseProperty(nameof(Skin.PriceHistories))]
+        public virtual Skin Skin { get; set; } = null!;
     }
 }
