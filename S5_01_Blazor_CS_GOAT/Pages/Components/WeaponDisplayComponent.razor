@@ -1,6 +1,6 @@
 @using S5_01_Blazor_CS_GOAT.Models
 
-<div style="height: @Height; width: @Width; border: 2px solid @WeaponSkin.RarityColor; --rarity-color: @WeaponSkin.RarityColor;" class="weapon-showcase">
+<div style="height: @Height; width: @Width" class="weapon-showcase">
     <div id="weapon-container">
         <img id="weapon-img" src="@ImageLink"/>
     </div>
@@ -15,7 +15,7 @@
     [Parameter]
     public required Skin WeaponSkin { get; set; }
 
-    [Parameter] public string? Height { get; set; } = "100px"; 
+    [Parameter] public string? Height { get; set; } = "110px"; 
     [Parameter] public string? Width { get; set; } = "100px"; 
 
 
