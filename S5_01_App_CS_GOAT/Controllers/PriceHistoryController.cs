@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [AllowAnonymous]
     public class PriceHistoryController(
         IReadableRepository<Wear, int> wearManager,
-        IDataRepository<PriceHistory, int> manager,
+       IReadableRepository<PriceHistory,int> manager,
         IMapper mapper
     ) : ControllerBase
     {

@@ -16,7 +16,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     [TestClass()]
     public class PaymentMethodControllerTests
     {
-        private Mock<IDataRepository<PaymentMethod, int>>? paymentMethodRepositoryMock;
+        private Mock<ITypeRepository<PaymentMethod>>? paymentMethodRepositoryMock;
         private PaymentMethodController? controller;
 
         private List<PaymentMethod>? paymentMethods;
@@ -24,7 +24,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
-            paymentMethodRepositoryMock = new Mock<IDataRepository<PaymentMethod, int>>();
+            paymentMethodRepositoryMock = new Mock<ITypeRepository<PaymentMethod>>();
 
             paymentMethods = TransactionFixture.GetPaymentMethods();
 
@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(null))
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync())
                                        .ReturnsAsync(paymentMethods);
 
             // When
@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            paymentMethodRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            paymentMethodRepositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         #endregion

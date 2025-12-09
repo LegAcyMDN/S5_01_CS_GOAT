@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using S5_01_App_CS_GOAT.Models.DataManager;
+using S5_01_App_CS_GOAT.Services;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -40,7 +41,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
 builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, CrudRepository<CaseContent, (int,int)>>();
-builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
 builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
 builder.Services.AddScoped<IReadableRepository<Skin, int>, CrudRepository<Skin>>();
 builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
@@ -73,6 +73,8 @@ builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepositor
 // Custom managers for complex entities
 builder.Services.AddScoped<IUserRepository, UserManager>();
 
+// Timed services
+builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
 
 string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
 if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");

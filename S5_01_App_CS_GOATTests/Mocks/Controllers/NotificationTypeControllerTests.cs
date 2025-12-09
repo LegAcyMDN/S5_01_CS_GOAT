@@ -16,7 +16,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class NotificationTypeControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<NotificationType, int>>? notificationTypeRepositoryMock;
+        private Mock<ITypeRepository<NotificationType>>? notificationTypeRepositoryMock;
         private NotificationTypeController? controller;
 
         private List<NotificationType>? notificationTypes;
@@ -26,7 +26,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            notificationTypeRepositoryMock = new Mock<IDataRepository<NotificationType, int>>();
+            notificationTypeRepositoryMock = new Mock<ITypeRepository<NotificationType>>();
 
             notificationTypes = NotificationFixture.GetNotificationTypes();
             notificationTypeDTOs = NotificationFixture.GetNotificationTypeDTOs();
@@ -43,7 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync())
                                           .ReturnsAsync(notificationTypes);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
                       .Returns(notificationTypeDTOs);
@@ -53,7 +53,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            notificationTypeRepositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         #endregion
