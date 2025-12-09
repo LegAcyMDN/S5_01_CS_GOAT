@@ -6,26 +6,27 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using S5_01_App_CS_GOAT.Models.DataManager;
 
-
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<CSGOATDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString"))
+);
 
 // Enable CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
     {
-        policy.WithOrigins("https://localhost:7030") // Your Blazor app URL
+        policy.WithOrigins("https://localhost:7030")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // If you're using authentication/cookies
+            .AllowCredentials();
     });
 });
 
-
 // Add services to the container.
-
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -72,8 +73,6 @@ builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepositor
 // Custom managers for complex entities
 builder.Services.AddScoped<IUserRepository, UserManager>();
 
-builder.Services.AddDbContext<CSGOATDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString")));
 
 string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
 if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");
