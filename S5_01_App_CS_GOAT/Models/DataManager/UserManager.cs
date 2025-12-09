@@ -84,13 +84,17 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task<User> CreateUser(CreateUserDTO newAccount)
     {
+        if(newAccount.Password == null)
+            throw new InvalidOperationException("Password must be provided.");
         if (newAccount.Email == null && newAccount.Phone == null)
             throw new InvalidOperationException("At least one contact method (email or phone) must be provided.");
-
+        string newSalt = SecurityService.GenerateToken();
         User newUser = new User
         {
             Login = newAccount.Login,
             DisplayName = newAccount.DisplayName,
+            HashPassword = SecurityService.HashAndSalt(newAccount.Password, newSalt),
+            SaltPassword = newSalt,
             Email = newAccount.Email,
             Phone = newAccount.Phone
         };
