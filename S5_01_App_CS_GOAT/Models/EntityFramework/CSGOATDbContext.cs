@@ -116,10 +116,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithOne(m => m.Wear)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_inventoryitem_wear");
-                e.HasMany(p => p.PriceHistories)
-                    .WithOne(m => m.Wear)
+                e.HasOne(p => p.WearType)
+                    .WithMany(m => m.Wears)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_pricehistory_wear");
+                    .HasConstraintName("FK_wear_weartype");
             });
 
             // Configure Case
@@ -358,10 +358,14 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             modelBuilder.Entity<PriceHistory>(e =>
             {
                 e.HasKey(p => p.PriceHistoryId);
-                e.HasOne(p => p.Wear)
+                e.HasOne(p => p.WearType)
                     .WithMany(m => m.PriceHistories)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_pricehistory_wear");
+                    .HasConstraintName("FK_pricehistory_weartype");
+                e.HasOne(p => p.Skin)
+                    .WithMany(m => m.PriceHistories)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_pricehistory_skin");
             });
 
             // Configure Limit
@@ -400,6 +404,20 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithMany(m => m.PromoCodes)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_promocode_case");
+            });
+
+            // Configure WearType
+            modelBuilder.Entity<WearType>(e =>
+            {
+                e.HasKey(p => p.WearTypeId);
+                e.HasMany(p => p.Wears)
+                    .WithOne(m => m.WearType)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_wear_weartype");
+                e.HasMany(p => p.PriceHistories)
+                    .WithOne(m => m.WearType)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_pricehistory_weartype");
             });
 
             OnModelCreatingPartial(modelBuilder);

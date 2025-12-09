@@ -15,7 +15,7 @@ public class InventoryItemDetailMapper : Profile
             .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
             .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn))
             .ForMember(dest => dest.Uuid, opt => opt.MapFrom(src => src.Wear.Uuid))
-            .ForMember(dest => dest.WearName, opt => opt.MapFrom(src => src.Wear.WearName))
+            .ForMember(dest => dest.WearName, opt => opt.MapFrom(src => src.Wear.WearType.WearTypeName))
             .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.Wear.Skin.SkinName))
             .ForMember(dest => dest.RarityColor, opt => opt.MapFrom(src => src.Wear.Skin.Rarity.RarityColor))
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Wear.Skin.Rarity.RarityName))

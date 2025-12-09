@@ -27,7 +27,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     {
                         WearId = 1,
                         SkinId = 1,
-                        WearName = "Field-Tested",
+                        WearTypeId = 1,
                         Uuid = "test-uuid-1"
                     }
                 }
@@ -141,9 +141,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                                 {
                                     WearId = 1,
                                     SkinId = 1,
-                                    WearName = "Field-Tested",
-                                    Uuid = "test-uuid-1",
-                                    PriceHistories = new List<PriceHistory>()
+                                    WearTypeId = 1,
+                                    Uuid = "test-uuid-1"
                                 }
                             }
                         }
@@ -171,9 +170,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                                 {
                                     WearId = 2,
                                     SkinId = 2,
-                                    WearName = "Factory New",
-                                    Uuid = "test-uuid-2",
-                                    PriceHistories = new List<PriceHistory>()
+                                    WearTypeId = 2,
+                                    Uuid = "test-uuid-2"
                                 }
                             }
                         }
