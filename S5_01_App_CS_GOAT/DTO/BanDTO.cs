@@ -11,4 +11,6 @@ public class BanDTO
     public int BanDuration { get; set; } //  day duration of the ban
 
     public string BanTypeName { get; set; } = null!;
+
+    public string BanTypeDescription { get; set; } = null!;
 }

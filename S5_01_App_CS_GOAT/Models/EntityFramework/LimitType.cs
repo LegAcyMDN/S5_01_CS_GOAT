@@ -23,11 +23,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Range(1, int.MaxValue)]
         public int Duration { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        [Column("lmt_durationname")]
-        public string DurationName { get; set; } = null!;
-
         [InverseProperty(nameof(Limit.LimitType))]
         public virtual ICollection<Limit> Limits { get; set; } = null!;
     }

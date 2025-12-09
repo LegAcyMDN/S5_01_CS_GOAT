@@ -10,6 +10,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DbSet<ItemType> ItemTypes { get; set; }
         public DbSet<Skin> Skins { get; set; }
         public DbSet<Wear> Wears { get; set; }
+        public DbSet<WearType> WearTypes { get; set; }
         public DbSet<Rarity> Rarities { get; set; }
         public DbSet<Case> Cases { get; set; }
         public DbSet<CaseContent> CaseContents { get; set; }
@@ -284,6 +285,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithOne(m => m.BanType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ban_bantype");
+                e.HasOne(p => p.ParentBanType)
+                    .WithMany(m => m.SubBanTypes)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
             // Configure Favorite
@@ -419,6 +423,90 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_weartype");
             });
+
+            // Seeding static data
+
+            modelBuilder.Entity<ItemType>().HasData(
+                new ItemType { ItemTypeId = 1, ItemTypeName = "Pistol", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 2, ItemTypeName = "Rifle", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 3, ItemTypeName = "Sniper Rifle", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 4, ItemTypeName = "Machinegun", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 5, ItemTypeName = "SMG", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 6, ItemTypeName = "Shotgun", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 7, ItemTypeName = "Knife", ParentItemTypeId = null },
+                new ItemType { ItemTypeId = 8, ItemTypeName = "Gloves", ParentItemTypeId = null }
+            );
+
+            modelBuilder.Entity<WearType>().HasData(
+                new WearType { WearTypeId = 1, WearTypeName = "Factory New" },
+                new WearType { WearTypeId = 2, WearTypeName = "Minimal Wear" },
+                new WearType { WearTypeId = 3, WearTypeName = "Field-Tested" },
+                new WearType { WearTypeId = 4, WearTypeName = "Well-Worn" },
+                new WearType { WearTypeId = 5, WearTypeName = "Battle-Scarred" }
+            );
+
+            modelBuilder.Entity<Rarity>().HasData(
+                new Rarity { RarityId = 1, RarityName = "Consumer", RarityColor = "#afafaf" },
+                new Rarity { RarityId = 2, RarityName = "Industrial", RarityColor = "#6496e1" },
+                new Rarity { RarityId = 3, RarityName = "Mil-Spec", RarityColor = "#4b69cd" },
+                new Rarity { RarityId = 4, RarityName = "Restricted", RarityColor = "#8847ff" },
+                new Rarity { RarityId = 5, RarityName = "Classified", RarityColor = "#d32ce6" },
+                new Rarity { RarityId = 6, RarityName = "Covert", RarityColor = "#eb4b4b" },
+                new Rarity { RarityId = 7, RarityName = "Contraband", RarityColor = "#f29b1d" }
+            );
+
+            modelBuilder.Entity<BanType>().HasData(
+                new BanType { BanTypeId = 1, BanTypeName = "Total", BanTypeDescription = "Perte d'accès à tous les fonctions du site, connexion incluse." },
+                new BanType { BanTypeId = 2, BanTypeName = "Transactionnel", BanTypeDescription = "Compte en lecture seule.", ParentBanTypeId = 1 },
+                new BanType { BanTypeId = 3, BanTypeName = "Inventaire", BanTypeDescription = "Impossibilité de modifier l'inventaire.", ParentBanTypeId = 2 },
+                new BanType { BanTypeId = 4, BanTypeName = "Ouverture", BanTypeDescription = "Interdiction d'ouvrir des caisses.", ParentBanTypeId = 3 },
+                new BanType { BanTypeId = 5, BanTypeName = "Vente", BanTypeDescription = "Restrictions sur les ventes d'objets.", ParentBanTypeId = 3 },
+                new BanType { BanTypeId = 6, BanTypeName = "Amélioration", BanTypeDescription = "Les objets dans l'inventaire ne peuvent pas être améliorés.", ParentBanTypeId = 3 },
+                new BanType { BanTypeId = 7, BanTypeName = "Monétaire", BanTypeDescription = "Ne peut pas effectuer de dépôt ou de retrait.", ParentBanTypeId = 2 },
+                new BanType { BanTypeId = 8, BanTypeName = "Crédit", BanTypeDescription = "Le compte ne peut pas être crédité depuis l'extérieur.", ParentBanTypeId = 7 },
+                new BanType { BanTypeId = 9, BanTypeName = "Débit", BanTypeDescription = "Le solde ne peut pas être exporté vers d'autres plateformes.", ParentBanTypeId = 7 }
+            );
+
+            modelBuilder.Entity<TokenType>().HasData(
+                new TokenType { TokenTypeId = 1, TokenTypeName = "Remember Cookie" },
+                new TokenType { TokenTypeId = 2, TokenTypeName = "Password Reset" },
+                new TokenType { TokenTypeId = 3, TokenTypeName = "Email Verification" },
+                new TokenType { TokenTypeId = 4, TokenTypeName = "Phone Verification" },
+                new TokenType { TokenTypeId = 5, TokenTypeName = "2FA" }
+            );
+
+            modelBuilder.Entity<NotificationType>().HasData(
+                new NotificationType { NotificationTypeId = 1, NotificationTypeName = "Annonce" },
+                new NotificationType { NotificationTypeId = 2, NotificationTypeName = "Sécurité & Confidentialité" },
+                new NotificationType { NotificationTypeId = 3, NotificationTypeName = "Offres Spéciales" },
+                new NotificationType { NotificationTypeId = 4, NotificationTypeName = "Mise à jour" },
+                new NotificationType { NotificationTypeId = 5, NotificationTypeName = "Évènement" }
+            );
+
+            modelBuilder.Entity<LimitType>().HasData(
+                new LimitType { LimitTypeId = 1, LimitTypeName = "Dépôt Horaire", Duration = 1 },
+                new LimitType { LimitTypeId = 2, LimitTypeName = "Dépenses Horaire", Duration = 1 },
+                new LimitType { LimitTypeId = 3, LimitTypeName = "Ouvertures Horaire", Duration = 1 },
+                new LimitType { LimitTypeId = 4, LimitTypeName = "Améliorations Horaire", Duration = 1 },
+                new LimitType { LimitTypeId = 5, LimitTypeName = "Dépôt Quotidien", Duration = 24 },
+                new LimitType { LimitTypeId = 6, LimitTypeName = "Dépenses Quotidien", Duration = 24 },
+                new LimitType { LimitTypeId = 7, LimitTypeName = "Ouvertures Quotidien", Duration = 24 },
+                new LimitType { LimitTypeId = 8, LimitTypeName = "Améliorations Quotidien", Duration = 24 },
+                new LimitType { LimitTypeId = 9, LimitTypeName = "Dépôt Hebdomadaire", Duration = 168 },
+                new LimitType { LimitTypeId = 10, LimitTypeName = "Dépenses Hebdomadaire", Duration = 168 },
+                new LimitType { LimitTypeId = 11, LimitTypeName = "Ouvertures Hebdomadaire", Duration = 168 },
+                new LimitType { LimitTypeId = 12, LimitTypeName = "Améliorations Hebdomadaire", Duration = 168 },
+                new LimitType { LimitTypeId = 13, LimitTypeName = "Dépôt Mensuel", Duration = 720 },
+                new LimitType { LimitTypeId = 14, LimitTypeName = "Dépenses Mensuel", Duration = 720 },
+                new LimitType { LimitTypeId = 15, LimitTypeName = "Ouvertures Mensuel", Duration = 720 },
+                new LimitType { LimitTypeId = 16, LimitTypeName = "Améliorations Mensuel", Duration = 720 }
+            );
+
+            modelBuilder.Entity<PaymentMethod>().HasData(
+                new PaymentMethod { PaymentMethodId = 1, PaymentMethodName = "Carte de crédit", FromWallet = false, ToWallet = true },
+                new PaymentMethod { PaymentMethodId = 2, PaymentMethodName = "RIB", FromWallet = true, ToWallet = false },
+                new PaymentMethod { PaymentMethodId = 3, PaymentMethodName = "PayPal", FromWallet = true, ToWallet = true }
+            );
 
             OnModelCreatingPartial(modelBuilder);
         }
