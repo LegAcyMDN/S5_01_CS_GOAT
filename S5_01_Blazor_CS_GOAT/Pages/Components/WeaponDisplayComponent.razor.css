@@ -11,6 +11,7 @@
     width: 100px;
     height: 100px;
 }
+
 .letsgo-gambling {
     display: flex;
     flex-wrap: wrap;
@@ -30,14 +31,7 @@
     transition: all 0.5s ease;
 }
 
-/*.letsgo-gambling div:nth-child(-n+6) p {*/
-/*    font-size: 0.95em;*/
-/*    font-weight: bolder;*/
-/*    position: relative;*/
-/*    z-index: 2;*/
-/*}*/
-
-.letsgo-gambling div:nth-child(-n+6)::before {
+.weapon-showcase::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -45,9 +39,9 @@
     width: 200%;
     height: 200%;
     background: linear-gradient(0deg,
-    transparent,
-    transparent 30%,
-    rgba(249, 158, 28, 0.3));
+            transparent,
+            transparent 30%,
+            var(--rarity-color, rgba(249, 158, 28, 0.3)));
     transform: rotate(-45deg);
     transition: all 0.5s ease;
     opacity: 0;
@@ -55,7 +49,7 @@
 
 .weapon-showcase:hover {
     transform: scale(1.05);
-    box-shadow: 0 0 10px rgba(249, 158, 28, 0.5);
+    box-shadow: 0 0 10px var(--rarity-color, rgba(249, 158, 28, 0.5));
 }
 
 .weapon-showcase:hover::before {
