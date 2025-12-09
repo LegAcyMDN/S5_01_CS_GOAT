@@ -20,8 +20,8 @@ namespace S5_01_App_CS_GOAT.Services
 
     public interface ITimedAction
     {
-        public Task Tick(TimedActionFrequency frequencyn, IServiceScope scope);
-        public static virtual TimedActionFrequency TickFrequency { get; }
+        public Task Tick(IServiceScope scope);
+        public static abstract TimedActionFrequency TickFrequency { get; }
     }
 
     public class TimedActionService<TRepository, TEntity, TIdentifier> : BackgroundService
@@ -53,7 +53,7 @@ namespace S5_01_App_CS_GOAT.Services
                         {
                             try
                             {
-                                await entity.Tick(frequency, scope);
+                                await entity.Tick(scope);
                             }
                             catch (Exception ex)
                             {

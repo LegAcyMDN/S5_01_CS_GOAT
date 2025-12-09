@@ -7,13 +7,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     {
         public int? DependantUserId { get => this.UserId; }
 
-        public static TimedActionFrequency TickFrequency { get => TimedActionFrequency.QuarterHourly; }
+        public static TimedActionFrequency TickFrequency => TimedActionFrequency.QuarterHourly;
 
-        public async Task Tick(TimedActionFrequency frequency, IServiceScope scope)
+        public async Task Tick(IServiceScope scope)
         {
             if (this.TokenExpiry <= DateTime.Now)
             {
-                var tokenRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<Token, int>>();
+                IDataRepository<Token, int> tokenRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<Token, int>>();
                 await tokenRepository.DeleteAsync(this);
             }
         }

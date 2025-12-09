@@ -20,19 +20,27 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [StringLength(50)]
         public string Code { get; set; } = SecurityService.GenerateSeed(8);
 
+        [Column("prc_remaininguses")]
+        public int? RemainingUses { get; set; }
+
         [Required]
         [Column("prc_discountpercentage")]
-        [Range(0, 100)]
-        public int DiscountPercentage { get; set; }
+        [Range(1, 100)]
+        public int? DiscountPercentage { get; set; }
 
         [Required]
         [Column("prc_discountamount")]
         [Range(0.0, double.MaxValue)]
-        public double DiscountAmount { get; set; }  
+        public double? DiscountAmount { get; set; }  
 
-        [Required]
+        [Column("prc_validitystart")]
+        public DateTime? ValidityStart { get; set; } = DateTime.Now;
+
         [Column("prc_expirydate")]
-        public DateTime ExpiryDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+
+        [Column("prc_refreshdelay")]
+        public TimeSpan? RefreshDelay { get; set; }
 
         [Column("cas_id")]
         public int? CaseId { get; set; }

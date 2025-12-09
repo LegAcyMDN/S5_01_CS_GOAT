@@ -134,6 +134,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         PromoCode newUserPromoCode = new PromoCode
         {
             UserId = user.UserId,
+            RemainingUses = 1,
             Code = "WELCOME",
             DiscountPercentage = 25,
             DiscountAmount = 0,
@@ -164,14 +165,20 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task<User?> Recall(RememberDTO rememberDTO)
     {
-        Token? token = await _context.Set<Token>()
-            .FirstOrDefaultAsync(t =>
-                t.TokenValue == rememberDTO.Token
-                && t.TokenTypeId == 1
-                && t.TokenExpiry > DateTime.Now
-                && t.UserId == rememberDTO.UserId);
+        Token? token = await _context.Set<Token>().FindAsync(rememberDTO.TokenId);
+        if (
+            token == null
+            || token.TokenValue != rememberDTO.Token
+            || token.UserId != rememberDTO.UserId
+            || token.TokenTypeId != 1
+        ) return null;
 
-        if (token == null) return null;
+        if (token.TokenExpiry <= DateTime.Now)
+        {
+            _context.Set<Token>().Remove(token);
+            await _context.SaveChangesAsync();
+            return null;
+        }
 
         User? user = await _context.Set<User>()
             .FirstOrDefaultAsync(u => u.UserId == token.UserId);
