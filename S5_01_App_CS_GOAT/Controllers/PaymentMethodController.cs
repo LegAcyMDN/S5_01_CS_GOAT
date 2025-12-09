@@ -10,7 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PaymentMethodController(
-        IDataRepository<PaymentMethod, int> manager
+        ITypeRepository<PaymentMethod> manager
     ) : ControllerBase
     {
         /// <summary>

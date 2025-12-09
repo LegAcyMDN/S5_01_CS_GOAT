@@ -40,7 +40,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
 builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, CrudRepository<CaseContent, (int,int)>>();
-builder.Services.AddScoped<IReadableRepository<PaymentMethod, int>, CrudRepository<PaymentMethod>>();
 builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
 builder.Services.AddScoped<IReadableRepository<Skin, int>, CrudRepository<Skin>>();
 builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
