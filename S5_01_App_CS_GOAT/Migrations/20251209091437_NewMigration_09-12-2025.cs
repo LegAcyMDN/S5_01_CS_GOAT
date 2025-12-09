@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace S5_01_App_CS_GOAT.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class NewMigration_09122025 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,11 +20,18 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     bnt_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    bnt_bantypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                    bnt_bantypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    bnt_bantypedescription = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    bnt_parentid = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_t_e_bantype_bnt", x => x.bnt_id);
+                    table.ForeignKey(
+                        name: "FK_t_e_bantype_bnt_t_e_bantype_bnt_bnt_parentid",
+                        column: x => x.bnt_parentid,
+                        principalTable: "t_e_bantype_bnt",
+                        principalColumn: "bnt_id");
                 });
 
             migrationBuilder.CreateTable(
@@ -83,8 +92,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     lmt_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     lmt_limittypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    lmt_duration = table.Column<int>(type: "integer", nullable: false),
-                    lmt_durationname = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    lmt_duration = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -152,9 +160,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     usr_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    usr_login = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    usr_displayname = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    usr_email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    usr_login = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    usr_displayname = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    usr_email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     usr_phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     usr_phoneverifiedon = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     usr_emailverifiedon = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -174,6 +182,19 @@ namespace S5_01_App_CS_GOAT.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_t_e_user_usr", x => x.usr_id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "t_e_weartype_wrt",
+                columns: table => new
+                {
+                    wrt_id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    wrt_weartypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_t_e_weartype_wrt", x => x.wrt_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -280,6 +301,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     usr_id = table.Column<int>(type: "integer", nullable: false),
                     bnt_id = table.Column<int>(type: "integer", nullable: false),
+                    ban_id = table.Column<int>(type: "integer", nullable: false),
                     ban_reason = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     ban_bandate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ban_banduration = table.Column<int>(type: "integer", nullable: false)
@@ -327,7 +349,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     usr_id = table.Column<int>(type: "integer", nullable: false),
                     lmt_id = table.Column<int>(type: "integer", nullable: false),
-                    lim_limitamount = table.Column<double>(type: "double precision", nullable: false)
+                    lim_limitamount = table.Column<double>(type: "double precision", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -472,9 +494,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     wer_id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    wer_wearname = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    wer_floatlow = table.Column<float>(type: "real", nullable: false),
-                    wer_floathigh = table.Column<float>(type: "real", nullable: false),
+                    wrt_id = table.Column<int>(type: "integer", nullable: false),
+                    wer_wearfloat = table.Column<float>(type: "real", nullable: false),
                     wer_uuid = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     skn_id = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -486,6 +507,11 @@ namespace S5_01_App_CS_GOAT.Migrations
                         column: x => x.skn_id,
                         principalTable: "t_e_skin_skn",
                         principalColumn: "skn_id");
+                    table.ForeignKey(
+                        name: "FK_wear_weartype",
+                        column: x => x.wrt_id,
+                        principalTable: "t_e_weartype_wrt",
+                        principalColumn: "wrt_id");
                 });
 
             migrationBuilder.CreateTable(
@@ -575,14 +601,26 @@ namespace S5_01_App_CS_GOAT.Migrations
                     prh_pricedate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     prh_pricevalue = table.Column<double>(type: "double precision", nullable: false),
                     prh_guessdate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    wer_id = table.Column<int>(type: "integer", nullable: false)
+                    wrt_id = table.Column<int>(type: "integer", nullable: false),
+                    skn_id = table.Column<int>(type: "integer", nullable: false),
+                    WearId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_t_e_pricehistory_prh", x => x.prh_id);
                     table.ForeignKey(
-                        name: "FK_pricehistory_wear",
-                        column: x => x.wer_id,
+                        name: "FK_pricehistory_skin",
+                        column: x => x.skn_id,
+                        principalTable: "t_e_skin_skn",
+                        principalColumn: "skn_id");
+                    table.ForeignKey(
+                        name: "FK_pricehistory_weartype",
+                        column: x => x.wrt_id,
+                        principalTable: "t_e_weartype_wrt",
+                        principalColumn: "wrt_id");
+                    table.ForeignKey(
+                        name: "FK_t_e_pricehistory_prh_t_e_wear_wer_WearId",
+                        column: x => x.WearId,
                         principalTable: "t_e_wear_wer",
                         principalColumn: "wer_id");
                 });
@@ -655,7 +693,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_upgraderesult_upg", x => x.inv_id);
+                    table.PrimaryKey("PK_t_j_upgraderesult_upg", x => new { x.inv_id, x.tra_id });
                     table.ForeignKey(
                         name: "FK_fairrandom_upgraderesult",
                         column: x => x.frn_id,
@@ -675,11 +713,134 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
+            migrationBuilder.InsertData(
+                table: "t_e_bantype_bnt",
+                columns: new[] { "bnt_id", "bnt_bantypedescription", "bnt_bantypename", "bnt_parentid" },
+                values: new object[] { 1, "Perte d'accès à tous les fonctions du site, connexion incluse.", "Total", null });
+
+            migrationBuilder.InsertData(
+                table: "t_e_itemtype_itt",
+                columns: new[] { "itt_id", "itt_itemtypename", "itt_parentid" },
+                values: new object[,]
+                {
+                    { 1, "Pistol", null },
+                    { 2, "Rifle", null },
+                    { 3, "Sniper Rifle", null },
+                    { 4, "Machinegun", null },
+                    { 5, "SMG", null },
+                    { 6, "Shotgun", null },
+                    { 7, "Knife", null },
+                    { 8, "Gloves", null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_limittype_lmt",
+                columns: new[] { "lmt_id", "lmt_duration", "lmt_limittypename" },
+                values: new object[,]
+                {
+                    { 1, 1, "Dépôt Horaire" },
+                    { 2, 1, "Dépenses Horaire" },
+                    { 3, 1, "Ouvertures Horaire" },
+                    { 4, 1, "Améliorations Horaire" },
+                    { 5, 24, "Dépôt Quotidien" },
+                    { 6, 24, "Dépenses Quotidien" },
+                    { 7, 24, "Ouvertures Quotidien" },
+                    { 8, 24, "Améliorations Quotidien" },
+                    { 9, 168, "Dépôt Hebdomadaire" },
+                    { 10, 168, "Dépenses Hebdomadaire" },
+                    { 11, 168, "Ouvertures Hebdomadaire" },
+                    { 12, 168, "Améliorations Hebdomadaire" },
+                    { 13, 720, "Dépôt Mensuel" },
+                    { 14, 720, "Dépenses Mensuel" },
+                    { 15, 720, "Ouvertures Mensuel" },
+                    { 16, 720, "Améliorations Mensuel" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_notificationtype_ntt",
+                columns: new[] { "ntt_id", "ntt_notificationtypename" },
+                values: new object[,]
+                {
+                    { 1, "Annonce" },
+                    { 2, "Sécurité & Confidentialité" },
+                    { 3, "Offres Spéciales" },
+                    { 4, "Mise à jour" },
+                    { 5, "Évènement" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_paymentmethod_pmt",
+                columns: new[] { "pmt_id", "pmt_fromwallet", "pmt_paymentmethodname", "pmt_towallet" },
+                values: new object[,]
+                {
+                    { 1, false, "Carte de crédit", true },
+                    { 2, true, "RIB", false },
+                    { 3, true, "PayPal", true }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_rarity_rar",
+                columns: new[] { "rar_id", "rar_raritycolor", "rar_rarityname" },
+                values: new object[,]
+                {
+                    { 1, "#afafaf", "Consumer" },
+                    { 2, "#6496e1", "Industrial" },
+                    { 3, "#4b69cd", "Mil-Spec" },
+                    { 4, "#8847ff", "Restricted" },
+                    { 5, "#d32ce6", "Classified" },
+                    { 6, "#eb4b4b", "Covert" },
+                    { 7, "#f29b1d", "Contraband" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_tokentype_tkt",
+                columns: new[] { "tkt_id", "tkt_tokentypename" },
+                values: new object[,]
+                {
+                    { 1, "Remember Cookie" },
+                    { 2, "Password Reset" },
+                    { 3, "Email Verification" },
+                    { 4, "Phone Verification" },
+                    { 5, "2FA" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_weartype_wrt",
+                columns: new[] { "wrt_id", "wrt_weartypename" },
+                values: new object[,]
+                {
+                    { 1, "Factory New" },
+                    { 2, "Minimal Wear" },
+                    { 3, "Field-Tested" },
+                    { 4, "Well-Worn" },
+                    { 5, "Battle-Scarred" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "t_e_bantype_bnt",
+                columns: new[] { "bnt_id", "bnt_bantypedescription", "bnt_bantypename", "bnt_parentid" },
+                values: new object[,]
+                {
+                    { 2, "Compte en lecture seule.", "Transactionnel", 1 },
+                    { 3, "Impossibilité de modifier l'inventaire.", "Inventaire", 2 },
+                    { 7, "Ne peut pas effectuer de dépôt ou de retrait.", "Monétaire", 2 },
+                    { 4, "Interdiction d'ouvrir des caisses.", "Ouverture", 3 },
+                    { 5, "Restrictions sur les ventes d'objets.", "Vente", 3 },
+                    { 6, "Les objets dans l'inventaire ne peuvent pas être améliorés.", "Amélioration", 3 },
+                    { 8, "Le compte ne peut pas être crédité depuis l'extérieur.", "Crédit", 7 },
+                    { 9, "Le solde ne peut pas être exporté vers d'autres plateformes.", "Débit", 7 }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_bantype_bnt_bnt_bantypename",
                 table: "t_e_bantype_bnt",
                 column: "bnt_bantypename",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_bantype_bnt_bnt_parentid",
+                table: "t_e_bantype_bnt",
+                column: "bnt_parentid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_case_cas_cas_casename",
@@ -767,9 +928,19 @@ namespace S5_01_App_CS_GOAT.Migrations
                 column: "prh_pricedate");
 
             migrationBuilder.CreateIndex(
-                name: "IX_t_e_pricehistory_prh_wer_id",
+                name: "IX_t_e_pricehistory_prh_skn_id",
                 table: "t_e_pricehistory_prh",
-                column: "wer_id");
+                column: "skn_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_pricehistory_prh_WearId",
+                table: "t_e_pricehistory_prh",
+                column: "WearId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_pricehistory_prh_wrt_id",
+                table: "t_e_pricehistory_prh",
+                column: "wrt_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_e_promocode_prc_cas_id",
@@ -907,6 +1078,12 @@ namespace S5_01_App_CS_GOAT.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_t_e_user_usr_usr_phone",
+                table: "t_e_user_usr",
+                column: "usr_phone",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_steamid",
                 table: "t_e_user_usr",
                 column: "usr_steamid",
@@ -926,6 +1103,17 @@ namespace S5_01_App_CS_GOAT.Migrations
                 name: "IX_t_e_wear_wer_wer_uuid",
                 table: "t_e_wear_wer",
                 column: "wer_uuid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_wear_wer_wrt_id",
+                table: "t_e_wear_wer",
+                column: "wrt_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_t_e_weartype_wrt_wrt_weartypename",
+                table: "t_e_weartype_wrt",
+                column: "wrt_weartypename",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_t_j_ban_ban_ban_bandate",
@@ -1073,6 +1261,9 @@ namespace S5_01_App_CS_GOAT.Migrations
 
             migrationBuilder.DropTable(
                 name: "t_e_skin_skn");
+
+            migrationBuilder.DropTable(
+                name: "t_e_weartype_wrt");
 
             migrationBuilder.DropTable(
                 name: "t_e_notification_ntf");

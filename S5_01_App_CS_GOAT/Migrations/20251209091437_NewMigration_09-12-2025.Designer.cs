@@ -12,8 +12,8 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 namespace S5_01_App_CS_GOAT.Migrations
 {
     [DbContext(typeof(CSGOATDbContext))]
-    [Migration("20251128091209_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251209091437_NewMigration_09-12-2025")]
+    partial class NewMigration_09122025
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,13 +29,11 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("integer")
-                        .HasColumnName("usr_id")
-                        .HasColumnOrder(1);
+                        .HasColumnName("usr_id");
 
                     b.Property<int>("BanTypeId")
                         .HasColumnType("integer")
-                        .HasColumnName("bnt_id")
-                        .HasColumnOrder(2);
+                        .HasColumnName("bnt_id");
 
                     b.Property<DateTime>("BanDate")
                         .HasColumnType("timestamp with time zone")
@@ -44,6 +42,10 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.Property<int>("BanDuration")
                         .HasColumnType("integer")
                         .HasColumnName("ban_banduration");
+
+                    b.Property<int>("BanId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ban_id");
 
                     b.Property<string>("BanReason")
                         .IsRequired()
@@ -69,18 +71,94 @@ namespace S5_01_App_CS_GOAT.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BanTypeId"));
 
+                    b.Property<string>("BanTypeDescription")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("bnt_bantypedescription");
+
                     b.Property<string>("BanTypeName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("bnt_bantypename");
 
+                    b.Property<int?>("ParentBanTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("bnt_parentid");
+
                     b.HasKey("BanTypeId");
 
                     b.HasIndex("BanTypeName")
                         .IsUnique();
 
+                    b.HasIndex("ParentBanTypeId");
+
                     b.ToTable("t_e_bantype_bnt");
+
+                    b.HasData(
+                        new
+                        {
+                            BanTypeId = 1,
+                            BanTypeDescription = "Perte d'accès à tous les fonctions du site, connexion incluse.",
+                            BanTypeName = "Total"
+                        },
+                        new
+                        {
+                            BanTypeId = 2,
+                            BanTypeDescription = "Compte en lecture seule.",
+                            BanTypeName = "Transactionnel",
+                            ParentBanTypeId = 1
+                        },
+                        new
+                        {
+                            BanTypeId = 3,
+                            BanTypeDescription = "Impossibilité de modifier l'inventaire.",
+                            BanTypeName = "Inventaire",
+                            ParentBanTypeId = 2
+                        },
+                        new
+                        {
+                            BanTypeId = 4,
+                            BanTypeDescription = "Interdiction d'ouvrir des caisses.",
+                            BanTypeName = "Ouverture",
+                            ParentBanTypeId = 3
+                        },
+                        new
+                        {
+                            BanTypeId = 5,
+                            BanTypeDescription = "Restrictions sur les ventes d'objets.",
+                            BanTypeName = "Vente",
+                            ParentBanTypeId = 3
+                        },
+                        new
+                        {
+                            BanTypeId = 6,
+                            BanTypeDescription = "Les objets dans l'inventaire ne peuvent pas être améliorés.",
+                            BanTypeName = "Amélioration",
+                            ParentBanTypeId = 3
+                        },
+                        new
+                        {
+                            BanTypeId = 7,
+                            BanTypeDescription = "Ne peut pas effectuer de dépôt ou de retrait.",
+                            BanTypeName = "Monétaire",
+                            ParentBanTypeId = 2
+                        },
+                        new
+                        {
+                            BanTypeId = 8,
+                            BanTypeDescription = "Le compte ne peut pas être crédité depuis l'extérieur.",
+                            BanTypeName = "Crédit",
+                            ParentBanTypeId = 7
+                        },
+                        new
+                        {
+                            BanTypeId = 9,
+                            BanTypeDescription = "Le solde ne peut pas être exporté vers d'autres plateformes.",
+                            BanTypeName = "Débit",
+                            ParentBanTypeId = 7
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Case", b =>
@@ -317,6 +395,48 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.HasIndex("ParentItemTypeId");
 
                     b.ToTable("t_e_itemtype_itt");
+
+                    b.HasData(
+                        new
+                        {
+                            ItemTypeId = 1,
+                            ItemTypeName = "Pistol"
+                        },
+                        new
+                        {
+                            ItemTypeId = 2,
+                            ItemTypeName = "Rifle"
+                        },
+                        new
+                        {
+                            ItemTypeId = 3,
+                            ItemTypeName = "Sniper Rifle"
+                        },
+                        new
+                        {
+                            ItemTypeId = 4,
+                            ItemTypeName = "Machinegun"
+                        },
+                        new
+                        {
+                            ItemTypeId = 5,
+                            ItemTypeName = "SMG"
+                        },
+                        new
+                        {
+                            ItemTypeId = 6,
+                            ItemTypeName = "Shotgun"
+                        },
+                        new
+                        {
+                            ItemTypeId = 7,
+                            ItemTypeName = "Knife"
+                        },
+                        new
+                        {
+                            ItemTypeId = 8,
+                            ItemTypeName = "Gloves"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Limit", b =>
@@ -329,7 +449,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("lmt_id");
 
-                    b.Property<double>("LimitAmount")
+                    b.Property<double?>("LimitAmount")
                         .HasColumnType("double precision")
                         .HasColumnName("lim_limitamount");
 
@@ -353,12 +473,6 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("lmt_duration");
 
-                    b.Property<string>("DurationName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("lmt_durationname");
-
                     b.Property<string>("LimitTypeName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -371,6 +485,104 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsUnique();
 
                     b.ToTable("t_e_limittype_lmt");
+
+                    b.HasData(
+                        new
+                        {
+                            LimitTypeId = 1,
+                            Duration = 1,
+                            LimitTypeName = "Dépôt Horaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 2,
+                            Duration = 1,
+                            LimitTypeName = "Dépenses Horaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 3,
+                            Duration = 1,
+                            LimitTypeName = "Ouvertures Horaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 4,
+                            Duration = 1,
+                            LimitTypeName = "Améliorations Horaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 5,
+                            Duration = 24,
+                            LimitTypeName = "Dépôt Quotidien"
+                        },
+                        new
+                        {
+                            LimitTypeId = 6,
+                            Duration = 24,
+                            LimitTypeName = "Dépenses Quotidien"
+                        },
+                        new
+                        {
+                            LimitTypeId = 7,
+                            Duration = 24,
+                            LimitTypeName = "Ouvertures Quotidien"
+                        },
+                        new
+                        {
+                            LimitTypeId = 8,
+                            Duration = 24,
+                            LimitTypeName = "Améliorations Quotidien"
+                        },
+                        new
+                        {
+                            LimitTypeId = 9,
+                            Duration = 168,
+                            LimitTypeName = "Dépôt Hebdomadaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 10,
+                            Duration = 168,
+                            LimitTypeName = "Dépenses Hebdomadaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 11,
+                            Duration = 168,
+                            LimitTypeName = "Ouvertures Hebdomadaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 12,
+                            Duration = 168,
+                            LimitTypeName = "Améliorations Hebdomadaire"
+                        },
+                        new
+                        {
+                            LimitTypeId = 13,
+                            Duration = 720,
+                            LimitTypeName = "Dépôt Mensuel"
+                        },
+                        new
+                        {
+                            LimitTypeId = 14,
+                            Duration = 720,
+                            LimitTypeName = "Dépenses Mensuel"
+                        },
+                        new
+                        {
+                            LimitTypeId = 15,
+                            Duration = 720,
+                            LimitTypeName = "Ouvertures Mensuel"
+                        },
+                        new
+                        {
+                            LimitTypeId = 16,
+                            Duration = 720,
+                            LimitTypeName = "Améliorations Mensuel"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Notification", b =>
@@ -465,6 +677,33 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsUnique();
 
                     b.ToTable("t_e_notificationtype_ntt");
+
+                    b.HasData(
+                        new
+                        {
+                            NotificationTypeId = 1,
+                            NotificationTypeName = "Annonce"
+                        },
+                        new
+                        {
+                            NotificationTypeId = 2,
+                            NotificationTypeName = "Sécurité & Confidentialité"
+                        },
+                        new
+                        {
+                            NotificationTypeId = 3,
+                            NotificationTypeName = "Offres Spéciales"
+                        },
+                        new
+                        {
+                            NotificationTypeId = 4,
+                            NotificationTypeName = "Mise à jour"
+                        },
+                        new
+                        {
+                            NotificationTypeId = 5,
+                            NotificationTypeName = "Évènement"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.PaymentMethod", b =>
@@ -496,6 +735,29 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsUnique();
 
                     b.ToTable("t_e_paymentmethod_pmt");
+
+                    b.HasData(
+                        new
+                        {
+                            PaymentMethodId = 1,
+                            FromWallet = false,
+                            PaymentMethodName = "Carte de crédit",
+                            ToWallet = true
+                        },
+                        new
+                        {
+                            PaymentMethodId = 2,
+                            FromWallet = true,
+                            PaymentMethodName = "RIB",
+                            ToWallet = false
+                        },
+                        new
+                        {
+                            PaymentMethodId = 3,
+                            FromWallet = true,
+                            PaymentMethodName = "PayPal",
+                            ToWallet = true
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.PriceHistory", b =>
@@ -519,15 +781,26 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("prh_pricevalue");
 
-                    b.Property<int>("WearId")
+                    b.Property<int>("SkinId")
                         .HasColumnType("integer")
-                        .HasColumnName("wer_id");
+                        .HasColumnName("skn_id");
+
+                    b.Property<int?>("WearId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WearTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("wrt_id");
 
                     b.HasKey("PriceHistoryId");
 
                     b.HasIndex("PriceDate");
 
+                    b.HasIndex("SkinId");
+
                     b.HasIndex("WearId");
+
+                    b.HasIndex("WearTypeId");
 
                     b.ToTable("t_e_pricehistory_prh");
                 });
@@ -606,6 +879,50 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsUnique();
 
                     b.ToTable("t_e_rarity_rar");
+
+                    b.HasData(
+                        new
+                        {
+                            RarityId = 1,
+                            RarityColor = "#afafaf",
+                            RarityName = "Consumer"
+                        },
+                        new
+                        {
+                            RarityId = 2,
+                            RarityColor = "#6496e1",
+                            RarityName = "Industrial"
+                        },
+                        new
+                        {
+                            RarityId = 3,
+                            RarityColor = "#4b69cd",
+                            RarityName = "Mil-Spec"
+                        },
+                        new
+                        {
+                            RarityId = 4,
+                            RarityColor = "#8847ff",
+                            RarityName = "Restricted"
+                        },
+                        new
+                        {
+                            RarityId = 5,
+                            RarityColor = "#d32ce6",
+                            RarityName = "Classified"
+                        },
+                        new
+                        {
+                            RarityId = 6,
+                            RarityColor = "#eb4b4b",
+                            RarityName = "Covert"
+                        },
+                        new
+                        {
+                            RarityId = 7,
+                            RarityColor = "#afafaf",
+                            RarityName = "Contraband"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Skin", b =>
@@ -719,6 +1036,33 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsUnique();
 
                     b.ToTable("t_e_tokentype_tkt");
+
+                    b.HasData(
+                        new
+                        {
+                            TokenTypeId = 1,
+                            TokenTypeName = "Remember Cookie"
+                        },
+                        new
+                        {
+                            TokenTypeId = 2,
+                            TokenTypeName = "Password Reset"
+                        },
+                        new
+                        {
+                            TokenTypeId = 3,
+                            TokenTypeName = "Email Verification"
+                        },
+                        new
+                        {
+                            TokenTypeId = 4,
+                            TokenTypeName = "Phone Verification"
+                        },
+                        new
+                        {
+                            TokenTypeId = 5,
+                            TokenTypeName = "2FA"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Transaction", b =>
@@ -771,6 +1115,10 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("inv_id");
 
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tra_id");
+
                     b.Property<string>("DegradeFunction")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -801,11 +1149,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("upg_propdestroy");
 
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tra_id");
-
-                    b.HasKey("InventoryItemId");
+                    b.HasKey("InventoryItemId", "TransactionId");
 
                     b.HasIndex("FairRandomId")
                         .IsUnique();
@@ -833,13 +1177,11 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnName("usr_deletedon");
 
                     b.Property<string>("DisplayName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("usr_displayname");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("usr_email");
@@ -862,7 +1204,6 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnName("usr_lastlogin");
 
                     b.Property<string>("Login")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("usr_login");
@@ -922,6 +1263,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.HasIndex("Login")
                         .IsUnique();
 
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
                     b.HasIndex("SteamId")
                         .IsUnique();
 
@@ -937,14 +1281,6 @@ namespace S5_01_App_CS_GOAT.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WearId"));
 
-                    b.Property<float>("FloatHigh")
-                        .HasColumnType("real")
-                        .HasColumnName("wer_floathigh");
-
-                    b.Property<float>("FloatLow")
-                        .HasColumnType("real")
-                        .HasColumnName("wer_floatlow");
-
                     b.Property<int>("SkinId")
                         .HasColumnType("integer")
                         .HasColumnName("skn_id");
@@ -955,11 +1291,13 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("wer_uuid");
 
-                    b.Property<string>("WearName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("wer_wearname");
+                    b.Property<float>("WearFloat")
+                        .HasColumnType("real")
+                        .HasColumnName("wer_wearfloat");
+
+                    b.Property<int>("WearTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("wrt_id");
 
                     b.HasKey("WearId");
 
@@ -967,7 +1305,59 @@ namespace S5_01_App_CS_GOAT.Migrations
 
                     b.HasIndex("Uuid");
 
+                    b.HasIndex("WearTypeId");
+
                     b.ToTable("t_e_wear_wer");
+                });
+
+            modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.WearType", b =>
+                {
+                    b.Property<int>("WearTypeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("wrt_id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WearTypeId"));
+
+                    b.Property<string>("WearTypeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("wrt_weartypename");
+
+                    b.HasKey("WearTypeId");
+
+                    b.HasIndex("WearTypeName")
+                        .IsUnique();
+
+                    b.ToTable("t_e_weartype_wrt");
+
+                    b.HasData(
+                        new
+                        {
+                            WearTypeId = 1,
+                            WearTypeName = "Factory New"
+                        },
+                        new
+                        {
+                            WearTypeId = 2,
+                            WearTypeName = "Minimal Wear"
+                        },
+                        new
+                        {
+                            WearTypeId = 3,
+                            WearTypeName = "Field-Tested"
+                        },
+                        new
+                        {
+                            WearTypeId = 4,
+                            WearTypeName = "Well-Worn"
+                        },
+                        new
+                        {
+                            WearTypeId = 5,
+                            WearTypeName = "Battle-Scarred"
+                        });
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.GlobalNotification", b =>
@@ -1069,6 +1459,15 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.Navigation("BanType");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.BanType", b =>
+                {
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.BanType", "ParentBanType")
+                        .WithMany("SubBanTypes")
+                        .HasForeignKey("ParentBanTypeId");
+
+                    b.Navigation("ParentBanType");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.CaseContent", b =>
@@ -1199,13 +1598,25 @@ namespace S5_01_App_CS_GOAT.Migrations
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.PriceHistory", b =>
                 {
-                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.Wear", "Wear")
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.Skin", "Skin")
                         .WithMany("PriceHistories")
-                        .HasForeignKey("WearId")
+                        .HasForeignKey("SkinId")
                         .IsRequired()
-                        .HasConstraintName("FK_pricehistory_wear");
+                        .HasConstraintName("FK_pricehistory_skin");
 
-                    b.Navigation("Wear");
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.Wear", null)
+                        .WithMany("PriceHistories")
+                        .HasForeignKey("WearId");
+
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.WearType", "WearType")
+                        .WithMany("PriceHistories")
+                        .HasForeignKey("WearTypeId")
+                        .IsRequired()
+                        .HasConstraintName("FK_pricehistory_weartype");
+
+                    b.Navigation("Skin");
+
+                    b.Navigation("WearType");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.PromoCode", b =>
@@ -1317,7 +1728,15 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_wear_skin");
 
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.WearType", "WearType")
+                        .WithMany("Wears")
+                        .HasForeignKey("WearTypeId")
+                        .IsRequired()
+                        .HasConstraintName("FK_wear_weartype");
+
                     b.Navigation("Skin");
+
+                    b.Navigation("WearType");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.GlobalNotification", b =>
@@ -1410,6 +1829,8 @@ namespace S5_01_App_CS_GOAT.Migrations
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.BanType", b =>
                 {
                     b.Navigation("Bans");
+
+                    b.Navigation("SubBanTypes");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Case", b =>
@@ -1480,6 +1901,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                 {
                     b.Navigation("CaseContents");
 
+                    b.Navigation("PriceHistories");
+
                     b.Navigation("Wears");
                 });
 
@@ -1514,6 +1937,13 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.Navigation("InventoryItems");
 
                     b.Navigation("PriceHistories");
+                });
+
+            modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.WearType", b =>
+                {
+                    b.Navigation("PriceHistories");
+
+                    b.Navigation("Wears");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.RandomTransaction", b =>

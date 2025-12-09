@@ -5,7 +5,5 @@
         public double LimitAmount { get; set; } = 0; // amount of money the user don't want to spent
 
         public string LimitTypeName { get; set; } = null!; // name of why the user want to limit is spending
-
-        public string DurationName { get; set; } = null!; // convert the datetime to string (ex 365 days to 1 year)
     }
 }

@@ -18,7 +18,22 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("bnt_bantypename")]
         public string BanTypeName { get; set; } = null!;
 
+        [Required]
+        [Column("bnt_bantypedescription")]
+        [StringLength(255)]
+        public string BanTypeDescription { get; set; } = null!;
+
+        [Column("bnt_parentid")]
+        public int? ParentBanTypeId { get; set; }
+
         [InverseProperty(nameof(Ban.BanType))]
         public virtual ICollection<Ban> Bans { get; set; } = null!;
+
+        [ForeignKey(nameof(ParentBanTypeId))]
+        [InverseProperty(nameof(SubBanTypes))]
+        public virtual BanType? ParentBanType { get; set; }
+
+        [InverseProperty(nameof(ParentBanType))]
+        public virtual ICollection<BanType> SubBanTypes { get; set; } = null!;
     }
 }

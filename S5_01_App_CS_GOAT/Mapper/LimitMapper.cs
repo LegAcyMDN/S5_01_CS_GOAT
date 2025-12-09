@@ -11,8 +11,7 @@ namespace S5_01_App_CS_GOAT.Mapper
             // Entity -> DTO
             CreateMap<Limit, LimitDTO>()
                 .ForMember(dest => dest.LimitAmount, opt => opt.MapFrom(src => src.LimitAmount))
-                .ForMember(dest => dest.LimitTypeName, opt => opt.MapFrom(src => src.LimitType.LimitTypeName))
-                .ForMember(dest => dest.DurationName, opt => opt.MapFrom(src => src.LimitType.DurationName));
+                .ForMember(dest => dest.LimitTypeName, opt => opt.MapFrom(src => src.LimitType.LimitTypeName));
         }
     }
 }
