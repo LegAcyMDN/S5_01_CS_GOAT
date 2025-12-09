@@ -28,7 +28,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
             if (wear == null) return NotFound();
-            IEnumerable<PriceHistory> result = wear.PriceHistories;
+            IEnumerable<PriceHistory> result = wear.PriceHistories();
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
             return Ok(result);
         }

@@ -16,16 +16,16 @@ public class SkinMapper : Profile
             .ForMember(dest => dest.BestPrice, opt => opt.MapFrom(src => 
                 src.Wears != null && src.Wears.Any() 
                     ? src.Wears
-                        .Where(w => w.PriceHistories != null && w.PriceHistories.Any())
-                        .SelectMany(w => w.PriceHistories)
-                        .Min(ph => (double?)ph.PriceValue) ?? 0.0
+                        .Where(w => w.PriceHistories() != null && w.PriceHistories().Any())
+                        .SelectMany(w => w.PriceHistories())
+                        .Max(ph => (double?)ph.PriceValue) ?? 0.0
                     : 0.0))
             .ForMember(dest => dest.WorstPrice, opt => opt.MapFrom(src => 
                 src.Wears != null && src.Wears.Any() 
                     ? src.Wears
-                        .Where(w => w.PriceHistories != null && w.PriceHistories.Any())
-                        .SelectMany(w => w.PriceHistories)
-                        .Max(ph => (double?)ph.PriceValue) ?? 0.0
+                        .Where(w => w.PriceHistories() != null && w.PriceHistories().Any())
+                        .SelectMany(w => w.PriceHistories())
+                        .Min(ph => (double?)ph.PriceValue) ?? 0.0
                     : 0.0))
             .ForMember(dest => dest.AnyUuid, opt => opt.MapFrom(src => 
                 src.Wears != null && src.Wears.Any() 

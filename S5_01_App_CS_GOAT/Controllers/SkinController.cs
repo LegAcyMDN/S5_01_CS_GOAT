@@ -26,16 +26,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByCase(int caseid)
         {
-            Case? _case = await caseManager.GetByIdAsync(caseid, "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories");
+            Case? _case = await caseManager.GetByIdAsync(caseid, "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType");
             if (_case == null) return NotFound();
-            
+
             IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 
-            {
-                var skinDto = mapper.Map<SkinDTO>(cc.Skin);
-                skinDto.Weight = cc.Weight;
-                return skinDto;
-            });
-            
+                {
+                    var skinDto = mapper.Map<SkinDTO>(cc.Skin);
+                    skinDto.Weight = cc.Weight;
+                    return skinDto;
+                });
+
             return Ok(skins);
         }
     }

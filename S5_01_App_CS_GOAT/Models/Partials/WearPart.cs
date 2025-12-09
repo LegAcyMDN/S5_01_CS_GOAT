@@ -4,15 +4,15 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Wear
     {
-        public IEnumerable<PriceHistory> PriceHistories
+        public IEnumerable<PriceHistory> PriceHistories()
         {
-            get => this.WearType.PriceHistories.Where(p => p.SkinId == this.SkinId);
+            return this.WearType.PriceHistories.Where(p => p.SkinId == this.SkinId);
         }
-
 
         public async Task<byte[]?[]> GetTexture()
         {
             int nbTextures = this.Skin.UvType != 3 ? 1 : 2;
+            Console.WriteLine($"Number of textures: {nbTextures}");
             byte[]?[] textures = new byte[nbTextures][];
 
             HttpClient httpClient = new()
