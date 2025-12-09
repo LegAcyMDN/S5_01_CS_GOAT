@@ -46,13 +46,13 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             };
         }
 
+        // LimitDTO fixtures
         public static LimitDTO GetLimitDTO()
         {
             return new LimitDTO
             {
                 LimitAmount = 150.00,
-                LimitTypeName = "Daily",
-                DurationName = "1 day"
+                LimitTypeName = "Daily"
             };
         }
 
@@ -63,14 +63,12 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 new LimitDTO
                 {
                     LimitAmount = 100.00,
-                    LimitTypeName = "Daily",
-                    DurationName = "1 day"
+                    LimitTypeName = "Daily"
                 },
                 new LimitDTO
                 {
                     LimitAmount = 50.00,
-                    LimitTypeName = "Weekly",
-                    DurationName = "7 days"
+                    LimitTypeName = "Weekly"
                 }
             };
         }
@@ -80,8 +78,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             return new LimitDTO
             {
                 LimitAmount = 250.00,
-                LimitTypeName = "Daily",
-                DurationName = "1 day"
+                LimitTypeName = "Daily"
             };
         }
 
@@ -90,6 +87,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             return new LimitDTO();
         }
 
+        // Limit key helpers
         public static (int, int) GetLimitKey(int userId, int limitTypeId)
         {
             return (userId, limitTypeId);
@@ -107,8 +105,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             {
                 LimitTypeId = 1,
                 LimitTypeName = "Daily",
-                Duration = 1,
-                DurationName = "Day"
+                Duration = 1
             };
         }
 
@@ -120,22 +117,19 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 {
                     LimitTypeId = 1,
                     LimitTypeName = "Daily",
-                    Duration = 1,
-                    DurationName = "Day"
+                    Duration = 1
                 },
                 new LimitType
                 {
                     LimitTypeId = 2,
                     LimitTypeName = "Weekly",
-                    Duration = 7,
-                    DurationName = "Week"
+                    Duration = 7
                 },
                 new LimitType
                 {
                     LimitTypeId = 3,
                     LimitTypeName = "Monthly",
-                    Duration = 30,
-                    DurationName = "Month"
+                    Duration = 30
                 }
             };
         }
