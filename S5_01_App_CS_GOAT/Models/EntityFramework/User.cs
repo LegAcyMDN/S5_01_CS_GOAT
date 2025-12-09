@@ -12,7 +12,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Index(nameof(SteamId), IsUnique = true)]
     [Index(nameof(LastLogin))]
     [Index(nameof(IsAdmin))]
-    [Index(nameof(DeleteOn))]
+    [Index(nameof(DeletedOn))]
     public partial class User
     {
         [Key]
@@ -92,7 +92,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public double Wallet { get; set; } = 0.0;
 
         [Column("usr_deletedon")]
-        public DateTime? DeleteOn { get; set; }
+        public DateTime? DeletedOn { get; set; }
 
         [InverseProperty(nameof(Limit.User))]
         public virtual ICollection<Limit> Limits { get; set; } = null!;
