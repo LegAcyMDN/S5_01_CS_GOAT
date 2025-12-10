@@ -50,8 +50,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 1,
-                "CaseContents.Skin.Rarity", 
-                "CaseContents.Skin.PriceHistories"
+              "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType"
             )).ReturnsAsync(caseWithSkins);
             
             List<CaseContent> caseContents = caseWithSkins.CaseContents.ToList();
@@ -69,8 +68,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsNotNull(okResult.Value);
             caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 1,
-                "CaseContents.Skin.Rarity", 
-                "CaseContents.Skin.PriceHistories"
+               "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType"
             ), Times.Once);
         }
 
@@ -79,8 +77,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 999,
-               "CaseContents.Skin.Rarity", 
-               "CaseContents.Skin.PriceHistorie"
+             "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType"
             )).ReturnsAsync((Case?)null);
 
             // When
@@ -90,8 +87,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
             caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 999,
-               "CaseContents.Skin.Rarity", 
-               "CaseContents.Skin.PriceHistories"
+              "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType"
             ), Times.Once);
         }
 
