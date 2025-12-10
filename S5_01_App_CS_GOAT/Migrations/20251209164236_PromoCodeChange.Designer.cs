@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
@@ -11,9 +12,11 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 namespace S5_01_App_CS_GOAT.Migrations
 {
     [DbContext(typeof(CSGOATDbContext))]
-    partial class CSGOATDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209164236_PromoCodeChange")]
+    partial class PromoCodeChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

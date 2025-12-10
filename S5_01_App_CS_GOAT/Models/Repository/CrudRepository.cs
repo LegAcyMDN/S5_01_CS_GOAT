@@ -68,10 +68,11 @@ public class CrudRepository<TEntity, TIdentifier> :
         return entity;
     }
 
-    public async Task UpdateAsync(TEntity entityToUpdate, TEntity entity)
+    public async Task UpdateAsync(TEntity entityToUpdate, TEntity? entity)
     {
         _context.Set<TEntity>().Attach(entityToUpdate);
-        _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
+        if (entity != null)
+            _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
         await _context.SaveChangesAsync();
     }
 
