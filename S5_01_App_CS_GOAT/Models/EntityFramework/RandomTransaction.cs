@@ -5,13 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_randomtransaction_rtr")]
-    public class RandomTransaction : Transaction
+    public class RandomTransaction : ItemTransaction
     {
-        [Required]
-        [StringLength(255)]
-        [Column("rtr_userseed")]
-        public string UserSeed { get; set; } = null!;
-
         [Column("cas_id")]
         public int? CaseId { get; set; }
 

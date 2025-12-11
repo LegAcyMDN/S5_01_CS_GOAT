@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 
@@ -44,10 +45,11 @@ namespace S5_01_App_CS_GOAT.Services
         /// <returns>The list of IUserDependant objects belonging to the authenticated user</returns>
         public async Task<IEnumerable<T1>> GetByUser<T1, T2>(
                 IReadableRepository<T1, T2> manager,
-                bool adminOverride)
+                bool adminOverride,
+                Expression<Func<T1, bool>>? where = null)
                 where T1 : IUserDependant
         {
-            IEnumerable<T1> allObjects = await manager.GetAllAsync();
+            IEnumerable<T1> allObjects = await manager.GetAllAsync(where);
             AuthResult self = this;
             return allObjects.Where(o => self.IsAllowed(o, adminOverride));
         }

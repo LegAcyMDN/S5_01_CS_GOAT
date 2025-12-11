@@ -11,7 +11,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         public async Task Tick(IServiceScope scope)
         {
-            if (!this.ExpiryDate.HasValue || this.ExpiryDate > DateTime.Now) return;
+            IDataRepository<PromoCode, int> promoCodeRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<PromoCode, int>>();
+            await this.CheckStillValid(promoCodeRepository);
+        }
+
+        public async Task<bool> CheckStillValid(IWriteRepository<PromoCode> promoCodeRepository)
+        {
+            if (!this.ExpiryDate.HasValue || this.ExpiryDate > DateTime.Now) return true;
             if (this.RefreshDelay.HasValue && this.ExpiryDate.Value.Add(this.RefreshDelay.Value) > DateTime.Now)
             {
                 if (this.RemainingUses.HasValue && this.RemainingUses == 0)
@@ -19,16 +25,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 this.ValidityStart += this.RefreshDelay.Value;
                 this.ExpiryDate += this.RefreshDelay.Value;
 
-                IDataRepository<PromoCode, int> promoCodeRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<PromoCode, int>>();
                 await promoCodeRepository.UpdateAsync(this, null);
-                return;
             }
             else
             {
-                IDataRepository<PromoCode, int> promoCodeRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<PromoCode, int>>();
                 await promoCodeRepository.DeleteAsync(this);
-                return;
             }
+            return false;
         }
     }
 }
