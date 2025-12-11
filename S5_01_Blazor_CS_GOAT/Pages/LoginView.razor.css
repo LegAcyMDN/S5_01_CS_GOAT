@@ -11,10 +11,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 500px;
+    width: 600px;
     padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
+}
+
+.form-box form {
+    margin: 0 0 15px 0;
 }
 
 h3 {
@@ -45,8 +47,15 @@ input[type="text"], input[type="password"] {
 }
 
 .usr-login label, .usr-password label {
-    margin-right: 10px;
-    width: 147px;
+    margin-right: 10px;    
+}
+
+.usr-login input {
+    width: 325px;
+}
+
+.usr-password input {
+    width: 300px;
 }
 
 .margin-bottom-10 {
@@ -218,4 +227,22 @@ path.two {
     background-color: rgba(255, 68, 68, 0.1);
     border: 1px solid #ff4444;
     color: #ff4444;
+}
+
+/* Ajout de styles pour centrer verticalement la div-submit */
+.div-submit {
+    margin: 0 auto;
+}
+
+.steam-link {
+    margin: 0 0 15px 0
+}
+
+/* Ajout de styles pour centrer verticalement le span dans la div steam-span */
+.steam-span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 5px 0;
+    transform: skewX(-15deg);
 }
