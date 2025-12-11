@@ -15,7 +15,6 @@ app = Flask(__name__)
 
 # Configure the app for PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Should be boolean, not string
-
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS")
 # Initialize SQLAlchemy with the app
 db.init_app(app)
