@@ -22,8 +22,6 @@
         
         public string? RarityColor { get; set; }
 
-        public string UserSeed { get; set; } = null!;
-
         public CaseDTO? Case { get; set; }
     }
 }

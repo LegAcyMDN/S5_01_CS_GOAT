@@ -11,6 +11,7 @@ namespace S5_01_App_CS_GOAT.Mapper
             CreateMap<FairRandom, FairRandomDTO>()
                 .ForMember(dest => dest.ServerSeed, opt => opt.MapFrom(src => src.ServerSeed))
                 .ForMember(dest => dest.ServerHash, opt => opt.MapFrom(src => src.ServerHash))
+                .ForMember(dest => dest.UserSeed, opt => opt.MapFrom(src => src.UserSeed))
                 .ForMember(dest => dest.UserNonce, opt => opt.MapFrom(src => src.UserNonce))
                 .ForMember(dest => dest.CombinedHash, opt => opt.MapFrom(src => src.CombinedHash))
                 .ForMember(dest => dest.Fraction, opt => opt.MapFrom(src => src.Fraction))

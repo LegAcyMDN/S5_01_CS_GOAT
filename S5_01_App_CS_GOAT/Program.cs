@@ -54,7 +54,6 @@ builder.Services.AddScoped<ITypeRepository<WearType>, TypeRepository<WearType>>(
 
 // Generic repositories for standard entities
 builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
-builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
 builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int>, CrudRepository<InventoryItem>>();
@@ -71,6 +70,7 @@ builder.Services.AddScoped<IDataRepository<UpgradeResult, (int,int)>, CrudReposi
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
 // Custom managers for complex entities
+builder.Services.AddScoped<IFairRandomRepository, FairRandomManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 
 // Timed services
