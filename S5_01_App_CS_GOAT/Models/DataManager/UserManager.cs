@@ -43,11 +43,15 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
         if (existing.Email != userDTO.Email)
         {
+            if (userDTO.Email != null && await this.GetByEmail(userDTO.Email) != null)
+                throw new InvalidOperationException("Email is already in use.");
             existing.Email = userDTO.Email;
             existing.EmailVerifiedOn = null;
         }
         if (existing.Phone != userDTO.Phone)
         {
+            if (userDTO.Phone != null && await this.GetByPhone(userDTO.Phone) != null)
+                throw new InvalidOperationException("Phone is already in use.");
             existing.Phone = userDTO.Phone;
             existing.PhoneVerifiedOn = null;
         }
@@ -65,18 +69,14 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             bool? goodPassword = SecurityService.VerifyPassword(
                 userDTO.OldPassword,
                 existing.HashPassword,
-                existing.SaltPassword);
-            
+                existing.SaltPassword
+            );
             if (goodPassword != true)
                 throw new InvalidOperationException("Current password is incorrect.");
 
             if (userDTO.NewPassword != null)
-            {
-                string newSalt = SecurityService.GenerateToken();
-                string newHash = SecurityService.HashAndSalt(userDTO.NewPassword, newSalt);
-                existing.SaltPassword = newSalt;
-                existing.HashPassword = newHash;
-            }
+                if (!existing.TrySetPassword(userDTO.NewPassword))
+                    throw new InvalidOperationException("New password does not meet complexity requirements.");
         }
 
         await _context.SaveChangesAsync();
@@ -84,20 +84,24 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task<User> CreateUser(CreateUserDTO newAccount)
     {
-        if(newAccount.Password == null)
-            throw new InvalidOperationException("Password must be provided.");
+        if (await GetByLogin(newAccount.Login) != null)
+            throw new InvalidOperationException("Login is already in use.");
         if (newAccount.Email == null && newAccount.Phone == null)
             throw new InvalidOperationException("At least one contact method (email or phone) must be provided.");
-        string newSalt = SecurityService.GenerateToken();
+        if (newAccount.Email != null && await GetByEmail(newAccount.Email) != null)
+            throw new InvalidOperationException("Email is already in use.");
+        if (newAccount.Phone != null && await GetByPhone(newAccount.Phone) != null)
+            throw new InvalidOperationException("Phone is already in use.");
+
         User newUser = new User
         {
             Login = newAccount.Login,
             DisplayName = newAccount.DisplayName,
-            HashPassword = SecurityService.HashAndSalt(newAccount.Password, newSalt),
-            SaltPassword = newSalt,
             Email = newAccount.Email,
             Phone = newAccount.Phone
         };
+        if (!newUser.TrySetPassword(newAccount.Password))
+            throw new InvalidOperationException("Password does not meet complexity requirements.");
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
         await _context.Set<User>().AddAsync(newUser);
@@ -145,12 +149,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task<User?> Login(LoginDTO loginDTO)
     {
-        User? user = await _context.Set<User>()
-            .FirstOrDefaultAsync(
-                u => u.Login == loginDTO.Identifier
-                || u.Email == loginDTO.Identifier
-                || u.Phone == loginDTO.Identifier);
-
+        User? user = await this.GetByIdentifier(loginDTO.Identifier);
         if (user == null) return null;
 
         bool? goodPassword = SecurityService.VerifyPassword(
@@ -213,5 +212,39 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             await _context.SaveChangesAsync();
         }
         return authDTO;
+    }
+
+    public async Task<User?> GetByLogin(string login)
+    {
+        return await _context.Set<User>()
+            .FirstOrDefaultAsync(
+                u => u.Login != null && u.Login.ToLower() == login.ToLower()
+            );
+    }
+
+    public async Task<User?> GetByEmail(string email)
+    {
+        return await _context.Set<User>()
+            .FirstOrDefaultAsync(
+                u => u.Email != null && u.Email.ToLower() == email.ToLower()
+            );
+    }
+
+    public async Task<User?> GetByPhone(string phone)
+    {
+        return await _context.Set<User>()
+            .FirstOrDefaultAsync(
+                u => u.Phone != null && u.Phone.ToLower() == phone.ToLower()
+            );
+    }
+
+    public async Task<User?> GetByIdentifier(string identifier)
+    {
+        User? user = await GetByLogin(identifier);
+        if (user != null) return user;
+        user = await GetByEmail(identifier);
+        if (user != null) return user;
+        user = await GetByPhone(identifier);
+        return user;
     }
 }

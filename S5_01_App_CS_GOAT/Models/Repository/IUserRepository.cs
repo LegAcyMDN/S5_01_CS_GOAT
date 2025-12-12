@@ -17,4 +17,10 @@ public interface IUserRepository : IDataRepository<User, int>
     Task<User?> Login(LoginDTO loginDTO);
 
     Task<User?> Recall(RememberDTO rememberDTO);
+
+    Task<User?> GetByIdentifier(string identifier);
+    Task<User?> GetByLogin(string login);
+    Task<User?> GetByEmail(string email);
+    Task<User?> GetByPhone(string phone);
+
 }
