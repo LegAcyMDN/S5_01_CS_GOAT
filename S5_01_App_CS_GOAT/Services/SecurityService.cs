@@ -30,11 +30,31 @@ namespace S5_01_App_CS_GOAT.Services
         }
 
         /// <summary>
+        /// Hash a string using SHA256
+        /// </summary>
+        /// <param name="input">The input string to hash</param>
+        /// <returns>A Base64 encoded hash of the input string</returns>
+        /// <exception cref="ArgumentException">Thrown when input is null or empty</exception>
+        public static string HashString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                throw new ArgumentException("Input cannot be null or empty");
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                return Convert.ToBase64String(hashBytes);
+            }
+        }
+
+        /// <summary>
         /// Hashes a password using PBKDF2 with the provided salt
         /// </summary>
         /// <param name="password">The plain text password to hash</param>
         /// <param name="salt">The salt to use for hashing</param>
         /// <returns>A Base64 encoded hash of the password</returns>
+        /// <exception cref="ArgumentException">Thrown when password or salt is null or empty</exception>
         public static string HashAndSalt(string password, string salt)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(salt))

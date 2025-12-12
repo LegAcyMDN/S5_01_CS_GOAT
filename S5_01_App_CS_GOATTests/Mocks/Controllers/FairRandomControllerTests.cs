@@ -24,7 +24,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class FairRandomControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<FairRandom, int>>? fairRandomRepositoryMock;
+        private Mock<IFairRandomRepository>? fairRandomRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private FairRandomController? controller;
 
@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            fairRandomRepositoryMock = new Mock<IDataRepository<FairRandom, int>>();
+            fairRandomRepositoryMock = new Mock<IFairRandomRepository>();
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();
@@ -72,7 +72,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.IsResolved), Times.Never);
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             
             List<FairRandom> mixedFairRandomList = FairRandomFixture.GetFairRandoms();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(null))
+            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.IsResolved))
                                     .ReturnsAsync(mixedFairRandomList);
             
             mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(mixedFairRandomList))
@@ -93,7 +93,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.IsResolved), Times.Once);
         }
 
         [TestMethod]
@@ -102,7 +102,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             List<FairRandom> emptyList = new List<FairRandom>();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(null))
+            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.IsResolved))
                                     .ReturnsAsync(emptyList);
             
             mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(emptyList))
@@ -113,7 +113,42 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.IsResolved), Times.Once);
+        }
+
+        #endregion
+
+        #region GetServerHash Tests
+
+        [TestMethod]
+        public void GetServerHash_Unauthenticated_ReturnsUnauthorized()
+        {
+            // When
+            IActionResult? result = controller.GetServerHash().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            fairRandomRepositoryMock.Verify(r => r.Init(It.IsAny<int>(), true, true), Times.Never);
+        }
+
+        [TestMethod]
+        public void GetServerHash_AuthenticatedUser_ReturnsServerHash()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+
+            FairRandom fairRandom = FairRandomFixture.GetFairRandom();
+            fairRandomRepositoryMock.Setup(r => r.Init(normalUser.UserId, true, true))
+                                    .ReturnsAsync(fairRandom);
+
+            // When
+            IActionResult? result = controller.GetServerHash().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            var okResult = result as OkObjectResult;
+            Assert.AreEqual(fairRandom.ServerHash, okResult?.Value);
+            fairRandomRepositoryMock.Verify(r => r.Init(normalUser.UserId, true, true), Times.Once);
         }
 
         #endregion

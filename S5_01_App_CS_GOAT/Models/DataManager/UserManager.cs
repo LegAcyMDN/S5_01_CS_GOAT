@@ -100,7 +100,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         };
 
         await using var transaction = await _context.Database.BeginTransactionAsync();
-        await AddAsync(newUser);
+        await _context.Set<User>().AddAsync(newUser);
         await InitializeUser(newUser);
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();

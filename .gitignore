@@ -366,3 +366,4 @@ FodyWeavers.xsd
 **/appsettings.json
 **/appsettings.*.json
 /S5_01_App_CS_GOAT/Controllers/UpgradeResultController.cs
+*.env

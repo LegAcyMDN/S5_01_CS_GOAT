@@ -228,7 +228,6 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 UserId = 2,
                 TransactionDate = DateTime.Now.AddDays(-3),
                 WalletValue = -10.00,
-                UserSeed = "seed-12345",
                 CaseId = 1,
                 FairRandomId = 1
             };
@@ -242,7 +241,6 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 UserId = 1,
                 TransactionDate = DateTime.Now.AddDays(-2),
                 WalletValue = -15.00,
-                UserSeed = "seed-67890",
                 CaseId = 2,
                 FairRandomId = 2
             };
@@ -258,7 +256,6 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     UserId = 2,
                     TransactionDate = DateTime.Now.AddDays(-3),
                     WalletValue = -10.00,
-                    UserSeed = "seed-12345",
                     CaseId = 1,
                     FairRandomId = 1
                 },
@@ -268,7 +265,6 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     UserId = 2,
                     TransactionDate = DateTime.Now.AddDays(-1),
                     WalletValue = -12.50,
-                    UserSeed = "seed-11111",
                     CaseId = 1,
                     FairRandomId = 3
                 }
@@ -280,8 +276,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             return new RandomTransactionDetailDTO
             {
                 TransactionDate = DateTime.Now.AddDays(-3),
-                WalletValue = -10.00,
-                UserSeed = "seed-12345"
+                WalletValue = -10.00
             };
         }
 

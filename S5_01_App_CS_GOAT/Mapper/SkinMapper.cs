@@ -11,6 +11,7 @@ public class SkinMapper : Profile
         // Entity -> DTO
         CreateMap<Skin, SkinDTO>()
             .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.SkinName))
+            .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.Item.ItemName))
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Rarity.RarityName))
             .ForMember(dest => dest.RarityColor, opt => opt.MapFrom(src => src.Rarity.RarityColor))
             .ForMember(dest => dest.BestPrice, opt => opt.MapFrom(src => 
