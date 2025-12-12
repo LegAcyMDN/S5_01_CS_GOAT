@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -17,6 +18,7 @@ class PriceHistory(db.Model):
     price_history_id = db.Column('prh_id', db.Integer, primary_key=True, autoincrement=True)
     price_date = db.Column('prh_pricedate', db.DateTime, nullable=False, index=True)
     price_value = db.Column('prh_pricevalue', db.Float, nullable=False)
+    guess_date = db.Column('prh_guessdate', db.DateTime, nullable=True) 
     
     skin_id = db.Column('skn_id', db.Integer, nullable=False)
     wear_type_id = db.Column('wrt_id', db.Integer, nullable=False)
@@ -29,3 +31,4 @@ class PriceHistory(db.Model):
             'pricedate': self.price_date.isoformat(),
             'pricevalue': self.price_value
         }
+    
