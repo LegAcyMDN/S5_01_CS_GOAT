@@ -12,7 +12,7 @@
             <div class="alert alert-danger">@errorMessage</div>
         }
 
-        <form @onsubmit="HandleLogin" @onsubmit:preventDefault>
+        <form @onsubmit="HandleLogin" @onsubmit:preventDefault="true">
             <div class="margin-bottom-10">
                 <div class="wrapper usr-login">
                     <div class="cta">
@@ -78,7 +78,8 @@
             </div>
         </div>        
         <div class="other-links">
-            <span>Vous n'avez pas de compte ? <a href="">Créer un compte</a></span>
+            <p>Vous n'avez pas de compte ? <a href="/register">Créer un compte</a></p>
+            <p><a href="/">Mot de passe oublié ?</a> </p>
         </div>
     </div>
 </div>
