@@ -1,8 +1,108 @@
-<div id="rectangle-div">
-    
+@using S5_01_Blazor_CS_GOAT.Models
+
+@inject IJSRuntime JS
+
+<div class="raffle-roller">
+    <div class="raffle-roller-holder">
+        <div class="raffle-roller-container" style="margin-left: 0px; display: flex; flex-direction: row">
+            @if (listSkins.Count == 0)
+            {
+
+            }
+            else
+            {
+                @foreach (Skin skin in listSkinsInCaseRoll)
+                {
+                    <div class="skin-in-case">
+                        <WeaponDisplayComponent WeaponSkin=@skin ImageLink=@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")></WeaponDisplayComponent>
+                    </div>
+                }
+            }
+        </div>
+    </div>
 </div>
+<div style="text-align: center;"><span style="font-size: 25px;">You winning is 
+    <span style="color: green;" id="rolled">rolling</span></span>
+    <br>
+    <button onclick="() => openCase()" style="color: black">go</button>
+    </div>
+
 
 
 @code {
+    [Parameter]
+    public required List<Skin> listSkins { get; set; }
     
+    
+
+    private List<Skin> listSkinsInCaseRoll = new();
+    
+    // private List<WeaponDisplayComponent> listCaseRoll = new List<WeaponDisplayComponent>()
+    private List<DynamicComponentInfo> listCaseRoll = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+       await openCase();
+    }
+
+    private async Task openCase()
+    {
+        Random random = new();
+        
+        for (int i = 0; i <= 67; i++)
+        {
+            int indexOfListToAdd = random.Next(listSkins.Count);
+            Skin itemWithWeight = listSkins[indexOfListToAdd];
+            listSkinsInCaseRoll.Add(itemWithWeight);
+
+            // AddWeaponDisplayComponent($"https://screenshots.cs.money/csmoney2/{itemWithWeight.AnyUuid}_icon.png", itemWithWeight);
+        }
+        
+        // Add the skin you're supposed to win
+        listSkinsInCaseRoll.Add(listSkins[0]);
+        foreach (var oneSkin in listSkins)
+        {
+            await JS.InvokeVoidAsync("eval", $"console.log('{oneSkin.ItemName} | {oneSkin.SkinName}')");
+        }
+
+        
+        for (int i = 0; i <= 9; i++)
+        {
+            int indexOfListToAdd = random.Next(listSkins.Count);
+            Skin itemWithWeight = listSkins[indexOfListToAdd];
+            listSkinsInCaseRoll.Add(itemWithWeight);
+
+            await JS.InvokeVoidAsync("caseRollLogic.printStuff");
+        }
+        StateHasChanged();
+        await JS.InvokeVoidAsync("caseRollLogic.rollForItem");
+        
+        
+    }
+
+    private async Task roll()
+    {
+        await JS.InvokeVoidAsync("CaseRollComponent.rollForItem", "myElement");
+    }
+    
+    
+
+    private void AddWeaponDisplayComponent(string imageLink, Skin weaponSkin)
+    {
+        listCaseRoll.Add(new DynamicComponentInfo
+        {
+            ComponentType = typeof(WeaponDisplayComponent),
+            Parameters = new Dictionary<string, object>
+            {
+                { "ImageLink", imageLink },
+                { "WeaponSkin", weaponSkin},
+            }
+        });
+    }
+    private class DynamicComponentInfo
+    {
+        public Type ComponentType { get; set; }
+        public Dictionary<string, object> Parameters { get; set; }
+    }
 }
