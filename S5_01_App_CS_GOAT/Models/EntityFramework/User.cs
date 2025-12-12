@@ -112,6 +112,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [InverseProperty(nameof(Ban.User))]
         public virtual ICollection<Ban> Bans { get; set; } = null!;
 
+        [InverseProperty(nameof(FairRandom.User))]
+        public virtual FairRandom? FairRandom { get; set; }
+
         [InverseProperty(nameof(Favorite.User))]
         public virtual ICollection<Favorite> Favorites { get; set; } = null!;
 

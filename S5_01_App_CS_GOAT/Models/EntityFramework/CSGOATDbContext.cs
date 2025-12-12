@@ -356,6 +356,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithOne(m => m.FairRandom)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_upgraderesult");
+                e.HasOne(p => p.User)
+                    .WithOne(m => m.FairRandom)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("FK_fairrandom_user");
             });
 
             // Configure PriceHistory
