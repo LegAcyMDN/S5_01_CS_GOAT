@@ -15,6 +15,8 @@ ia_bp = Blueprint('ia', __name__)
 def predict_and_save(skin_id, wear_id, jours):
     
     price_historie = get_by_id(wear_id)
+    if price_historie is None or len(price_historie) < 10:
+        return None
 
     df = pd.DataFrame([{
         'ds': datetime.fromisoformat(ph['pricedate']),
@@ -37,7 +39,7 @@ def predict_and_save(skin_id, wear_id, jours):
         daily_seasonality=False,
         changepoint_prior_scale=0.05,
     )
-    print("Training the model !")
+    print("Training the model...")
     
     model.fit(train_df)
     last_date = df['ds'].max()
@@ -60,7 +62,7 @@ def predict_and_save(skin_id, wear_id, jours):
         new_prediction = PriceHistory(
             skin_id=skin_id,
             wear_type_id=wear.wear_type_id,
-            price_value=round(float(row['yhat']), 1),
+            price_value=round(float(row['yhat']), 2),
             price_date=row['ds'],
             guess_date=datetime.now(),
         )
@@ -83,12 +85,7 @@ def get_by_id(wear_id):
         wear_type_id=wear.wear_type_id,
         guess_date=None,
     ).all()
-    
     print(f"Found {len(price_histories)} price histories for skin_id={wear.skin_id} and wear_type_id={wear.wear_type_id}")
-    
-    if not price_histories:
-        return None
-    
     return [ph.to_dict() for ph in price_histories]
 
 
@@ -98,8 +95,5 @@ def get_all(skin_id, wear_type_id):
         wear_type_id=wear_type_id
     ).all()
 
-    print(f"Found {len(price_histories)} price histories for skin_id={skin_id} and wear_type_id={wear_type_id}")   
-    if not price_histories:
-        return None
-    
+    print(f"Found {len(price_histories)} price histories for skin_id={skin_id} and wear_type_id={wear_type_id}")
     return [ph.to_dict() for ph in price_histories]
