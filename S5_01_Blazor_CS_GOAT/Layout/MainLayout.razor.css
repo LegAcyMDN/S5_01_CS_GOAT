@@ -14,6 +14,10 @@ hr {
     overflow: hidden;
 }
 
+.content-wrapper {
+    position: relative;
+}
+
 .container-page {
     padding: 0 0 0 10px;
     position: absolute;
