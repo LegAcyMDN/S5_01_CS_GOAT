@@ -12,6 +12,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 builder.Services.AddScoped<IService<Case>>(sp => new WebService<Case>("case"));
 builder.Services.AddScoped<IService<Skin>>(sp => new WebService<Skin>("skin"));
 builder.Services.AddScoped<IService<User>>(sp => new WebService<User>("user"));
+builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<InventoryItemDetail>("inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
 
 builder.Services.AddScoped<CacheService>(sp => 

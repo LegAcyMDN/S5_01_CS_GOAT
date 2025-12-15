@@ -34,7 +34,7 @@
     letter-spacing: 3px;
     text-decoration: none;
     font-size: var(--fs-size);
-    font-family: "Arial";
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;;
     position: relative;
     text-transform: uppercase;
     color: transparent;
