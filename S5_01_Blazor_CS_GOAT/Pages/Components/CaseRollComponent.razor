@@ -50,7 +50,7 @@
     {
         Random random = new();
         
-        for (int i = 0; i <= 67; i++)
+        for (int i = 0; i <= 71; i++)
         {
             int indexOfListToAdd = random.Next(listSkins.Count);
             Skin itemWithWeight = listSkins[indexOfListToAdd];
@@ -61,6 +61,7 @@
         
         // Add the skin you're supposed to win
         listSkinsInCaseRoll.Add(listSkins[0]);
+        await JS.InvokeVoidAsync("eval", $"console.log('item to win : ' + '{listSkins[0].ItemName} | {listSkins[0].SkinName}')");
         foreach (var oneSkin in listSkins)
         {
             await JS.InvokeVoidAsync("eval", $"console.log('{oneSkin.ItemName} | {oneSkin.SkinName}')");

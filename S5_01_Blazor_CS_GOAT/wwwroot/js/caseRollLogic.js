@@ -1,7 +1,7 @@
 window.caseRollLogic = {
 
     rollForItem: async function () {
-        let endingPixel = 6800 + Math.floor(Math.random()*100)
+        let endingPixel = 6800
         let audio = new Audio('/sounds/spin.mp3');
         let maxEndingPixel = endingPixel;
         
@@ -11,6 +11,7 @@ window.caseRollLogic = {
         let lastEndingPixel = endingPixel;
         let lastThresholdAudio = endingPixel;
         while (endingPixel > 1){
+            console.log("ending pixel start : " + endingPixel);
             let marginLeft = document.querySelector(".raffle-roller-container").style
                 .marginLeft
             
@@ -19,10 +20,11 @@ window.caseRollLogic = {
             if (maxEndingPixel === endingPixel){
                 pixelStep = 50;
             } else {
-                pixelStep = endingPixel/Math.abs(maxEndingPixel - endingPixel);
+                pixelStep = (endingPixel*10)/Math.abs(maxEndingPixel - endingPixel);
+                console.log(pixelStep);
             }
             document.querySelector(".raffle-roller-container").style
-                .marginLeft = (parseInt(marginLeft) - pixelStep) + "px"
+                .marginLeft = (parseFloat(marginLeft) - pixelStep) + "px"
             endingPixel -= pixelStep;
             if (lastThresholdAudio - endingPixel >= 100) {
                 await audio.cloneNode().play()
