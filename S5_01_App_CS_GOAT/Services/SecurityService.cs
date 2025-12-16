@@ -9,21 +9,22 @@ namespace S5_01_App_CS_GOAT.Services
         /// Create a new (non-cryptographically secure) random seed
         /// </summary>
         /// <returns>A random string</returns>
-        public static string GenerateSeed(int lenght = 16)
+        public static string GenerateSeed(int length = 16)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, lenght)
+            return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         /// <summary>
         /// Generates a new random token
         /// </summary>
+        /// <param name="length">The length of the token in bytes</param>
         /// <returns>A Base64 encoded random token</returns>
-        public static string GenerateToken(int lenght = 64)
+        public static string GenerateToken(int length = 64)
         {
-            byte[] bytes = new byte[lenght];
+            byte[] bytes = new byte[length];
             using (var rng = RandomNumberGenerator.Create())
                 rng.GetBytes(bytes);
             return Convert.ToBase64String(bytes);

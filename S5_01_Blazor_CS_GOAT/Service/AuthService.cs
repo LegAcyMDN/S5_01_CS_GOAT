@@ -155,6 +155,22 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
             return await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "displayName");
         }
 
+        public async Task<int?> GetUserIdAsync()
+        {
+            var userIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "userId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return null;
+            }
+            
+            if (int.TryParse(userIdString, out int userId))
+            {
+                return userId;
+            }
+            
+            return null;
+        }
+
         public async Task LoadCurrentUserAsync()
         {
             try
