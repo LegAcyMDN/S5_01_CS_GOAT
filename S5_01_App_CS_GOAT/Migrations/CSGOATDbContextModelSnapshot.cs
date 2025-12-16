@@ -228,12 +228,11 @@ namespace S5_01_App_CS_GOAT.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("FairRandomId"));
 
                     b.Property<string>("CombinedHash")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("frn_combinedhash");
 
-                    b.Property<double>("Fraction")
+                    b.Property<double?>("Fraction")
                         .HasColumnType("double precision")
                         .HasColumnName("frn_fraction");
 
@@ -249,11 +248,23 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("frn_serverseed");
 
-                    b.Property<int>("UserNonce")
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("usr_id");
+
+                    b.Property<int?>("UserNonce")
                         .HasColumnType("integer")
                         .HasColumnName("frn_usernonce");
 
+                    b.Property<string>("UserSeed")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("usr_seed");
+
                     b.HasKey("FairRandomId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("t_e_fairrandom_frn");
                 });
@@ -782,6 +793,10 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("skn_id");
 
+                    b.Property<int>("Volume")
+                        .HasColumnType("integer")
+                        .HasColumnName("prh_volume");
+
                     b.Property<int>("WearTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("wrt_id");
@@ -842,7 +857,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("usr_id");
 
-                    b.Property<DateTime?>("ValidityStart")
+                    b.Property<DateTime>("ValidityStart")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("prc_validitystart");
 
@@ -1183,8 +1198,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnName("usr_deletedon");
 
                     b.Property<string>("DisplayName")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
                         .HasColumnName("usr_displayname");
 
                     b.Property<string>("Email")
@@ -1210,8 +1225,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .HasColumnName("usr_lastlogin");
 
                     b.Property<string>("Login")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("usr_login");
 
                     b.Property<int>("Nonce")
@@ -1424,7 +1439,7 @@ namespace S5_01_App_CS_GOAT.Migrations
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.RandomTransaction", b =>
                 {
-                    b.HasBaseType("S5_01_App_CS_GOAT.Models.EntityFramework.Transaction");
+                    b.HasBaseType("S5_01_App_CS_GOAT.Models.EntityFramework.ItemTransaction");
 
                     b.Property<int?>("CaseId")
                         .HasColumnType("integer")
@@ -1433,12 +1448,6 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.Property<int>("FairRandomId")
                         .HasColumnType("integer")
                         .HasColumnName("frn_id");
-
-                    b.Property<string>("UserSeed")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("rtr_userseed");
 
                     b.HasIndex("CaseId");
 
@@ -1493,6 +1502,17 @@ namespace S5_01_App_CS_GOAT.Migrations
                     b.Navigation("Case");
 
                     b.Navigation("Skin");
+                });
+
+            modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.FairRandom", b =>
+                {
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.User", "User")
+                        .WithOne("FairRandom")
+                        .HasForeignKey("S5_01_App_CS_GOAT.Models.EntityFramework.FairRandom", "UserId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_fairrandom_user");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.Favorite", b =>
@@ -1817,7 +1837,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_fairrandom_randomtransaction");
 
-                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.Transaction", null)
+                    b.HasOne("S5_01_App_CS_GOAT.Models.EntityFramework.ItemTransaction", null)
                         .WithOne()
                         .HasForeignKey("S5_01_App_CS_GOAT.Models.EntityFramework.RandomTransaction", "TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1916,6 +1936,8 @@ namespace S5_01_App_CS_GOAT.Migrations
             modelBuilder.Entity("S5_01_App_CS_GOAT.Models.EntityFramework.User", b =>
                 {
                     b.Navigation("Bans");
+
+                    b.Navigation("FairRandom");
 
                     b.Navigation("Favorites");
 

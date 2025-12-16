@@ -1,3 +1,4 @@
+using S5_01_App_CS_GOAT.Services;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -21,19 +22,28 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("frn_serverhash")]
         public string ServerHash { get; set; } = null!;
 
-        [Required]
-        [Column("frn_usernonce")]
-        public int UserNonce { get; set; }
+        [Column("usr_id")]
+        public int? UserId { get; set; }
 
-        [Required]
+        [Column("usr_seed")]
+        [StringLength(16)]
+        [RegularExpression("^[A-Za-z0-9]{16}$")]
+        public string? UserSeed { get; set; }
+
+        [Column("frn_usernonce")]
+        public int? UserNonce { get; set; }
+
         [StringLength(255)]
         [Column("frn_combinedhash")]
-        public string CombinedHash { get; set; } = null!;
+        public string? CombinedHash { get; set; }
 
-        [Required]
         [Column("frn_fraction")]
         [Range(0.0, 1.0)]
-        public double Fraction { get; set; }
+        public double? Fraction { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        [InverseProperty(nameof(User.FairRandom))]
+        public virtual User? User { get; set; }
 
         [InverseProperty(nameof(RandomTransaction.FairRandom))]
         public virtual RandomTransaction? RandomTransaction { get; set; }

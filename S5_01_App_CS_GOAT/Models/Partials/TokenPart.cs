@@ -11,11 +11,18 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         public async Task Tick(IServiceScope scope)
         {
+            IDataRepository<Token, int> tokenRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<Token, int>>();
+            await this.CheckStillValid(tokenRepository);
+        }
+
+        public async Task<bool> CheckStillValid(IWriteRepository<Token> tokenRepository)
+        {
             if (this.TokenExpiry <= DateTime.Now)
             {
-                IDataRepository<Token, int> tokenRepository = scope.ServiceProvider.GetRequiredService<IDataRepository<Token, int>>();
                 await tokenRepository.DeleteAsync(this);
+                return false;
             }
+            return true;
         }
     }
 }

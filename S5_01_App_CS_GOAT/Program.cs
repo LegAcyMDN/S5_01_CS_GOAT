@@ -54,7 +54,6 @@ builder.Services.AddScoped<ITypeRepository<WearType>, TypeRepository<WearType>>(
 
 // Generic repositories for standard entities
 builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
-builder.Services.AddScoped<IDataRepository<FairRandom, int>, CrudRepository<FairRandom>>();
 builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int>, CrudRepository<InventoryItem>>();
@@ -63,7 +62,6 @@ builder.Services.AddScoped<IDataRepository<Limit, (int,int)>, CrudRepository<Lim
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int>, CrudRepository<MoneyTransaction>>();
 builder.Services.AddScoped<IDataRepository<Notification, int>, CrudRepository<Notification>>();
 builder.Services.AddScoped<IDataRepository<NotificationSetting, (int, int)>, CrudRepository<NotificationSetting, (int, int)>>();
-builder.Services.AddScoped<IDataRepository<PromoCode, int>, CrudRepository<PromoCode>>();
 builder.Services.AddScoped<IDataRepository<RandomTransaction, int>, CrudRepository<RandomTransaction>>();
 builder.Services.AddScoped<IDataRepository<Token, int>, CrudRepository<Token>>();
 builder.Services.AddScoped<IDataRepository<Transaction, int>, CrudRepository<Transaction>>();
@@ -71,6 +69,8 @@ builder.Services.AddScoped<IDataRepository<UpgradeResult, (int,int)>, CrudReposi
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
 // Custom managers for complex entities
+builder.Services.AddScoped<IFairRandomRepository, FairRandomManager>();
+builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 
 // Timed services

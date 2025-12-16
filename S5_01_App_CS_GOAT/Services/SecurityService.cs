@@ -9,24 +9,44 @@ namespace S5_01_App_CS_GOAT.Services
         /// Create a new (non-cryptographically secure) random seed
         /// </summary>
         /// <returns>A random string</returns>
-        public static string GenerateSeed(int lenght = 16)
+        public static string GenerateSeed(int length = 16)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
-            return new string(Enumerable.Repeat(chars, lenght)
+            return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         /// <summary>
         /// Generates a new random token
         /// </summary>
+        /// <param name="length">The length of the token in bytes</param>
         /// <returns>A Base64 encoded random token</returns>
-        public static string GenerateToken(int lenght = 64)
+        public static string GenerateToken(int length = 64)
         {
-            byte[] bytes = new byte[lenght];
+            byte[] bytes = new byte[length];
             using (var rng = RandomNumberGenerator.Create())
                 rng.GetBytes(bytes);
             return Convert.ToBase64String(bytes);
+        }
+
+        /// <summary>
+        /// Hash a string using SHA256
+        /// </summary>
+        /// <param name="input">The input string to hash</param>
+        /// <returns>A Base64 encoded hash of the input string</returns>
+        /// <exception cref="ArgumentException">Thrown when input is null or empty</exception>
+        public static string HashString(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                throw new ArgumentException("Input cannot be null or empty");
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                return Convert.ToBase64String(hashBytes);
+            }
         }
 
         /// <summary>
@@ -35,6 +55,7 @@ namespace S5_01_App_CS_GOAT.Services
         /// <param name="password">The plain text password to hash</param>
         /// <param name="salt">The salt to use for hashing</param>
         /// <returns>A Base64 encoded hash of the password</returns>
+        /// <exception cref="ArgumentException">Thrown when password or salt is null or empty</exception>
         public static string HashAndSalt(string password, string salt)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(salt))

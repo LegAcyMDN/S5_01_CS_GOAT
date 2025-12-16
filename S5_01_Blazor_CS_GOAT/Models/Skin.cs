@@ -10,4 +10,5 @@ public class Skin
     public int BestPrice { get; set; }    
     public int WorstPrice { get; set; }    
     public string AnyUuid { get; set; }
+    public int? Weight { get; set; }
 }

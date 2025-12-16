@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -21,34 +22,45 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     [TestClass()]
     public class PromoCodeControllerTests
     {
-        private Mock<IDataRepository<PromoCode, int>>? promoCodeRepositoryMock;
+        private Mock<IPromoCodeRepository>? promoCodeRepositoryMock;
+        private Mock<IReadableRepository<Case, int>>? caseRepositoryMock;
+        private Mock<IMapper>? mapperMock;
         private PromoCodeController? controller;
 
         private User? admin;
         private User? normalUser;
         private PromoCode? promoCode;
+        private PromoCode? expiredPromoCode;
+        private PromoCode? userPromoCode;
         private List<PromoCode>? promoCodes;
         private PromoCode? newPromoCode;
         private PromoCode? updatedPromoCode;
+        private Case? testCase;
         private Mock<IConfiguration>? configurationMock;
 
         [TestInitialize]
         public void Initialize()
         {
-            promoCodeRepositoryMock = new Mock<IDataRepository<PromoCode, int>>();
+            promoCodeRepositoryMock = new Mock<IPromoCodeRepository>();
+            caseRepositoryMock = new Mock<IReadableRepository<Case, int>>();
+            mapperMock = new Mock<IMapper>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
             promoCode = PromoCodeFixture.GetPromoCode();
+            expiredPromoCode = PromoCodeFixture.GetExpiredPromoCode();
+            userPromoCode = PromoCodeFixture.GetUserPromoCode();
             promoCodes = PromoCodeFixture.GetPromoCodes();
             newPromoCode = PromoCodeFixture.GetNewPromoCode();
             updatedPromoCode = PromoCodeFixture.GetUpdatedPromoCode();
+            testCase = CaseFixture.GetCase();
 
             controller = new PromoCodeController(
+                mapperMock.Object,
                 promoCodeRepositoryMock.Object,
+                caseRepositoryMock.Object,
                 configurationMock.Object
-
             );
         }
 
@@ -57,6 +69,214 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             Thread.CurrentPrincipal = null;
         }
+
+        #region Check Tests
+
+        [TestMethod]
+        public void Check_Unauthenticated_ReturnsUnauthorized()
+        {
+            // When
+            IActionResult? result = controller.Check("SUMMER2024", null).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void Check_ValidPromoCodeWithoutCase_ReturnsOk()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "SUMMER2024";
+            promoCode.CaseId = null; // No case restriction for this test
+            var promoCodeList = new List<PromoCode> { promoCode };
+            var expectedDto = new CasePromoCodeDTO
+            {
+                Code = code,
+                DiscountPercentage = 15,
+                DiscountAmount = 10.00
+            };
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(promoCodeList);
+
+            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
+                .Returns(expectedDto);
+
+            // When
+            IActionResult? result = controller.Check(code, null).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.IsInstanceOfType(okResult.Value, typeof(CasePromoCodeDTO));
+        }
+
+        [TestMethod]
+        public void Check_ValidPromoCodeWithCase_ReturnsOkWithPrices()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "SUMMER2024";
+            int caseId = 1;
+            promoCode.CaseId = caseId;
+            var promoCodeList = new List<PromoCode> { promoCode };
+            var expectedDto = new CasePromoCodeDTO
+            {
+                Code = code,
+                DiscountPercentage = 15,
+                DiscountAmount = 10.00,
+                CaseId = caseId
+            };
+
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
+                .ReturnsAsync(testCase);
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(promoCodeList);
+
+            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
+                .Returns(expectedDto);
+
+            // When
+            IActionResult? result = controller.Check(code, caseId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            var dto = okResult.Value as CasePromoCodeDTO;
+            Assert.IsNotNull(dto);
+            Assert.AreEqual(testCase.CasePrice, dto.BasePrice);
+            Assert.IsNotNull(dto.FinalPrice);
+        }
+
+        [TestMethod]
+        public void Check_PromoCodeNotFound_ReturnsNotFound()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "NONEXISTENT";
+            var emptyList = new List<PromoCode>();
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.Check(code, null).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void Check_ExpiredPromoCode_ReturnsNotFound()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "EXPIRED2023";
+            var promoCodeList = new List<PromoCode> { expiredPromoCode };
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(promoCodeList);
+
+            // When
+            IActionResult? result = controller.Check(code, null).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void Check_CaseNotFound_ReturnsNotFound()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "SUMMER2024";
+            int invalidCaseId = 999;
+
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(invalidCaseId))
+                .ReturnsAsync((Case?)null);
+
+            // When
+            IActionResult? result = controller.Check(code, invalidCaseId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
+        }
+
+        [TestMethod]
+        public void Check_PromoCodeForDifferentCase_ReturnsNotFound()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "SUMMER2024";
+            int requestedCaseId = 2;
+            promoCode.CaseId = 1; // Different case
+            var promoCodeList = new List<PromoCode> { promoCode };
+            var differentCase = new Case { CaseId = requestedCaseId, CaseName = "Different Case", CasePrice = 5.00 };
+
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(requestedCaseId))
+                .ReturnsAsync(differentCase);
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(promoCodeList);
+
+            // When
+            IActionResult? result = controller.Check(code, requestedCaseId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void Check_PromoCodeWithNoCaseRestriction_WorksWithAnyCase()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            string code = "USERSPECIAL";
+            int caseId = 1;
+            userPromoCode.CaseId = null; // No case restriction
+            var promoCodeList = new List<PromoCode> { userPromoCode };
+            var expectedDto = new CasePromoCodeDTO
+            {
+                Code = code,
+                DiscountPercentage = 10,
+                DiscountAmount = 5.00
+            };
+
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
+                .ReturnsAsync(testCase);
+
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+                It.IsAny<Expression<Func<PromoCode, bool>>>(),
+                It.IsAny<string[]>()))
+                .ReturnsAsync(promoCodeList);
+
+            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
+                .Returns(expectedDto);
+
+            // When
+            IActionResult? result = controller.Check(code, caseId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        #endregion
 
         #region GetAll Tests
 

@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Required]
         [StringLength(255)]
         [Column("tkn_token")]
-        public string TokenValue { get; set; } = SecurityService.GenerateToken(255);
+        public string TokenValue { get; set; } = SecurityService.GenerateToken(128);
 
         [Required]
         [Column("tkn_tokencreationdate")]

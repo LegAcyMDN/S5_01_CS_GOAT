@@ -87,9 +87,11 @@
             }
         </div>
     </div>
+    <CaseRollComponent listSkins="skinsList"></CaseRollComponent>
 } else {
     <p>Loading case...</p>
 }
+
 
 @code {
     [Parameter] public required int CaseId { get; set; }
@@ -102,10 +104,12 @@
     private bool showPopup;
     private int selectedCount = 1;
 
+    
     protected override async Task OnInitializedAsync()
     {
         skinsList = await skinRepository.GetByCaseIdAsync(CaseId);
         activeCase = await caseRepository.GetByIdAsync(CaseId);
+        
     }
 
     private async Task BuyCase()

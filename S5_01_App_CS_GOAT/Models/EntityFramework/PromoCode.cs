@@ -34,7 +34,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public double? DiscountAmount { get; set; }  
 
         [Column("prc_validitystart")]
-        public DateTime? ValidityStart { get; set; } = DateTime.Now;
+        public DateTime ValidityStart { get; set; } = DateTime.Now;
 
         [Column("prc_expirydate")]
         public DateTime? ExpiryDate { get; set; }

@@ -9,26 +9,31 @@
 .form-box {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    width: 500px;
+    width: 600px;
     padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
+}
+
+.form-box form {
+    width: 100%;
+    min-width: 600px;
+    margin: 0 0 15px 0;
 }
 
 h3 {
     margin-bottom: 20px;
-    color: white;
+    color: white;    
+    align-self: center;
 }
 
 .usr-login {
-    margin: 0 10px 5px 0;
+    margin: 0 10px 15px 0;
     width: 100%;
 }
 
 .usr-password {
-    margin: 0 10px 5px 0;
+    margin: 0 10px 15px 0;
     width: 100%;
 }
 
@@ -41,12 +46,13 @@ h3 {
 
 input[type="text"], input[type="password"] {
     all: unset;
-    width: 250px;
+    border-bottom: 2px solid white;
+    padding: 0 10px;
 }
 
-.usr-login label, .usr-password label {
-    margin-right: 10px;
-    width: 147px;
+.usr-login input, .usr-password input {
+    transform: skewX(15deg);
+    width: calc(100% - 20px);
 }
 
 .margin-bottom-10 {
@@ -88,22 +94,31 @@ input[type="text"], input[type="password"] {
 
 .wrapper {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     padding: 0 0 5px 0;
-    width: max-content;
-}
-
-.usr-login.wrapper {
     width: 100%;
 }
 
-.usr-password.wrapper {
+.usr-login.wrapper, .usr-password.wrapper {
     width: 100%;
+}
+
+.div-submit.wrapper {
+    width: 100%;
+    justify-content: center;
+}
+
+.steam-link.wrapper {
+    width: 100%;
+    justify-content: center;
 }
 
 .cta {
     display: flex;
-    padding: 5px 22px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 22px 5px 22px;
     text-decoration: none;
     font-family: 'Poppins', sans-serif;
     font-size: 20px;
@@ -112,6 +127,33 @@ input[type="text"], input[type="password"] {
     transition: 1s;
     box-shadow: 6px 6px 0 white;
     transform: skewX(-15deg);
+}
+
+.usr-submit.cta {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 22px;
+    width: max-content;
+    margin: 0 auto;
+}
+
+.div-steam .cta {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 22px;
+    width: max-content;
+}
+
+.cta label {
+    font-size: 0.7em;
+    margin-bottom: 3px;
+    transform: skewX(15deg);
+    color: white;
+    font-weight: 400;
+}
+
+.cta input {
+    transform: skewX(15deg);
 }
 
 .cta:focus {
@@ -188,7 +230,7 @@ path.two {
 
 .error-message {
     color: #ff4444;
-    font-size: 1em;
+    font-size: 0.8em;
     margin-top: 5px;
     margin-left: 10px;
     font-weight: 500;
@@ -218,4 +260,44 @@ path.two {
     background-color: rgba(255, 68, 68, 0.1);
     border: 1px solid #ff4444;
     color: #ff4444;
+}
+
+/* Ajout de styles pour centrer verticalement la div-submit */
+.div-submit {
+    margin: 0 auto 15px auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.steam-link {
+    margin: 0 0 15px 0;
+    align-self: center;
+}
+
+.other-links  {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.other-links p {
+    width: max-content;
+    font-size: 0.9em;
+}
+
+/* Ajout de styles pour centrer verticalement le span dans la div steam-span */
+.steam-span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0 5px 0;
+    transform: skewX(-15deg);
+}
+
+/*.div-steam {
+    margin: 0 auto 15px auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }

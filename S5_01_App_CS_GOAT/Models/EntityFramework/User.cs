@@ -20,12 +20,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("usr_id")]
         public int UserId { get; set; }
 
-        [StringLength(50)]
         [Column("usr_login")]
+        [StringLength(32, MinimumLength = 4)]
+        [RegularExpression("^[A-Za-z0-9_-]{4,32}$")]
         public string? Login { get; set; }
 
-        [StringLength(100)]
         [Column("usr_displayname")]
+        [StringLength(64, MinimumLength = 2)]
         public string? DisplayName { get; set; }
 
         [StringLength(255)]
@@ -111,6 +112,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [InverseProperty(nameof(Ban.User))]
         public virtual ICollection<Ban> Bans { get; set; } = null!;
+
+        [InverseProperty(nameof(FairRandom.User))]
+        public virtual FairRandom? FairRandom { get; set; }
 
         [InverseProperty(nameof(Favorite.User))]
         public virtual ICollection<Favorite> Favorites { get; set; } = null!;
