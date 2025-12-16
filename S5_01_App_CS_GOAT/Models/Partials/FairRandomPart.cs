@@ -27,6 +27,21 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             return this.Fraction.Value;
         }
 
+        public CaseContent ChooseOne(IEnumerable<CaseContent> options)
+        {
+            double fraction = this.Compute();
+            int totalWeight = options.Sum(o => o.Weight);
+            double scaled = fraction * totalWeight;
+            int cumulative = 0;
+            foreach (CaseContent option in options)
+            {
+                cumulative += option.Weight;
+                if (scaled < cumulative)
+                    return option;
+            }
+            return options.Last();
+        }
+
         public int? DependantUserId { get => this.UserId ?? this.GetRandomTransaction()?.DependantUserId; }
     }
 }

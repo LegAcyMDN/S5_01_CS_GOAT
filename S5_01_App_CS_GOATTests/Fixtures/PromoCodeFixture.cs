@@ -14,6 +14,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 Code = "SUMMER2024",
                 DiscountPercentage = 15,
                 DiscountAmount = 10.00,
+                ValidityStart = DateTime.Now.AddDays(-1),
                 ExpiryDate = DateTime.Now.AddDays(30),
                 CaseId = 1,
                 UserId = null
@@ -28,6 +29,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 Code = "EXPIRED2023",
                 DiscountPercentage = 20,
                 DiscountAmount = 15.00,
+                ValidityStart = DateTime.Now.AddDays(-20),
                 ExpiryDate = DateTime.Now.AddDays(-10),
                 CaseId = null,
                 UserId = 2
@@ -42,6 +44,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 Code = "USERSPECIAL",
                 DiscountPercentage = 10,
                 DiscountAmount = 5.00,
+                ValidityStart = DateTime.Now.AddDays(-5),
                 ExpiryDate = DateTime.Now.AddDays(15),
                 CaseId = null,
                 UserId = 2
@@ -58,6 +61,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     Code = "SUMMER2024",
                     DiscountPercentage = 15,
                     DiscountAmount = 10.00,
+                    ValidityStart = DateTime.Now.AddDays(-1),
                     ExpiryDate = DateTime.Now.AddDays(30),
                     CaseId = 1,
                     UserId = null
@@ -68,6 +72,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     Code = "EXPIRED2023",
                     DiscountPercentage = 20,
                     DiscountAmount = 15.00,
+                    ValidityStart = DateTime.Now.AddDays(-20),
                     ExpiryDate = DateTime.Now.AddDays(-10),
                     CaseId = null,
                     UserId = 2
@@ -78,6 +83,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     Code = "USERSPECIAL",
                     DiscountPercentage = 10,
                     DiscountAmount = 5.00,
+                    ValidityStart = DateTime.Now.AddDays(-5),
                     ExpiryDate = DateTime.Now.AddDays(15),
                     CaseId = null,
                     UserId = 2
@@ -92,6 +98,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 Code = "RICK2024",
                 DiscountPercentage = 25,
                 DiscountAmount = 20.00,
+                ValidityStart = DateTime.Now.AddDays(-1),
                 ExpiryDate = DateTime.Now.AddDays(60),
                 CaseId = 2,
                 UserId = null
@@ -106,6 +113,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 Code = "SUMMER2024UPDATED",
                 DiscountPercentage = 20,
                 DiscountAmount = 15.00,
+                ValidityStart = DateTime.Now.AddDays(-1),
                 ExpiryDate = DateTime.Now.AddDays(45),
                 CaseId = 1,
                 UserId = null

@@ -22,6 +22,11 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Range(0.0, double.MaxValue)]
         public double PriceValue { get; set; }
 
+        [Required]
+        [Column("prh_volume")]
+        [Range(1, int.MaxValue)]
+        public int Volume { get; set; }
+
         [Column("prh_guessdate")]
         public DateTime? GuessDate { get; set; }
 

@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _context = context;
         }
 
-        public async Task<FairRandom> Init(int userId, bool requestUnresolved = false, bool save = true)
+        public async Task<FairRandom> Init(int userId, bool requestUnresolved = false)
         {
             User? user = await _context.Set<User>()
                 .Include(u => u.FairRandom)
@@ -24,10 +24,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .FirstOrDefaultAsync(u => u.UserId == userId);
                 
             if (user == null) throw new ArgumentException("User not found", nameof(userId));
-            return await this.Init(user, requestUnresolved, save);
+            return await this.Init(user, requestUnresolved);
         }
 
-        public async Task<FairRandom> Init(User user, bool requestUnresolved = false, bool save = true)
+        public async Task<FairRandom> Init(User user, bool requestUnresolved = false)
         {
             FairRandom? existing = user.FairRandom;
             if (existing != null)
@@ -52,17 +52,17 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 ServerHash = hash
             };
             _context.Set<FairRandom>().Add(newFairRandom);
-            if (save) await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return newFairRandom;
         }
 
-        public async Task<FairRandom> Resolve(User user, FairRandom? random, bool requestUnresolved = true, bool save = false)
+        public async Task<FairRandom> Resolve(User user, FairRandom? random, bool requestUnresolved = true)
         {
             if (
                 random == null
                 || (random.IsResolved
                 && requestUnresolved)
-            ) random = await this.Init(user, requestUnresolved, false);
+            ) random = await this.Init(user, requestUnresolved);
             if (!requestUnresolved && random.IsResolved) return random;
             random.UserSeed = user.Seed;
             random.UserNonce = user.Nonce;
@@ -71,13 +71,13 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             user.Nonce += 1;
             _context.Set<FairRandom>().Update(random);
             _context.Set<User>().Update(user);
-            if (save) await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return random;
         }
 
-        public async Task<IEnumerable<FairRandom>> Chain(User user, FairRandom? init, int lenght, bool save = false)
+        public async Task<IEnumerable<FairRandom>> Chain(User user, FairRandom? init, int lenght)
         {
-            if (init == null) init = await this.Init(user, true, false);
+            if (init == null) init = await this.Init(user, true);
             if (init.IsResolved) throw new ArgumentException("Initial FairRandom must be unresolved");
             string serverSeed = init.ServerSeed;
             string serverHash = init.ServerHash;
@@ -94,10 +94,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                         ServerHash = serverHash
                     };
                 }
-                await this.Resolve(user, current, true, false);
+                await this.Resolve(user, current, true);
                 chain.Add(current);
             }
-            if (save) await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return chain;
         }
     }
