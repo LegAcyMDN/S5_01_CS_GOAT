@@ -1,5 +1,5 @@
 import datetime
-from flask import Blueprint, jsonify, render_template, request, Flask
+from flask import Blueprint, jsonify
 from prophet import Prophet
 import pandas as pd
 from datetime import datetime, timedelta
@@ -8,30 +8,45 @@ import numpy as np
 from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, db
 
 
-
 ia_bp = Blueprint('ia', __name__)
 
 
-def predict_and_save(skin_id, wear_id, jours):
+def predict_and_save_by_wear(wear_id, jours=30):
+    wear = Wear.query.get(wear_id)
+    if wear is None:
+        return None
     
-    price_historie = get_by_id(wear_id)
-    if price_historie is None or len(price_historie) < 10:
+    return _predict_and_save_internal(wear.skin_id, wear.wear_type_id, jours)
+
+
+def predict_and_save_by_skin_wear(skin_id, wear_type_id, jours=30):
+    return _predict_and_save_internal(skin_id, wear_type_id, jours)
+
+
+def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
+    price_historie = get_all(skin_id, wear_type_id)
+    if price_historie is None or len(price_historie) < training_days:
         return None
 
     df = pd.DataFrame([{
         'ds': datetime.fromisoformat(ph['pricedate']),
-        'y': ph['pricevalue']
+        'y': ph['pricevalue'],
+        'volume': ph.get('volume', 0) or 0  # Récupère le volume, 0 par défaut si None
     } for ph in price_historie])
 
-    print("="*80)
-    print("Epoch no:")
-    print(df.to_string())
-    print("="*80)
-    
     df = df.sort_values('ds')
     
-    split_index = int(len(df) * 0.75)
-    train_df = df[:split_index]
+    # # Filtrer pour garder seulement les 7 derniers jours à partir d'aujourd'hui
+    # cutoff_date = datetime.now() - timedelta(days=training_days)
+    # df = df[df['ds'] >= cutoff_date]
+    
+    if len(df) < training_days:
+        return None
+    
+    print("="*80)
+    print(f"Training data (last {training_days} days from today):")
+    print(df.to_string())
+    print("="*80)
     
     model = Prophet(
         yearly_seasonality=False,
@@ -39,16 +54,30 @@ def predict_and_save(skin_id, wear_id, jours):
         daily_seasonality=False,
         changepoint_prior_scale=0.05,
     )
-    print("Training the model...")
     
-    model.fit(train_df)
-    last_date = df['ds'].max()
-    future_dates = [last_date + timedelta(days=i) for i in range(1, jours + 1)]
-    future_df = pd.DataFrame({'ds': future_dates})
+
+    model.add_regressor('volume')
+    
+    print("Training the model with volume regressor...")
+    
+    model.fit(df)
+    
+
+    tomorrow = datetime.now() + timedelta(days=1)
+    tomorrow = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
+    future_dates = [tomorrow + timedelta(days=i) for i in range(jours)]
+    
+    # Calculer le volume moyen pour les prédictions futures
+    avg_volume = df['volume'].mean()
+    
+    future_df = pd.DataFrame({
+        'ds': future_dates,
+        'volume': [avg_volume] * jours  
+    })
     
     print(f"Predicting for {len(future_dates)} days: {future_dates[0]} to {future_dates[-1]}")
+    print(f"Using average volume: {avg_volume:.2f}")
     
-    # ← Prédiction pour tous les jours
     forecast = model.predict(future_df)
     
     print("="*80)
@@ -56,15 +85,14 @@ def predict_and_save(skin_id, wear_id, jours):
     print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
     print("="*80)
     
-    wear = Wear.query.get_or_404(wear_id)
-    
     for idx, row in forecast.iterrows():
         new_prediction = PriceHistory(
             skin_id=skin_id,
-            wear_type_id=wear.wear_type_id,
+            wear_type_id=wear_type_id,
             price_value=round(float(row['yhat']), 2),
             price_date=row['ds'],
             guess_date=datetime.now(),
+            volume= 1
         )
         db.session.add(new_prediction)
         print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
@@ -76,24 +104,11 @@ def predict_and_save(skin_id, wear_id, jours):
     return True
 
 
-
-def get_by_id(wear_id):
-    wear = Wear.query.get_or_404(wear_id)
-    print("Wear found:", wear.wear_id, "skin_id:", wear.skin_id, "wear_type_id:", wear.wear_type_id)
-    price_histories = PriceHistory.query.filter_by(
-        skin_id=wear.skin_id,
-        wear_type_id=wear.wear_type_id,
-        guess_date=None,
-    ).all()
-    print(f"Found {len(price_histories)} price histories for skin_id={wear.skin_id} and wear_type_id={wear.wear_type_id}")
-    return [ph.to_dict() for ph in price_histories]
-
-
 def get_all(skin_id, wear_type_id):
     price_histories = PriceHistory.query.filter_by(
         skin_id=skin_id,
-        wear_type_id=wear_type_id
+        wear_type_id=wear_type_id,
+        guess_date=None,
     ).all()
 
-    print(f"Found {len(price_histories)} price histories for skin_id={skin_id} and wear_type_id={wear_type_id}")
     return [ph.to_dict() for ph in price_histories]

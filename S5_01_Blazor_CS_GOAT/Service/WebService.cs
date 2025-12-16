@@ -68,4 +68,16 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/byuser");
     }
+
+    public async Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        await _httpClient.PatchAsync($"{_endpoint}/togglefavorite/{inventoryItemId}", null);
+    }
+
+    public async Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{inventoryItemId}");
+    }
 }
