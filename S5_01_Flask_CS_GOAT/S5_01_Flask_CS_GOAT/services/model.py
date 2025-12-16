@@ -19,6 +19,7 @@ class PriceHistory(db.Model):
     price_date = db.Column('prh_pricedate', db.DateTime, nullable=False, index=True)
     price_value = db.Column('prh_pricevalue', db.Float, nullable=False)
     guess_date = db.Column('prh_guessdate', db.DateTime, nullable=True) 
+    volume = db.Column('prh_volume', db.Integer, nullable=True)
     
     skin_id = db.Column('skn_id', db.Integer, nullable=False)
     wear_type_id = db.Column('wrt_id', db.Integer, nullable=False)
