@@ -151,6 +151,22 @@ namespace S5_01_Blazor_CS_GOAT.Service
             return await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "displayName");
         }
 
+        public async Task<int?> GetUserIdAsync()
+        {
+            var userIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "userId");
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return null;
+            }
+            
+            if (int.TryParse(userIdString, out int userId))
+            {
+                return userId;
+            }
+            
+            return null;
+        }
+
         public async Task LoadCurrentUserAsync()
         {
             try

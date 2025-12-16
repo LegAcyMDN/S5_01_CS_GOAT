@@ -1,16 +1,121 @@
 @page "/inventory"
 @using S5_01_Blazor_CS_GOAT.Layout
+@using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.Service
+@inject IService<InventoryItemDetail> inventoryService
+@inject AuthService authService
+@inject NavigationManager navigationManager
 
 <div class="inventory-page">
     <h1>Mon Inventaire</h1>
-    <div class="inventory-content">
-        <p>Consultez tous vos skins et objets ici.</p>
-        <!-- Votre contenu de page ici -->
-    </div>
+    
+    @if (isLoading)
+    {
+        <div class="loading">
+            <p>Chargement de votre inventaire...</p>
+        </div>
+    }
+    else if (!isAuthenticated)
+    {
+        <div class="inventory-content">
+            <p>Vous devez être connecté pour voir votre inventaire.</p>
+        </div>
+    }
+    else if (inventoryItems == null || !inventoryItems.Any())
+    {
+        <div class="inventory-content">
+            <p>Votre inventaire est vide. Commencez à ouvrir des caisses pour obtenir des skins !</p>
+        </div>
+    }
+    else
+    {
+        <div class="inventory-content">
+            <div class="inventory-stats">
+                <p>Total d'items : @inventoryItems.Count</p>
+            </div>
+            
+            <div class="inventory-grid">
+                @foreach (var item in inventoryItems)
+                {
+                    <div class="inventory-item" style="border-color: @item.RarityColor">
+                        <div class="item-image">
+                            <img src="@GetItemImageUrl(item)" alt="@item.SkinName" />
+                        </div>
+                        
+                        <button class="btn-favorite @(item.IsFavorite ? "is-favorite" : "")" 
+                                @onclick="() => ToggleFavorite(item.InventoryItemId)">
+                            @(item.IsFavorite ? "⭐" : "☆")
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
     
     <AuthOverlay />
 </div>
 
 @code {
-    // Votre code C# ici
+    private List<InventoryItemDetail>? inventoryItems;
+    private bool isLoading = true;
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isAuthenticated = await authService.IsAuthenticatedAsync();
+            
+            if (isAuthenticated)
+            {
+                var token = await authService.GetTokenAsync();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    inventoryItems = await inventoryService.GetByUserAsync(token);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement de l'inventaire: {ex.Message}");
+            inventoryItems = new List<InventoryItemDetail>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetItemImageUrl(InventoryItemDetail item)
+    {
+        if (!string.IsNullOrEmpty(item.Uuid))
+        {
+            return $"https://screenshots.cs.money/csmoney2/{item.Uuid}_icon.png";
+        }
+        return "images/default-item.png";
+    }
+
+    private async Task ToggleFavorite(int inventoryItemId)
+    {
+        try
+        {
+            var token = await authService.GetTokenAsync();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var item = inventoryItems?.FirstOrDefault(i => i.InventoryItemId == inventoryItemId);
+                if (item != null)
+                {
+                    item.IsFavorite = !item.IsFavorite;
+                    StateHasChanged();
+                    
+                    // TODO: Appeler l'API pour persister le changement
+                    // await inventoryService.ToggleFavoriteAsync(inventoryItemId, token);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
+        }
+    }
 }
