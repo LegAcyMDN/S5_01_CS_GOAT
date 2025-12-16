@@ -1,6 +1,8 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using S5_01_App_CS_GOAT.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -12,10 +14,46 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Authorize]
     [AllowAnonymous]
     public class PromoCodeController(
-        IDataRepository<PromoCode, int> manager,
+        IMapper mapper,
+        IPromoCodeRepository manager,
+        IReadableRepository<Case, int> caseRepository,
         IConfiguration configuration
     ) : ControllerBase
     {
+        /// <summary>
+        /// Check if code is valid and retrieve promo code details
+        /// </summary>
+        /// <param name="code"></param>
+        /// <returns>The promocode object if valid and usable by the user</returns>
+        [HttpGet("check/{code}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Check(string code, int? caseId)
+        {
+            Case? targetCase = null;
+            if (caseId != null)
+            {
+                targetCase = await caseRepository.GetByIdAsync((int)caseId);
+                if (targetCase == null) return NotFound();
+            }
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            IEnumerable<PromoCode> promoCodes = await authResult.GetByUser(manager, false, pc => pc.Code == code);
+            if (!promoCodes.Any()) return NotFound();
+            PromoCode promoCode = promoCodes.First();
+            if (promoCode.CaseId != null && (targetCase == null || targetCase.CaseId != promoCode.CaseId))
+                return NotFound();
+            if (!promoCode.IsValid())
+                return NotFound();
+            CasePromoCodeDTO dto = mapper.Map<CasePromoCodeDTO>(promoCode);
+            if (targetCase != null)
+            {
+                dto.BasePrice = targetCase.CasePrice;
+                dto.FinalPrice = promoCode.Apply(targetCase.CasePrice);
+            }
+            return Ok(dto);
+        }
 
         /// <summary>
         /// Get all promo codes (admin only)

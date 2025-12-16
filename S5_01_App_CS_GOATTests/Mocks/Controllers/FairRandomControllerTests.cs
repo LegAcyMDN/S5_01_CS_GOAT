@@ -128,7 +128,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            fairRandomRepositoryMock.Verify(r => r.Init(It.IsAny<int>(), true, true), Times.Never);
+            fairRandomRepositoryMock.Verify(r => r.Init(It.IsAny<int>(), true), Times.Never);
         }
 
         [TestMethod]
@@ -138,7 +138,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
 
             FairRandom fairRandom = FairRandomFixture.GetFairRandom();
-            fairRandomRepositoryMock.Setup(r => r.Init(normalUser.UserId, true, true))
+            fairRandomRepositoryMock.Setup(r => r.Init(normalUser.UserId, true))
                                     .ReturnsAsync(fairRandom);
 
             // When
@@ -148,7 +148,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             var okResult = result as OkObjectResult;
             Assert.AreEqual(fairRandom.ServerHash, okResult?.Value);
-            fairRandomRepositoryMock.Verify(r => r.Init(normalUser.UserId, true, true), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.Init(normalUser.UserId, true), Times.Once);
         }
 
         #endregion
