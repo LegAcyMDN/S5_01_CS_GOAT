@@ -11,4 +11,6 @@ public interface IService<TEntity>
     
     Task<List<TEntity>?> GetByCaseIdAsync(int id);
     Task<List<TEntity>?> GetByUserAsync(string jwtToken);
+    Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken);
+    Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken);
 }

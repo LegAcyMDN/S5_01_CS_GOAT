@@ -1,0 +1,53 @@
+.inventory-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.inventory-item {
+    cursor: pointer;
+    position: relative;
+    width: max-content;
+    height: max-content;
+    padding: 0 10px;
+    border-bottom:5px solid;
+    border-top: 2px solid;
+    border-left: 2px solid;
+    border-right: 2px solid;
+    border-radius: 5px;
+
+}
+
+.item-image img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.btn-favorite {
+    all: unset;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    line-height: 1;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    z-index: 10;
+}
+
+.btn-favorite:hover {
+    background-color: #f99e1c;
+    border-radius: 5px;
+}
+
+.btn-favorite.is-favorite:hover {
+    background-color: #00428c;
+    border-radius: 5px;
+}

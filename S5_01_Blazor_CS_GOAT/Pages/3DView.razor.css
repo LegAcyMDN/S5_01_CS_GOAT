@@ -1,3 +1,12 @@
+.page-viewermodel, .price-history {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2rem;
+    height: 100%;
+}
+
 .model-viewer {
     width: 500px;
     height: 500px;
@@ -101,4 +110,135 @@
         box-shadow: 0 0 0 1rem #fff;
         opacity: 1;
     }
+}
+
+.detail-header {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+
+.item-name {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.rarity-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin: 0 0.5rem;
+    border-radius: 4px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.container-resume {
+    margin: 20px 0 0 0.5rem;
+}
+
+.resume-title {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.i-svg-icon svg {
+    width: 16px;
+    height: 16px;
+    fill: rgba(255, 255, 255, 1);
+}
+
+.info-none {
+    width: 400px;
+    height: auto;
+    display: none;
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    z-index: 1010;
+    top: 100%;
+    left: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.resume-body {
+    width: 400px;
+}
+
+.resume-grid {
+    width: 100%;
+}
+
+.resume-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+    
+.wrapper-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.viewer-info {
+    position: relative;
+}
+
+.viewer-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 0.5rem;
+    z-index: 1000;
+}
+
+.viewer-info:hover .info-none {
+    display: block;
+    opacity: 1;
+    z-index: 1010;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0.5rem;
+}
+
+.btn-favorite {
+    all: unset;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    line-height: 1;
+    z-index: 10;
+}
+
+.btn-favorite:hover {
+    background-color: #f99e1c;
+    border-radius: 5px;
+}
+
+.btn-favorite.is-favorite:hover {
+    background-color: #00428c;
+    border-radius: 5px;
 }
