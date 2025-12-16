@@ -1,0 +1,45 @@
+@page "/wallet"
+@using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.Service
+<h3>Portefeuille</h3>
+
+@if (currentUser != null)
+{
+    <h1>@currentUser.Wallet €</h1>
+    
+    <br/>
+    <h2>Historique des paiements</h2>
+    <div>@currentUser</div>
+}
+else
+{
+    <h1>CHARGEMENT</h1>
+}
+
+
+
+@code {
+    [Inject]
+    private AuthService AuthService { get; set; } = default!;
+    private User? currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateUserState();
+        
+        
+        
+        
+    }
+    
+    private async Task UpdateUserState()
+    {
+        if (AuthService.CurrentUser == null && await AuthService.IsLoggedInAsync())
+        {
+            await AuthService.LoadCurrentUserAsync();
+        }
+        
+        currentUser = AuthService.CurrentUser;
+    }
+
+}
