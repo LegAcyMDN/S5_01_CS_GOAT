@@ -9,5 +9,7 @@ price_history_bp = Blueprint('price_history', __name__, url_prefix='/api/price_h
 @price_history_bp.route('/predict_price/<int:skin_id>/<int:wear_id>', methods=['GET'])
 @price_history_bp.route('/predict_price/<int:skin_id>/<int:wear_id>/<int:jours>', methods=['GET'])
 def predict_price(skin_id, wear_id, jours=30):
-        predict_and_save(skin_id, wear_id, jours)
+        
+        if(predict_and_save(skin_id, wear_id, jours)) is None:
+            return jsonify({'message': 'Not enough data to make a prediction'}), 400
         return jsonify({'message': 'prediction created'}), 200

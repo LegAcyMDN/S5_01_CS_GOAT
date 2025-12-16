@@ -1,0 +1,49 @@
+body {
+    background: rgb(25,25,33);
+}
+.raffle-roller {
+    height: 100px;
+    position: relative;
+    margin: 60px auto 30px auto;
+    width: 900px;
+}
+.raffle-roller-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+}
+.raffle-roller-holder {
+    overflow: hidden;
+    border-radius: 2px;
+    border: 1px solid #3c3759;
+}
+.raffle-roller-holder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+}
+.raffle-roller-container {
+    width: 9999999999999999999px;
+    max-width: 999999999999999999px;
+    height: 100px;
+    background: #191726;
+    margin-left: 0;
+}
+.raffle-roller-holder:before {
+    content: "";
+    position: absolute;
+    border: none;
+    z-index: 12222225;
+    width: 5px;
+    height: 100%;
+    left: 50%;
+    background: #d16266;
+}

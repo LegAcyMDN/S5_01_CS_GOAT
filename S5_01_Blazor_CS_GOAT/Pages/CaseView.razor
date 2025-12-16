@@ -57,9 +57,11 @@
             }
         </div>
     </div>
+    <CaseRollComponent listSkins="skinsList"></CaseRollComponent>
 } else {
     <p>Loading case...</p>
 }
+
 
 @code {
     [Parameter]
@@ -68,12 +70,12 @@
     private List<Skin> skinsList = new List<Skin>();
     private Case activeCase = null;
     
-    
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine(CaseId);
         skinsList = await skinRepository.GetByCaseIdAsync(CaseId);
         activeCase = await caseRepository.GetByIdAsync(CaseId);
+        
     }
 }
 
