@@ -117,19 +117,16 @@
 
         if(isEsthetic)
         {
-
+            // Animation Esthetic
         }
-        else
+        Console.WriteLine($"Achat de {selectedCount} cases");
+        for (int i = 0; i < selectedCount; i++)
         {
-            Console.WriteLine($"Achat de {selectedCount} cases");
-            for (int i = 0; i < selectedCount; i++)
-            {
-                int index = _rng.Next(skinsList.Count);
-                wonSkins.Add(skinsList[index]);
-            }
-
-            showPopup = true;
+            int index = _rng.Next(skinsList.Count);
+            wonSkins.Add(skinsList[index]);
         }
+
+        showPopup = true;
         
     }
 
