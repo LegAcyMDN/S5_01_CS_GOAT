@@ -165,3 +165,122 @@ path.two {
         fill: white;
     }
 }
+
+/* Slide Toggle */
+
+.toggle {
+    align-content: center;
+    margin: 0 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 150px;
+    height: 34px;
+    border-radius: 90px;
+    background-color: #292937;
+}
+
+    .switch input {
+        display: none;
+    }
+
+    .switch:has(input:checked) {
+        background-color: #f99e1c;
+    }
+
+span.slider {
+    position: static;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(115px);
+}
+
+/*------ ADDED CSS ---------*/
+.slider:after {
+    content: 'RAPIDE';
+    color: white;
+    display: block;
+    position: absolute;
+    transform: translate(-50%,-50%);
+    top: 50%;
+    left: 50%;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+input:checked + .slider:after {
+    content: 'ESTHETIQUE';
+}
+
+/*--------- END --------*/
+
+/*---------pop-Up-------*/
+
+.popup-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.popup-modal {
+    background-color: #2a2836;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 300px;
+    max-width: 500px;
+    text-align: -webkit-center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.popup-close {
+    margin-top: 15px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #f99e1c;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.popup-skins {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.gambling-x.selected {
+    outline: 2px solid #f99e1c;
+    outline-offset: 2px;
+}
