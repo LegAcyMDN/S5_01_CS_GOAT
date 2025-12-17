@@ -23,7 +23,7 @@ db.init_app(app)
 
 # Configure debug mode
 debug = app.config['DEBUG']
-print(f" * Debug print is {'on!' if debug else 'off!'}")
+print(f" * Debug print is {'on!' if debug == 'True' else 'off!'}")
 from .Controllers.price_history_controller import price_history_bp
 # Register blueprints
 app.register_blueprint(price_history_bp)
