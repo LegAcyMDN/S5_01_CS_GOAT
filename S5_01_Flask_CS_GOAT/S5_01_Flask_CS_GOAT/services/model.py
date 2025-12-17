@@ -23,6 +23,8 @@ class PriceHistory(db.Model):
     
     skin_id = db.Column('skn_id', db.Integer, nullable=False)
     wear_type_id = db.Column('wrt_id', db.Integer, nullable=False)
+
+    
     
     def to_dict(self):
         return {
@@ -32,4 +34,7 @@ class PriceHistory(db.Model):
             'pricedate': self.price_date.isoformat(),
             'pricevalue': self.price_value
         }
+    def __str__(self):
+        return str(self.to_dict())
+
     
