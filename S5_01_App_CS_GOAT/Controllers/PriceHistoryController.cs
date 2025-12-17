@@ -33,6 +33,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             return Ok(result);
         }
 
+
+// TODO: CLEANUP le endpoint
+#if DEBUG
         /// <summary>
         /// Get AI prediction for price history
         /// </summary>
@@ -40,10 +43,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>AI prediction data</returns>
         [HttpGet("aiprediction")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status501NotImplemented)]
         public async Task<IActionResult> GetAiPrediction(int wearId)
         {
-            throw new NotImplementedException();
+            HttpClient httpClient = new HttpClient();
+            string flaskApiUrl = $"http://localhost:5555/api/price_history/predict_price/bywear/{wearId}";
+            HttpResponseMessage response = await httpClient.GetAsync(flaskApiUrl);
+
+            if (!response.IsSuccessStatusCode) return BadRequest();
+
+            Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
+            IEnumerable<PriceHistory> result = wear.PriceHistories();
+            IEnumerable<PriceHistoryDTO> priceHistoryDTOs = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
+
+            return Ok(priceHistoryDTOs);
         }
+#endif
     }
 }

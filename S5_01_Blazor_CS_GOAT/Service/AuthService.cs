@@ -26,50 +26,52 @@ namespace S5_01_Blazor_CS_GOAT.Service
             _httpClient.BaseAddress = new Uri(_apiUrl);
         }
 
-        public async Task<LoginResult> LoginAsync(string identifier, string password, int rememberDays)
+public async Task<LoginResult> LoginAsync(string identifier, string password, int rememberDays)
+{
+    try
+    {
+        var request = new
         {
-            try
+            identifier,
+            password,
+            remember = rememberDays
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("user/login", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            
+            if (loginResponse != null)
             {
-                var request = new
+                // Store JWT token, userId and displayName
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "jwtToken", loginResponse.JwtToken);
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", loginResponse.UserId.ToString());
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "displayName", loginResponse.DisplayName ?? "");
+                
+                // Store the remember token data (tokenId, tokenValue, expiry)
+                if (loginResponse.RememberToken != null && !string.IsNullOrEmpty(loginResponse.RememberToken.TokenValue))
                 {
-                    identifier,
-                    password,
-                    remember = rememberDays
-                };
-
-                var response = await _httpClient.PostAsJsonAsync("user/login", request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                    
-                    if (loginResponse != null)
-                    {
-                        // Store token, userId and displayName
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "jwtToken", loginResponse.JwtToken);
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", loginResponse.UserId.ToString());
-                        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "displayName", loginResponse.DisplayName ?? "");
-                        
-                        if (loginResponse.RememberToken != null)
-                        {
-                            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberToken", loginResponse.RememberToken.Value);
-                        }
-                        
-                        // Charger les informations complètes de l'utilisateur
-                        await LoadCurrentUserAsync();
-                        
-                        return new LoginResult { Success = true, Token = loginResponse.JwtToken };
-                    }
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberToken", loginResponse.RememberToken.TokenValue);
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberTokenId", loginResponse.RememberToken.TokenId.ToString());
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberTokenExpiry", loginResponse.RememberToken.TokenExpiry.ToString("o"));
                 }
-
-                var errorContent = await response.Content.ReadAsStringAsync();
-                return new LoginResult { Success = false, ErrorMessage = $"Login failed: {errorContent}" };
-            }
-            catch (Exception ex)
-            {
-                return new LoginResult { Success = false, ErrorMessage = ex.Message };
+                
+                await LoadCurrentUserAsync();
+                
+                return new LoginResult { Success = true, Token = loginResponse.JwtToken };
             }
         }
+
+        var errorContent = await response.Content.ReadAsStringAsync();
+        return new LoginResult { Success = false, ErrorMessage = $"Login failed: {errorContent}" };
+    }
+    catch (Exception ex)
+    {
+        return new LoginResult { Success = false, ErrorMessage = ex.Message };
+    }
+}
 
         public async Task<string?> GetTokenAsync()
         {
@@ -82,6 +84,8 @@ namespace S5_01_Blazor_CS_GOAT.Service
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "userId");
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "displayName");
             await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberToken");
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberTokenId");
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberTokenExpiry");
             _currentUser = null;
         }
 
@@ -120,7 +124,7 @@ namespace S5_01_Blazor_CS_GOAT.Service
                         
                         if (authResponse.RememberToken != null)
                         {
-                            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberToken", authResponse.RememberToken.Value);
+                            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberToken", authResponse.RememberToken.TokenValue);
                         }
                         
                         return new RegisterResult { Success = true, AuthData = authResponse };
@@ -205,33 +209,153 @@ namespace S5_01_Blazor_CS_GOAT.Service
                 _currentUser = null;
             }
         }
-
-        public class RegisterResult
+        
+        public async Task InitializeAsync()
         {
-            public bool Success { get; set; }
-            public AuthDTO? AuthData { get; set; }
-            public string? ErrorMessage { get; set; }
+            Console.WriteLine("=== Auth Initialize ===");
+    
+            // First, try to use JWT token if it exists
+            var jwtToken = await GetTokenAsync();
+            if (!string.IsNullOrEmpty(jwtToken))
+            {
+                Console.WriteLine("JWT token found, loading user...");
+                await LoadCurrentUserAsync();
+                return;
+            }
+
+            // If no JWT, try to use remember token
+            Console.WriteLine("No JWT, checking remember token...");
+            await TryLoginWithRememberTokenAsync();
         }
 
-        public class AuthDTO
+private async Task<bool> TryLoginWithRememberTokenAsync()
+{
+    try
+    {
+        // Get stored remember token data
+        var rememberToken = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "rememberToken");
+        var userIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "userId");
+        var tokenIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "rememberTokenId");
+        
+        if (string.IsNullOrEmpty(rememberToken) || string.IsNullOrEmpty(userIdString))
         {
-            public int UserId { get; set; }
-            public string? DisplayName { get; set; }
-            public string JwtToken { get; set; } = string.Empty;
-            public Token? RememberToken { get; set; }
+            Console.WriteLine("No remember token or userId found");
+            return false;
         }
 
-        public class Token
+        if (!int.TryParse(userIdString, out int userId))
         {
-            public string Value { get; set; } = string.Empty;
-            public DateTime Expiry { get; set; }
+            Console.WriteLine("Invalid userId format");
+            return false;
+        }
+
+        // TokenId might not be stored yet, default to 0 if not found
+        int tokenId = 0;
+        if (!string.IsNullOrEmpty(tokenIdString))
+        {
+            int.TryParse(tokenIdString, out tokenId);
+        }
+
+        Console.WriteLine($"Remember token found for userId: {userId}, attempting recall...");
+        
+        // Call API recall endpoint
+        var request = new
+        {
+            userId = userId,
+            tokenId = tokenId,
+            token = rememberToken
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("user/recall", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            
+            if (loginResponse != null)
+            {
+                Console.WriteLine("Token recall successful!");
+                
+                // Store new JWT token and user info
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "jwtToken", loginResponse.JwtToken);
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "userId", loginResponse.UserId.ToString());
+                await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "displayName", loginResponse.DisplayName ?? "");
+                
+                // Store new remember token if provided
+                if (loginResponse.RememberToken != null && !string.IsNullOrEmpty(loginResponse.RememberToken.TokenValue))
+                {
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberToken", loginResponse.RememberToken.TokenValue);
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberTokenId", loginResponse.RememberToken.TokenId.ToString());
+                    await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "rememberTokenExpiry", loginResponse.RememberToken.TokenExpiry.ToString("o"));
+                }
+                
+                await LoadCurrentUserAsync();
+                return true;
+            }
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Remember token recall failed: {errorContent}");
+            
+            // Remember token is invalid or expired, clean up
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberToken");
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberTokenId");
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "rememberTokenExpiry");
+            return false;
         }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error recalling token: {ex.Message}");
+        return false;
+    }
+    
+    return false;
+}
 
+
+
+
+    }
+
+    
+    public class RegisterResult
+    {
+        public bool Success { get; set; }
+        public AuthDTO? AuthData { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
+
+    public class AuthDTO
+    {
+        public int UserId { get; set; }
+        public string? DisplayName { get; set; }
+        public string JwtToken { get; set; } = string.Empty;
+        public RememberTokenResponse? RememberToken { get; set; }
+    }
+    
     public class LoginResult
     {
         public bool Success { get; set; }
         public string? Token { get; set; }
         public string? ErrorMessage { get; set; }
+    }
+    
+    public class LoginResponse
+    {
+        public int UserId { get; set; }
+        public string? DisplayName { get; set; }
+        public string JwtToken { get; set; } = string.Empty;
+        public RememberTokenResponse? RememberToken { get; set; }
+    }
+
+    public class RememberTokenResponse
+    {
+        public int TokenId { get; set; }
+        public string TokenValue { get; set; } = string.Empty;
+        public DateTime TokenCreationDate { get; set; }
+        public DateTime TokenExpiry { get; set; }
+        public int UserId { get; set; }
     }
 }

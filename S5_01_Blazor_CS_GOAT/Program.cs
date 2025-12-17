@@ -14,6 +14,12 @@ builder.Services.AddScoped<IService<Skin>>(sp => new WebService<Skin>("skin"));
 builder.Services.AddScoped<IService<User>>(sp => new WebService<User>("user"));
 builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<InventoryItemDetail>("inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
+builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
+
+
+
+
+
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -25,4 +31,9 @@ builder.Services.AddScoped<AuthService>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+var authService = host.Services.GetRequiredService<AuthService>();
+await authService.InitializeAsync();
+
+await host.RunAsync();

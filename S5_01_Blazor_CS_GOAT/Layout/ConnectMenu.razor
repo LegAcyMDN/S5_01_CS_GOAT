@@ -17,7 +17,7 @@
                 </div>
                 <section class="menu-container">
                     <div class="menu-list">Profile</div>
-                    <div class="menu-list">Portefeuille : @currentUser.Wallet.ToString("F2")€</div>
+                    <div class="menu-list" @onclick="NavigateToWallet">Portefeuille : @currentUser.Wallet.ToString("F2")€</div>
                     <div class="menu-list" @onclick="HandleLogout" style="cursor: pointer;">Déconnexion</div>
                 </section>
             </label>
@@ -71,6 +71,11 @@
     private void NavigateToLogin()
     {
         Navigation.NavigateTo("/login");
+    }
+
+    private void NavigateToWallet()
+    {
+        Navigation.NavigateTo("/wallet");
     }
 
     private async Task HandleLogout()

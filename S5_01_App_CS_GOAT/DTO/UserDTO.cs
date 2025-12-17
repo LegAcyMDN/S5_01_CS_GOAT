@@ -27,4 +27,6 @@ public class UserDTO
     public double Wallet { get; set; }
 
     public bool IsSteamLogin { get; set; } // has the user link is account steam
+
+    public bool IsAdmin { get; set; } = false;
 }

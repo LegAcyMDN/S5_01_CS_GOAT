@@ -1,4 +1,4 @@
-@page "/viewModel/{WearId:int}"
+@page "/viewModel/{InventoryItemId:int}"
 @using HomagGroup.Blazor3D.Enums
 @using HomagGroup.Blazor3D.Events
 @using HomagGroup.Blazor3D.Lights
@@ -11,11 +11,10 @@
 @* @rendermode @(new InteractiveServerRenderMode(prerender: false)) *@
 @implements IDisposable
 @inject IThreeDModelService<ThreeDModel> ThreeDModelRepository
+@inject IService<InventoryItemDetail> InventoryItemService
+@inject AuthService AuthService
 @inject CacheService CacheService
 @inject IJSRuntime JS
-
-
-<h3>3DView</h3>
 
 <div class="page-viewermodel">
     <div class="model-viewer">
@@ -36,38 +35,95 @@
             </div>
         }
         <Viewer @ref="View3D1" Scene=scene />
+        <div class="viewer-info">
+            <i class="i-svg-icon">
+                <svg fill="#000000" viewBox="-1 0 19 19" xmlns="http://www.w3.org/2000/svg" class="cf-icon-svg">
+                    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                    <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                    <g id="SVGRepo_iconCarrier">
+                        <path d="M16.417 9.583A7.917 7.917 0 1 1 8.5 1.666a7.917 7.917 0 0 1 7.917 7.917zM9.64 5.78a1.136 1.136 0 1 0-1.136 1.135A1.136 1.136 0 0 0 9.64 5.781zm-.344 2.884a.792.792 0 1 0-1.583 0v5.203a.792.792 0 0 0 1.583 0z"></path>
+                    </g>
+                </svg>
+            </i>
+            <div class="info-none">
+                Utilisez la souris pour faire pivoter (clique droit), zoomer et déplacer (clique gauche) l'objet dans le Viewer.
+            </div>
+        </div>
     </div>
 
-    <div>@msg</div>
+    @if (itemDetails != null)
+    {
+        <div class="item-details">
+            <div class="detail-header">
+                <p class="item-name">@itemDetails.ItemName | @itemDetails.SkinName | @itemDetails.WearName</p>
+                <span class="rarity-badge"  style="background-color: @itemDetails.RarityColor">@itemDetails.RarityName</span>
+            </div>
+            
+            <div class="container-resume">
+                <div class="resume-header">
+                    <div class="resume-title">
+                        <h2 class="title">Résumé de l'Objet</h2>
+                    </div>
+                </div>
+                <div class="resume-body">
+                    <div class="resume-grid">
+                        <div class="resume-row">
+                            <div class="">Type</div>
+                            <div class="">@itemDetails.ItemTypeName</div>
+                        </div>
+                        <div class="resume-row">
+                            <div class="">Arme</div>
+                            <div class="">@itemDetails.ItemName</div>
+                        </div>
+                        <div class="resume-row">
+                            <div class="">Float</div>
+                            <div class="">@itemDetails.Float</div>
+                        </div>
+                        <div class="resume-row">
+                            <div class="">Date Acquisition</div>
+                            <div class="">@itemDetails.AcquiredOn.ToString("dd/MM/yyyy HH'h'mm")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex">
+                <p>Ajouter aux favoris :</p>
+                <button class="btn-favorite @(itemDetails.IsFavorite ? "is-favorite" : "")" 
+                        @onclick="() => ToggleFavorite(itemDetails.InventoryItemId)"
+                        @onclick:stopPropagation="true">
+                    @(itemDetails.IsFavorite ? "★" : "☆")
+                </button>
+            </div>
+        </div>
+    }
+    else if (!isLoading && itemDetails == null)
+    {
+        <div class="item-details">
+            <p class="error-message">Impossible de charger les détails de l'item.</p>
+        </div>
+    }
 </div>
-
-@if (modelUrl != null)
-{
-    <h1>@modelUrl</h1>
-}
-
-
+<div class="price-history">
+    <p>Historique des prix - (À implémenter)</p>
+</div>
 
 <script src="js/cacheHelper.js"></script>
 
 @code {
     [Parameter]
-    public required int WearId { get; set; }
-
+    public required int InventoryItemId { get; set; }
 
     private Viewer View3D1 = null!;
     private Scene scene = new Scene();
     private Guid loadedObjectGuid = Guid.NewGuid();
-    private string msg = string.Empty;
     
+    private InventoryItemDetail? itemDetails;
     private string? modelUrl;
     private string? textureUrl;
     
     private bool isLoading = true;
     private string loadingMessage = string.Empty;
     private int loadingProgress = 0;
-    
-    
 
     public void Dispose()
     {
@@ -93,9 +149,7 @@
             Intensity = 1f,
             Position = new Vector3(5, 5, 5)
         });
-    }
-
-    
+    }    
     
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -110,135 +164,167 @@
     }
     private record CacheResult(bool ok, string message);
     
-private async Task OnJsModuleLoaded()
-{
-    try
+    private async Task OnJsModuleLoaded()
     {
-        isLoading = true;
-        loadingProgress = 0;
-        loadingMessage = "Initialisation...";
-        StateHasChanged();
-        
-        loadingProgress = 10;
-        loadingMessage = "Récupération des données du modèle...";
-        StateHasChanged();
-        
-        ThreeDModel weapon3DModelObject = await ThreeDModelRepository.GetByIdAsync(WearId);
-        string weaponName = weapon3DModelObject.ItemModel;
-        string pathModelOrLegacy = weapon3DModelObject.UvType == 1 ? "models/legacy/" : "models/model/";
-        
-        // STEP 1: Cache BIN file first and get its blob URL
-        loadingProgress = 20;
-        loadingMessage = "Mise en cache du fichier binaire...";
-        StateHasChanged();
-        
-        await CacheService.CacheLocalFile("/" + pathModelOrLegacy + weaponName + ".bin", weaponName + ".bin");
-        var binBlobUrl = await CacheService.GetCachedUrl(weaponName + ".bin");
-        
-        // STEP 2: Fetch and cache texture(s) from API
-        loadingProgress = 40;
-        loadingMessage = "Chargement des textures...";
-        StateHasChanged();
-        
-        await CacheService.FetchAndCacheImage(
+        try
+        {
+            isLoading = true;
+            loadingProgress = 0;
+            loadingMessage = "Initialisation...";
+            StateHasChanged();
+
+            // STEP 1: Get JWT token and item details
+            loadingProgress = 5;
+            loadingMessage = "Authentification...";
+            StateHasChanged();
+
+            var jwtToken = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                loadingMessage = "Erreur: Non authentifié";
+                isLoading = false;
+                StateHasChanged();
+                return;
+            }
+
+            // STEP 2: Get inventory item details
+            loadingProgress = 10;
+            loadingMessage = "Récupération des détails de l'item...";
+            StateHasChanged();
+
+            itemDetails = await InventoryItemService.GetDetailsAsync(InventoryItemId, jwtToken);
+            if (itemDetails == null)
+            {
+                loadingMessage = "Erreur: Item introuvable";
+                isLoading = false;
+                StateHasChanged();
+                return;
+            }
+
+            // STEP 3: Get 3D model data
+            loadingProgress = 15;
+            loadingMessage = "Récupération des données du modèle...";
+            StateHasChanged();
+
+            // We need to find the WearId from the item details
+            // For now, we'll use a workaround - you may need to adjust based on your data structure
+            // Assuming the UUID can help us identify the wear
+            ThreeDModel weapon3DModelObject = await ThreeDModelRepository.GetByIdAsync(InventoryItemId);
+            string weaponName = weapon3DModelObject.ItemModel;
+            string pathModelOrLegacy = weapon3DModelObject.UvType == 1 ? "models/legacy/" : "models/model/";
+
+            // STEP 4: Cache BIN file first and get its blob URL
+            loadingProgress = 25;
+            loadingMessage = "Mise en cache du fichier binaire...";
+            StateHasChanged();
+
+            await CacheService.CacheLocalFile("/" + pathModelOrLegacy + weaponName + ".bin", weaponName + ".bin");
+            var binBlobUrl = await CacheService.GetCachedUrl(weaponName + ".bin");
+
+            // STEP 5: Fetch and cache texture(s) from API
+            loadingProgress = 45;
+            loadingMessage = "Chargement des textures...";
+            StateHasChanged();
+
+            await CacheService.FetchAndCacheImage(
 #if DEBUG
-            "https://localhost:7009/api/wear/get3dmodel/" + WearId,
+                "https://localhost:7009/api/wear/get3dmodel/" + InventoryItemId,
 #else
-            "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/" + WearId,
+                "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/" + InventoryItemId,
 #endif
-            "applied_texture.png" // This will be unused for multiple textures
-        );
-        
-        
-        // STEP 3: Handle single or multiple textures
-        loadingProgress = 55;
-        StateHasChanged();
-        
-        var textureUrls = new Dictionary<string, string>();
-        
-        if (weapon3DModelObject.Texture.Count == 1)
-        {
-            // Single texture case
-            var textureBlobUrl = await CacheService.GetCachedUrl("applied_texture.png");
-            textureUrls["applied_texture.png"] = textureBlobUrl;
+                "applied_texture.png" // This will be unused for multiple textures
+            );
+
+
+            // STEP 6: Handle single or multiple textures
+            loadingProgress = 60;
+            StateHasChanged();
+
+            var textureUrls = new Dictionary<string, string>();
+
+            if (weapon3DModelObject.Texture.Count == 1)
+            {
+                // Single texture case
+                var textureBlobUrl = await CacheService.GetCachedUrl("applied_texture.png");
+                textureUrls["applied_texture.png"] = textureBlobUrl;
+            }
+            else if (weapon3DModelObject.Texture.Count == 2)
+            {
+                // Multiple texture case - cache both textures separately
+                await CacheTexture(weapon3DModelObject.Texture[0], "applied_texture_l.png");
+                await CacheTexture(weapon3DModelObject.Texture[1], "applied_texture_r.png");
+
+                var textureLBlobUrl = await CacheService.GetCachedUrl("applied_texture_l.png");
+                var textureRBlobUrl = await CacheService.GetCachedUrl("applied_texture_r.png");
+
+                textureUrls["applied_texture_l.png"] = textureLBlobUrl;
+                textureUrls["applied_texture_r.png"] = textureRBlobUrl;
+            }
+
+            // STEP 7: Handle SSG08 special case - add static textures
+            if (weaponName == "weapon_snip_ssg08" && weapon3DModelObject.UvType == 1)
+            {
+                // Cache the static lens texture
+                await CacheService.CacheLocalFile("/models/ssg_lens.png", "ssg_lens.png");
+                var lensUrl = await CacheService.GetCachedUrl("ssg_lens.png");
+                textureUrls["ssg_lens.png"] = lensUrl;
+
+                // Cache the static scope texture
+                await CacheService.CacheLocalFile("/models/ssg_scope.png", "ssg_scope.png");
+                var scopeUrl = await CacheService.GetCachedUrl("ssg_scope.png");
+                textureUrls["ssg_scope.png"] = scopeUrl;
+
+                Console.WriteLine($"SSG08 Lens URL: {lensUrl}");
+                Console.WriteLine($"SSG08 Scope URL: {scopeUrl}");
+            }
+
+            // STEP 8: Cache GLTF with modified URIs pointing to blob URLs
+            loadingProgress = 75;
+            loadingMessage = "Préparation du modèle GLTF...";
+            StateHasChanged();
+
+            await CacheService.CacheGltfWithBlobUrls(
+                "/" + pathModelOrLegacy + weaponName + ".gltf",
+                weaponName + ".gltf",
+                binBlobUrl,
+                textureUrls
+            );
+
+            // STEP 9: Get the modified GLTF blob URL
+            loadingProgress = 85;
+            StateHasChanged();
+
+            modelUrl = await CacheService.GetCachedUrl(weaponName + ".gltf");
+
+            Console.WriteLine($"Model URL: {modelUrl}");
+            Console.WriteLine($"Bin URL: {binBlobUrl}");
+            foreach (var texture in textureUrls)
+            {
+                Console.WriteLine($"Texture {texture.Key}: {texture.Value}");
+            }
+
+            // STEP 10: Load the model
+            loadingProgress = 95;
+            loadingMessage = "Chargement du modèle 3D...";
+            StateHasChanged();
+
+            var settings = new ImportSettings
+            {
+                Format = Import3DFormats.Gltf,
+                FileURL = modelUrl,
+            };
+            loadedObjectGuid = await View3D1.Import3DModelAsync(settings);
+            await View3D1.SetCameraPositionAsync(new Vector3(45, 30, 0), new Vector3(0, 0, 0));
         }
-        else if (weapon3DModelObject.Texture.Count == 2)
+        catch (Exception ex)
         {
-            // Multiple texture case - cache both textures separately
-            await CacheTexture(weapon3DModelObject.Texture[0], "applied_texture_l.png");
-            await CacheTexture(weapon3DModelObject.Texture[1], "applied_texture_r.png");
-            
-            var textureLBlobUrl = await CacheService.GetCachedUrl("applied_texture_l.png");
-            var textureRBlobUrl = await CacheService.GetCachedUrl("applied_texture_r.png");
-            
-            textureUrls["applied_texture_l.png"] = textureLBlobUrl;
-            textureUrls["applied_texture_r.png"] = textureRBlobUrl;
+            loadingProgress = 100;
+            loadingMessage = $"Erreur: {ex.Message}";
+            isLoading = false;
+            StateHasChanged();
+            Console.WriteLine($"Error loading 3D model: {ex}");
         }
-        
-        // STEP 4: Handle SSG08 special case - add static textures
-        if (weaponName == "weapon_snip_ssg08" && weapon3DModelObject.UvType == 1)
-        {
-            // Cache the static lens texture
-            await CacheService.CacheLocalFile("/models/ssg_lens.png", "ssg_lens.png");
-            var lensUrl = await CacheService.GetCachedUrl("ssg_lens.png");
-            textureUrls["ssg_lens.png"] = lensUrl;
-            
-            // Cache the static scope texture
-            await CacheService.CacheLocalFile("/models/ssg_scope.png", "ssg_scope.png");
-            var scopeUrl = await CacheService.GetCachedUrl("ssg_scope.png");
-            textureUrls["ssg_scope.png"] = scopeUrl;
-            
-            Console.WriteLine($"SSG08 Lens URL: {lensUrl}");
-            Console.WriteLine($"SSG08 Scope URL: {scopeUrl}");
-        }
-        
-        // STEP 5: Cache GLTF with modified URIs pointing to blob URLs
-        loadingProgress = 70;
-        loadingMessage = "Préparation du modèle GLTF...";
-        StateHasChanged();
-        
-        await CacheService.CacheGltfWithBlobUrls(
-            "/" + pathModelOrLegacy + weaponName + ".gltf",
-            weaponName + ".gltf",
-            binBlobUrl,
-            textureUrls
-        );
-        
-        // STEP 6: Get the modified GLTF blob URL
-        loadingProgress = 80;
-        StateHasChanged();
-        
-        modelUrl = await CacheService.GetCachedUrl(weaponName + ".gltf");
-        
-        Console.WriteLine($"Model URL: {modelUrl}");
-        Console.WriteLine($"Bin URL: {binBlobUrl}");
-        foreach (var texture in textureUrls)
-        {
-            Console.WriteLine($"Texture {texture.Key}: {texture.Value}");
-        }
-        
-        // STEP 7: Load the model
-        loadingProgress = 90;
-        loadingMessage = "Chargement du modèle 3D...";
-        StateHasChanged();
-        
-        var settings = new ImportSettings
-        {
-            Format = Import3DFormats.Gltf,
-            FileURL = modelUrl,
-        };
-        loadedObjectGuid = await View3D1.Import3DModelAsync(settings);
-        await View3D1.SetCameraPositionAsync(new Vector3(45, 30, 0), new Vector3(0, 0, 0));
     }
-    catch (Exception ex)
-    {
-        loadingProgress = 100;
-        loadingMessage = $"Erreur: {ex.Message}";
-        isLoading = false;
-        StateHasChanged();
-        Console.WriteLine($"Error loading 3D model: {ex}");
-    }
-}
     
     private Task OnObjectLoaded(Object3DArgs e)
     {
@@ -248,7 +334,6 @@ private async Task OnJsModuleLoaded()
         {
             if (item.Uuid == e.UUID)
             {
-                this.msg = $"loaded object with id = {e.UUID} and type {item.Type}. Initial guid was {loadedObjectGuid}";
                 loadingProgress = 100;
                 loadingMessage = "Chargement terminé !";
                 StateHasChanged();
@@ -265,15 +350,34 @@ private async Task OnJsModuleLoaded()
         return Task.CompletedTask;
     }
 
-// Helper method to cache individual texture bytes
-private async Task CacheTexture(byte[] textureBytes, string cacheKey)
-{
-    await JS.InvokeAsync<bool>(
-        "cacheHelper.putInCache",
-        "model-cache",
-        cacheKey,
-        textureBytes
-    );
-}
+    // Helper method to cache individual texture bytes
+    private async Task CacheTexture(byte[] textureBytes, string cacheKey)
+    {
+        await JS.InvokeAsync<bool>(
+            "cacheHelper.putInCache",
+            "model-cache",
+            cacheKey,
+            textureBytes
+        );
+    }
+
+    private async Task ToggleFavorite(int inventoryItemId)
+    {
+        try
+        {
+            var token = await AuthService.GetTokenAsync();
+            if (!string.IsNullOrEmpty(token) && itemDetails != null)
+            {
+                itemDetails.IsFavorite = !itemDetails.IsFavorite;
+                StateHasChanged();
+                
+                await InventoryItemService.ToggleFavoriteAsync(inventoryItemId, token);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
+        }
+    }
 
 }

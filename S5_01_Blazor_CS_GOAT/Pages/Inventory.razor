@@ -35,16 +35,17 @@
             </div>
             
             <div class="inventory-grid">
-                @foreach (var item in inventoryItems)
+                @foreach (var item in GetSortedInventoryItems())
                 {
-                    <div class="inventory-item" style="border-color: @item.RarityColor">
+                    <div class="inventory-item" style="border-color: @item.RarityColor" @onclick="() => NavigateToItemDetail(item.InventoryItemId)">
                         <div class="item-image">
                             <img src="@GetItemImageUrl(item)" alt="@item.SkinName" />
                         </div>
                         
                         <button class="btn-favorite @(item.IsFavorite ? "is-favorite" : "")" 
-                                @onclick="() => ToggleFavorite(item.InventoryItemId)">
-                            @(item.IsFavorite ? "⭐" : "☆")
+                                @onclick="() => ToggleFavorite(item.InventoryItemId)"
+                                @onclick:stopPropagation="true">
+                            @(item.IsFavorite ? "★" : "☆")
                         </button>
                     </div>
                 }
@@ -86,6 +87,20 @@
         }
     }
 
+    private IEnumerable<InventoryItemDetail> GetSortedInventoryItems()
+    {
+        if (inventoryItems == null)
+            return Enumerable.Empty<InventoryItemDetail>();
+        
+        // Tri par date d'acquisition, du plus récent au plus ancien
+        return inventoryItems.OrderByDescending(item => item.AcquiredOn);
+    }
+
+    private void NavigateToItemDetail(int inventoryItemId)
+    {
+        navigationManager.NavigateTo($"/viewmodel/{inventoryItemId}");
+    }
+
     private string GetItemImageUrl(InventoryItemDetail item)
     {
         if (!string.IsNullOrEmpty(item.Uuid))
@@ -108,8 +123,7 @@
                     item.IsFavorite = !item.IsFavorite;
                     StateHasChanged();
                     
-                    // TODO: Appeler l'API pour persister le changement
-                    // await inventoryService.ToggleFavoriteAsync(inventoryItemId, token);
+                    await inventoryService.ToggleFavoriteAsync(inventoryItemId, token);
                 }
             }
         }

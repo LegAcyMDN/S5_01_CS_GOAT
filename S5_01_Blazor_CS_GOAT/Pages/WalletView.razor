@@ -1,0 +1,75 @@
+@page "/wallet"
+@using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.Service
+@inject IService<MoneyTransaction> moneyTransactionRepository
+@inject AuthService authService
+
+
+<h3>Portefeuille</h3>
+
+@if (currentUser != null)
+{
+    <h1>@currentUser.Wallet €</h1>
+    
+    
+    <button style="color: green">Ajouter de l'argent</button>
+    <button style="color: red">Retirer de l'argent</button>
+    
+    <br/>
+    <h2>Historique des paiements</h2>
+    @if (transactionsList != null)
+    {
+        @foreach (MoneyTransaction transaction in transactionsList)
+        {
+            <div>
+                <p>Méthode de paiement : @transaction.PaymentMethod</p>
+                <p>Montant de la transaction : @transaction.WalletValue €</p>
+                <p>Date de la transaction : @transaction.TransactionDate</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div>Chargement...</div>
+    }
+}
+else
+{
+    <h1>CHARGEMENT</h1>
+}
+
+
+
+@code {
+    [Inject]
+    private AuthService AuthService { get; set; } = default!;
+    private User? currentUser;
+    private List<MoneyTransaction> transactionsList;
+    
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateUserState();
+
+        string jwtToken = await authService.GetTokenAsync();
+        transactionsList = await moneyTransactionRepository.GetByUserAsync(jwtToken);
+        
+        
+
+
+
+    }
+    
+    private async Task UpdateUserState()
+    {
+        if (AuthService.CurrentUser == null && await AuthService.IsLoggedInAsync())
+        {
+            await AuthService.LoadCurrentUserAsync();
+        }
+        
+        currentUser = AuthService.CurrentUser;
+    }
+
+}
+
+

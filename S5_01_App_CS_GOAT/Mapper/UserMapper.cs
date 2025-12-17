@@ -25,7 +25,8 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.CreationDate, opt => opt.MapFrom(src => src.CreationDate))
                 .ForMember(dest => dest.Seed, opt => opt.MapFrom(src => src.Seed))
                 .ForMember(dest => dest.Wallet, opt => opt.MapFrom(src => src.Wallet))
-                .ForMember(dest => dest.IsSteamLogin, opt => opt.MapFrom(src => !string.IsNullOrEmpty(src.SteamId)));
+                .ForMember(dest => dest.IsSteamLogin, opt => opt.MapFrom(src => !string.IsNullOrEmpty(src.SteamId)))
+                .ForMember(dest => dest.IsAdmin, opt => opt.MapFrom(src => src.IsAdmin));
         }
     }
 }
