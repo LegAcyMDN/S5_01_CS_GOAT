@@ -4,15 +4,15 @@ from prophet import Prophet
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
+from S5_01_Flask_CS_GOAT import debug
 
 from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, db
 
 
 ia_bp = Blueprint('ia', __name__)
-
-
 def predict_and_save_by_wear(wear_id, jours=30):
     wear = Wear.query.get(wear_id)
+    print("wear_type_id found ",wear.wear_type_id )
     if wear is None:
         return None
     
@@ -24,6 +24,9 @@ def predict_and_save_by_skin_wear(skin_id, wear_type_id, jours=30):
 
 
 def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
+    if(debug) :
+        print("skin_id : ",skin_id)
+        print("wear_type_id : ",wear_type_id)
     price_historie = get_all(skin_id, wear_type_id)
     if price_historie is None or len(price_historie) < training_days:
         return None
@@ -42,11 +45,11 @@ def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
     
     if len(df) < training_days:
         return None
-    
-    print("="*80)
-    print(f"Training data (last {training_days} days from today):")
-    print(df.to_string())
-    print("="*80)
+    if(debug): 
+        print("="*80)
+        print(f"Training data (last {training_days} days from today):")
+        print(df.to_string())
+        print("="*80)
     
     model = Prophet(
         yearly_seasonality=False,
@@ -67,7 +70,7 @@ def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
     tomorrow = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
     future_dates = [tomorrow + timedelta(days=i) for i in range(jours)]
     
-    # Calculer le volume moyen pour les prédictions futures
+    #volume moyen pour les prédictions
     avg_volume = df['volume'].mean()
     
     future_df = pd.DataFrame({
@@ -75,15 +78,16 @@ def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
         'volume': [avg_volume] * jours  
     })
     
-    print(f"Predicting for {len(future_dates)} days: {future_dates[0]} to {future_dates[-1]}")
-    print(f"Using average volume: {avg_volume:.2f}")
+    if(debug):
+        print(f"Predicting for {len(future_dates)} days: {future_dates[0]} to {future_dates[-1]}")
+        print(f"Using average volume: {avg_volume:.2f}")
     
     forecast = model.predict(future_df)
-    
-    print("="*80)
-    print("PREDICTIONS:")
-    print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
-    print("="*80)
+    if(debug):
+        print("="*80)
+        print("PREDICTIONS:")
+        print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
+        print("="*80)
     
     for idx, row in forecast.iterrows():
         new_prediction = PriceHistory(
@@ -95,7 +99,8 @@ def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
             volume= 1
         )
         db.session.add(new_prediction)
-        print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
+        if(debug):
+            print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
     
     db.session.commit()
     

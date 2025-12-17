@@ -3,6 +3,7 @@ from datetime import datetime
 from ..services.model import PriceHistory, Wear, db
 from ..fonctionnalites.ia_app import predict_and_save_by_wear, predict_and_save_by_skin_wear
 
+
 price_history_bp = Blueprint('price_history', __name__, url_prefix='/api/price_history')
 
 
