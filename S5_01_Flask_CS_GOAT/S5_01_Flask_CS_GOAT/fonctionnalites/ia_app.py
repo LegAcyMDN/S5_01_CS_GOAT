@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
 from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, db
-from S5_01_Flask_CS_GOAT import get_debug_print 
+from S5_01_Flask_CS_GOAT import debug 
 
 ia_bp = Blueprint('ia', __name__)
 
@@ -23,7 +23,7 @@ def predict_and_save_by_skin_wear(skin_id, wear_type_id, jours=30):
     return _predict_and_save_internal(skin_id, wear_type_id, jours)
 
 def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
-    debug = get_debug_print() 
+
     
     if debug:
         print("skin_id:", skin_id)
