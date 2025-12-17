@@ -12,6 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [Authorize]
     [AllowAnonymous]
+    [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
         IMapper mapper,
