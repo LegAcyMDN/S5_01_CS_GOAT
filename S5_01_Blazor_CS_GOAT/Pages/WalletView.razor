@@ -32,6 +32,64 @@
     {
         <div>Chargement...</div>
     }
+
+    <div class="WalletLimit">
+        <h2>Budget</h2>
+
+        <h3>Recharge du Portefeuille</h3>
+
+        <label>
+            Période :
+            <select @bind="topUpPeriod" class="inputLimit" name="topUpPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="topUpMax" min="0" step="any" class="inputLimit" name="topUpMax" />
+        </label>
+
+        <h3>Nombres de caisses</h3>
+
+        <label>
+            Période :
+            <select @bind="casesPeriod" class="inputLimit" name="casesPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="casesMax" min="0" step="any" class="inputLimit" name="casesMax" />
+        </label>
+
+        <h3>Dépense</h3>
+
+        <label>
+            Période :
+            <select @bind="spendingPeriod" class="inputLimit" name="spendingPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="spendingMax" min="0" step="any" class="inputLimit" name="spendingMax" />
+        </label>
+    </div>
+    
+
+
 }
 else
 {
@@ -45,7 +103,14 @@ else
     private AuthService AuthService { get; set; } = default!;
     private User? currentUser;
     private List<MoneyTransaction> transactionsList;
-    
+
+    private string topUpPeriod = "none";
+    private int? topUpMax = null;
+    private string casesPeriod = "none";
+    private int? casesMax = null;
+    private string spendingPeriod = "none";
+    private int? spendingMax = null;
+
     
     protected override async Task OnInitializedAsync()
     {
