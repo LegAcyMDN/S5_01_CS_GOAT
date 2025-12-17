@@ -37,9 +37,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("frn_combinedhash")]
         public string? CombinedHash { get; set; }
 
-        [Column("frn_fraction")]
+        [Column("frn_fraction1")]
         [Range(0.0, 1.0)]
-        public double? Fraction { get; set; }
+        public double? Fraction1 { get; set; }
+
+        [Column("frn_fraction2")]
+        [Range(0.0, 1.0)]
+        public double? Fraction2 { get; set; }
 
         [ForeignKey(nameof(UserId))]
         [InverseProperty(nameof(User.FairRandom))]

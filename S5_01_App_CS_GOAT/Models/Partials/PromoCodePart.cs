@@ -49,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             );
         }
 
-        public double Apply(double value)
+        public double Apply(double value, bool consume = false)
         {
             if (this.DiscountAmount != null)
                 value -= this.DiscountAmount.Value;

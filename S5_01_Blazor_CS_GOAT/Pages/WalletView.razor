@@ -1,15 +1,95 @@
 @page "/wallet"
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.Service
+@inject IService<MoneyTransaction> moneyTransactionRepository
+@inject AuthService authService
+
+
 <h3>Portefeuille</h3>
 
 @if (currentUser != null)
 {
     <h1>@currentUser.Wallet €</h1>
     
+    
+    <button style="color: green">Ajouter de l'argent</button>
+    <button style="color: red">Retirer de l'argent</button>
+    
     <br/>
     <h2>Historique des paiements</h2>
-    <div>@currentUser</div>
+    @if (transactionsList != null)
+    {
+        @foreach (MoneyTransaction transaction in transactionsList)
+        {
+            <div>
+                <p>Méthode de paiement : @transaction.PaymentMethod</p>
+                <p>Montant de la transaction : @transaction.WalletValue €</p>
+                <p>Date de la transaction : @transaction.TransactionDate</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div>Chargement...</div>
+    }
+
+    <div class="WalletLimit">
+        <h2>Budget</h2>
+
+        <h3>Recharge du Portefeuille</h3>
+
+        <label>
+            Période :
+            <select @bind="topUpPeriod" class="inputLimit" name="topUpPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="topUpMax" min="0" step="any" class="inputLimit" name="topUpMax" />
+        </label>
+
+        <h3>Nombres de caisses</h3>
+
+        <label>
+            Période :
+            <select @bind="casesPeriod" class="inputLimit" name="casesPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="casesMax" min="0" step="any" class="inputLimit" name="casesMax" />
+        </label>
+
+        <h3>Dépense</h3>
+
+        <label>
+            Période :
+            <select @bind="spendingPeriod" class="inputLimit" name="spendingPeriod">
+                <option value="daily">Journalière</option>
+                <option value="weekly">Hebdomadère</option>
+                <option value="monthly">Mensuelle</option>
+                <option value="none">Aucune</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Montant Max :
+            <input type="number" @bind="spendingMax" min="0" step="any" class="inputLimit" name="spendingMax" />
+        </label>
+    </div>
+    
+
+
 }
 else
 {
@@ -22,14 +102,27 @@ else
     [Inject]
     private AuthService AuthService { get; set; } = default!;
     private User? currentUser;
+    private List<MoneyTransaction> transactionsList;
 
+    private string topUpPeriod = "none";
+    private int? topUpMax = null;
+    private string casesPeriod = "none";
+    private int? casesMax = null;
+    private string spendingPeriod = "none";
+    private int? spendingMax = null;
+
+    
     protected override async Task OnInitializedAsync()
     {
         await UpdateUserState();
+
+        string jwtToken = await authService.GetTokenAsync();
+        transactionsList = await moneyTransactionRepository.GetByUserAsync(jwtToken);
         
         
-        
-        
+
+
+
     }
     
     private async Task UpdateUserState()
@@ -43,3 +136,5 @@ else
     }
 
 }
+
+

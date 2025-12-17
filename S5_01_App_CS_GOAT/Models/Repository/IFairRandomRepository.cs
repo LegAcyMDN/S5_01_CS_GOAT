@@ -7,9 +7,7 @@ public interface IFairRandomRepository : IDataRepository<FairRandom, int>
 {
     Task<FairRandom> Init(int userId, bool requestUnresolved = false);
 
-    Task<FairRandom> Init(User user, bool requestUnresolved = false);
+    Task<FairRandom> Init(User user, bool requestUnresolved = false, FairRandom? init = null);
 
     Task<FairRandom> Resolve(User user, FairRandom? random, bool requestUnresolved = true);
-
-    Task<IEnumerable<FairRandom>> Chain(User user, FairRandom? init, int lenght);
 }

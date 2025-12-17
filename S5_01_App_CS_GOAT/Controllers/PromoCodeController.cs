@@ -30,22 +30,21 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Check(string code, int? caseId)
         {
-            Case? targetCase = null;
-            if (caseId != null)
-            {
-                targetCase = await caseRepository.GetByIdAsync((int)caseId);
-                if (targetCase == null) return NotFound();
-            }
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            IEnumerable<PromoCode> promoCodes = await authResult.GetByUser(manager, false, pc => pc.Code == code);
-            if (!promoCodes.Any()) return NotFound();
-            PromoCode promoCode = promoCodes.First();
-            if (promoCode.CaseId != null && (targetCase == null || targetCase.CaseId != promoCode.CaseId))
-                return NotFound();
-            if (!promoCode.IsValid())
-                return NotFound();
+            Case? targetCase = null;
+            if (caseId != null)
+            {
+                targetCase = await caseRepository.GetByIdAsync(caseId.Value);
+                if (targetCase == null) return NotFound();
+            }
+            PromoCode? promoCode = await manager.Check(
+                code,
+                authResult.AuthUserId.Value,
+                caseId
+            );
+            if (promoCode == null) return NotFound();
             CasePromoCodeDTO dto = mapper.Map<CasePromoCodeDTO>(promoCode);
             if (targetCase != null)
             {

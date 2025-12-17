@@ -84,7 +84,5 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             throw new NotImplementedException();
         }
-
-        // TODO: Add OpenCase endpoint
     }
 }
