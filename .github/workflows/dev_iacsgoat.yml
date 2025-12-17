@@ -15,37 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
-
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Python version
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
-
-      # 🛠️ Local Build Section (Optional)
-      # The following section in your workflow is designed to catch build issues early on the client side, before deployment. This can be helpful for debugging and validation. However, if this step significantly increases deployment time and early detection is not critical for your workflow, you may remove this section to streamline the deployment process.
+          python-version: '3.11'  # Changed from 3.14 (which doesn't exist) to 3.11
+      
       - name: Create and Start virtual environment and Install dependencies
         run: |
           python -m venv antenv
           source antenv/bin/activate
-          pip install -r requirements.txt
+          pip install -r S5_01_Flask_CS_GOAT/requirements.txt
                 
-      # By default, when you enable GitHub CI/CD integration through the Azure portal, the platform automatically sets the SCM_DO_BUILD_DURING_DEPLOYMENT application setting to true. This triggers the use of Oryx, a build engine that handles application compilation and dependency installation (e.g., pip install) directly on the platform during deployment. Hence, we exclude the antenv virtual environment directory from the deployment artifact to reduce the payload size. 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
-            .
-            !antenv/
-
-      # 🚫 Opting Out of Oryx Build
-      # If you prefer to disable the Oryx build process during deployment, follow these steps:
-      # 1. Remove the SCM_DO_BUILD_DURING_DEPLOYMENT app setting from your Azure App Service Environment variables.
-      # 2. Refer to sample workflows for alternative deployment strategies: https://github.com/Azure/actions-workflow-samples/tree/master/AppService
-      
+            S5_01_Flask_CS_GOAT/
+            !S5_01_Flask_CS_GOAT/antenv/
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,7 +44,7 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -66,11 +57,10 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DF333828C91441B8BD2FACF0AE1A7C7A }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5BAA0611D90F42678F20FD86E917BEA1 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4EF0E9DE1028499B9BC99320DB558E25 }}
-
+      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'iacsgoat'
           slot-name: 'Production'
-          
