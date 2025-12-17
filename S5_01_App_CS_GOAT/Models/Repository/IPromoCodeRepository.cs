@@ -9,4 +9,8 @@ public interface IPromoCodeRepository : IDataRepository<PromoCode, int>
     Task<bool> CheckValidity(PromoCode promoCode);
 
     Task Refresh(PromoCode promoCode);
+
+    Task<PromoCode?> Check(string code, int userId, int? caseId = null);
+
+    Task Consume(PromoCode promoCode);
 }

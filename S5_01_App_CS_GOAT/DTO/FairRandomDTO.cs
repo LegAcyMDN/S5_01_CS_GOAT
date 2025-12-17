@@ -12,7 +12,9 @@ public class FairRandomDTO
   
     public string CombinedHash { get; set; } = null!; // serverseed + userseed + usernonce
 
-    public double Fraction { get; set; } // combinedhash transform between 0 and 1
+    public double Fraction1 { get; set; } // combinedhash transform between 0 and 1
+
+    public double Fraction2 { get; set; } // combinedhash transform between 0 and 1
 
     public int TransactionId { get; set; }
 }

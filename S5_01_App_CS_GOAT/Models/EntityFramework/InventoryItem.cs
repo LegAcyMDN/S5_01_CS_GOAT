@@ -30,7 +30,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("inv_isfavorite")]
-        public bool IsFavorite { get; set; }
+        public bool IsFavorite { get; set; } = false;
 
         [Required]
         [Column("inv_acquiredon")]

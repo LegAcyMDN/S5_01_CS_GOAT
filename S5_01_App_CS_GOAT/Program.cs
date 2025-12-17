@@ -77,6 +77,9 @@ builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
 builder.Services.AddHostedService<TimedActionService<IDataRepository<PromoCode, int>, PromoCode, int>>();
 
+// Overseer services
+builder.Services.AddScoped<CaseOpenningService>();
+
 string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
 if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");
 

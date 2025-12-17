@@ -7,7 +7,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     [Table("t_e_skin_skn")]
     [Index(nameof(SkinName))]
     [Index(nameof(PaintIndex))]
-    public class Skin
+    public partial class Skin
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

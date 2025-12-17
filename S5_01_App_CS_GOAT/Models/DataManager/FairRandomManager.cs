@@ -27,7 +27,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return await this.Init(user, requestUnresolved);
         }
 
-        public async Task<FairRandom> Init(User user, bool requestUnresolved = false)
+        public async Task<FairRandom> Init(User user, bool requestUnresolved = false, FairRandom? init = null)
         {
             FairRandom? existing = user.FairRandom;
             if (existing != null)
@@ -43,8 +43,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     _context.Set<FairRandom>().Update(existing);
                 }
             }
-            string seed = SecurityService.GenerateSeed(16);
-            string hash = SecurityService.HashString(seed);
+            string seed = init != null ? init.ServerSeed :
+                SecurityService.GenerateSeed(16);
+            string hash = init != null ? init.ServerHash :
+                SecurityService.HashString(seed);
             FairRandom newFairRandom = new FairRandom()
             {
                 UserId = user.UserId,
@@ -62,7 +64,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 random == null
                 || (random.IsResolved
                 && requestUnresolved)
-            ) random = await this.Init(user, requestUnresolved);
+            ) random = await this.Init(user, requestUnresolved, random);
             if (!requestUnresolved && random.IsResolved) return random;
             random.UserSeed = user.Seed;
             random.UserNonce = user.Nonce;
@@ -73,32 +75,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _context.Set<User>().Update(user);
             await _context.SaveChangesAsync();
             return random;
-        }
-
-        public async Task<IEnumerable<FairRandom>> Chain(User user, FairRandom? init, int lenght)
-        {
-            if (init == null) init = await this.Init(user, true);
-            if (init.IsResolved) throw new ArgumentException("Initial FairRandom must be unresolved");
-            string serverSeed = init.ServerSeed;
-            string serverHash = init.ServerHash;
-            List<FairRandom> chain = new List<FairRandom>();
-            FairRandom current = init;
-            for (int i = 0; i < lenght; i++)
-            {
-                if (i > 0)
-                {
-                    current = new FairRandom()
-                    {
-                        UserId = user.UserId,
-                        ServerSeed = serverSeed,
-                        ServerHash = serverHash
-                    };
-                }
-                await this.Resolve(user, current, true);
-                chain.Add(current);
-            }
-            await _context.SaveChangesAsync();
-            return chain;
         }
     }
 }

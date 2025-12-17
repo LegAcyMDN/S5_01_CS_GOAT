@@ -14,7 +14,8 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.UserSeed, opt => opt.MapFrom(src => src.UserSeed))
                 .ForMember(dest => dest.UserNonce, opt => opt.MapFrom(src => src.UserNonce))
                 .ForMember(dest => dest.CombinedHash, opt => opt.MapFrom(src => src.CombinedHash))
-                .ForMember(dest => dest.Fraction, opt => opt.MapFrom(src => src.Fraction))
+                .ForMember(dest => dest.Fraction1, opt => opt.MapFrom(src => src.Fraction1))
+                .ForMember(dest => dest.Fraction2, opt => opt.MapFrom(src => src.Fraction2))
                 .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src =>
                     src.RandomTransaction != null ? src.RandomTransaction.TransactionId :
                     src.UpgradeResult != null ? src.UpgradeResult.TransactionId : (int?)null));

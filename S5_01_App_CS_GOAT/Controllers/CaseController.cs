@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.DTO;
+using S5_01_App_CS_GOAT.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -16,6 +17,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         IMapper mapper,
         IReadableRepository<Case, int> manager,
         IDataRepository<Favorite, (int,int)> favoriteManager,
+        CaseOpenningService caseOpenningService,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
@@ -68,6 +70,37 @@ namespace S5_01_App_CS_GOAT.Controllers
             );
             caseDetailDTO.IsFavorite = favorite != null;
             return Ok(caseDetailDTO);
+        }
+
+        /// <summary>
+        /// Open one or more cases
+        /// </summary>
+        /// <returns>MultipleCaseResultDTO object</returns>
+        [HttpPost("open")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status402PaymentRequired)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> OpenCase([FromBody] CaseOpenningDTO caseOpenning)
+        {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            Case? caseToOpen = await manager.GetByIdAsync(caseOpenning.CaseId);
+            if (caseToOpen == null) return NotFound();
+            MultipleCaseResultDTO caseResult;
+            try
+            {
+                caseResult = await caseOpenningService.OpenCaseAsync(
+                    caseOpenning,
+                    authResult.AuthUserId.Value
+                );
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            return Ok(caseResult);
         }
     }
 }

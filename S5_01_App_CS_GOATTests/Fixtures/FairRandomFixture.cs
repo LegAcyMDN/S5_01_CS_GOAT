@@ -16,7 +16,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash123abc456def",
                     UserNonce = 1,
                     CombinedHash = "combined123hash456",
-                    Fraction = 0.12345,
+                    Fraction1 = 0.12345,
+                    Fraction2 = 0.12345,
                     TransactionId = 1
                 },
                 new FairRandomDTO
@@ -25,7 +26,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash789xyz012ghi",
                     UserNonce = 2,
                     CombinedHash = "combined789hash012",
-                    Fraction = 0.67890,
+                    Fraction1 = 0.67890,
+                    Fraction2 = 0.12345,
                     TransactionId = 2
                 },
                 new FairRandomDTO
@@ -34,7 +36,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash456def789jkl",
                     UserNonce = 3,
                     CombinedHash = "combined456hash789",
-                    Fraction = 0.98765
+                    Fraction1 = 0.98765
                 }
             };
         }
@@ -47,7 +49,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 ServerHash = "testhash123",
                 UserNonce = 1,
                 CombinedHash = "testcombinedhash",
-                Fraction = 0.5,
+                Fraction1 = 0.5,
+                Fraction2 = 0.12345,
                 TransactionId = 1
             };
         }
@@ -61,7 +64,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 ServerHash = "testhash123",
                 UserNonce = 1,
                 CombinedHash = "testcombinedhash",
-                Fraction = 0.5
+                Fraction1 = 0.5,
+                Fraction2 = 0.12345,
             };
         }
 
@@ -76,7 +80,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash123abc456def",
                     UserNonce = 1,
                     CombinedHash = "combined123hash456",
-                    Fraction = 0.12345
+                    Fraction1 = 0.12345,
+                    Fraction2 = 0.12345,
                 },
                 new FairRandom
                 {
@@ -85,7 +90,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash789xyz012ghi",
                     UserNonce = 2,
                     CombinedHash = "combined789hash012",
-                    Fraction = 0.67890
+                    Fraction1 = 0.67890,
+                    Fraction2 = 0.12345,
                 },
                 new FairRandom
                 {
@@ -94,7 +100,8 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                     ServerHash = "hash456def789jkl",
                     UserNonce = 3,
                     CombinedHash = "combined456hash789",
-                    Fraction = 0.98765
+                    Fraction1 = 0.98765,
+                    Fraction2 = 0.12345,
                 }
             };
         }
