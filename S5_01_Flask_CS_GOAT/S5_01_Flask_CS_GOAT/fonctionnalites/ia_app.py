@@ -1,5 +1,4 @@
-import datetime
-from flask import Blueprint, jsonify, current_app
+from flask import Blueprint
 from prophet import Prophet
 import pandas as pd
 from datetime import datetime, timedelta
@@ -11,24 +10,29 @@ ia_bp = Blueprint('ia', __name__)
 
 
 
-def predict_and_save_by_wear(wear_id, jours=30):
-    wear = Wear.query.get(wear_id)
-    print("wear_type_id found ", wear.wear_type_id)
-    if wear is None:
+def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type_id:int=None) -> bool:
+    if wear_id:
+        (skin_id, wear_type_id) =predict_with_wear(wear_id)
+        if debug:
+            print(f"Wear found {wear_id} skin_id: {skin_id}, wear_type_id: {wear_type_id}")
+    if skin_id is None or wear_type_id is None:
         return None
-    
-    return _predict_and_save_internal(wear.skin_id, wear.wear_type_id, jours)
-
-def predict_and_save_by_skin_wear(skin_id, wear_type_id, jours=30):
     return _predict_and_save_internal(skin_id, wear_type_id, jours)
 
-def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
 
-    
-    if debug:
-        print("skin_id:", skin_id)
-        print("wear_type_id:", wear_type_id)
-    
+def predict_with_wear(wear_id:int) -> tuple[int,int] :
+     if wear_id:
+        wear = Wear.query.get(wear_id)
+        if wear is None:
+            if debug: 
+                print(f"Wear {wear_id} introuvable.")
+            return None, None
+        skin_id = wear.skin_id
+        wear_type_id = wear.wear_type_id
+        return skin_id, wear_type_id
+
+def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, training_days:int=7) -> bool:
+
     price_history = get_all(skin_id, wear_type_id)
     if price_history is None or len(price_history) < training_days:
         return None
@@ -92,19 +96,22 @@ def _predict_and_save_internal(skin_id, wear_type_id, jours, training_days=7):
             price_value=round(float(row['yhat']), 2),
             price_date=row['ds'],
             guess_date=datetime.now(),
-            volume=1
+            volume=1        
         )
-        db.session.add(new_prediction)
+        if debug :
+            print(new_prediction)
+        else:
+            db.session.add(new_prediction)
         if debug:
             print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
-    
-    db.session.commit()
+        if not debug: 
+         db.session.commit()
     
     print(f"Saved {len(forecast)} predictions!")
     
     return True
 
-def get_all(skin_id, wear_type_id):
+def get_all(skin_id:int, wear_type_id:int) -> list:
     price_histories = PriceHistory.query.filter_by(
         skin_id=skin_id,
         wear_type_id=wear_type_id,
