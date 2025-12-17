@@ -2,7 +2,9 @@
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.Service
 @inject IService<MoneyTransaction> moneyTransactionRepository
+@inject IService<Limit> limitRepository
 @inject AuthService authService
+@inject HttpClient Http
 
 
 <h3>Portefeuille</h3>
@@ -10,11 +12,10 @@
 @if (currentUser != null)
 {
     <h1>@currentUser.Wallet €</h1>
-    
-    
+
     <button style="color: green">Ajouter de l'argent</button>
     <button style="color: red">Retirer de l'argent</button>
-    
+
     <br/>
     <h2>Historique des paiements</h2>
     @if (transactionsList != null)
@@ -35,94 +36,139 @@
 
     <div class="WalletLimit">
         <h2>Budget</h2>
-
-        <h3>Recharge du Portefeuille</h3>
-
+        <label>
+            Limite :
+            <select @bind="type" class="inputLimit" name="type">
+                <option value="Dépôt">Dépôt</option>
+                <option value="Dépenses">Dépenses</option>
+                <option value="Ouvertures">Ouvertures</option>
+                <option value="Améliorations">Améliorations</option>
+            </select>
+        </label>
+        <br />
         <label>
             Période :
-            <select @bind="topUpPeriod" class="inputLimit" name="topUpPeriod">
-                <option value="daily">Journalière</option>
-                <option value="weekly">Hebdomadère</option>
-                <option value="monthly">Mensuelle</option>
-                <option value="none">Aucune</option>
+            <select @bind="period" class="inputLimit" name="period">
+                <option value="Horaire">Horaire</option>
+                <option value="Quotidien">Quotidien</option>
+                <option value="Hebdomadaire">Hebdomadaire</option>
+                <option value="Mensuel">Mensuel</option>
             </select>
         </label>
         <br />
         <label>
             Montant Max :
-            <input type="number" @bind="topUpMax" min="0" step="any" class="inputLimit" name="topUpMax" />
+            <input type="number" @bind="amount" min="0" step="any" class="inputLimit" name="amount" />
+            <br />
+            <button class="inputLimit" @onclick="() => SaveLimitAsync(type, period, amount)">Sauver</button>
         </label>
 
-        <h3>Nombres de caisses</h3>
-
-        <label>
-            Période :
-            <select @bind="casesPeriod" class="inputLimit" name="casesPeriod">
-                <option value="daily">Journalière</option>
-                <option value="weekly">Hebdomadère</option>
-                <option value="monthly">Mensuelle</option>
-                <option value="none">Aucune</option>
-            </select>
-        </label>
-        <br />
-        <label>
-            Montant Max :
-            <input type="number" @bind="casesMax" min="0" step="any" class="inputLimit" name="casesMax" />
-        </label>
-
-        <h3>Dépense</h3>
-
-        <label>
-            Période :
-            <select @bind="spendingPeriod" class="inputLimit" name="spendingPeriod">
-                <option value="daily">Journalière</option>
-                <option value="weekly">Hebdomadère</option>
-                <option value="monthly">Mensuelle</option>
-                <option value="none">Aucune</option>
-            </select>
-        </label>
-        <br />
-        <label>
-            Montant Max :
-            <input type="number" @bind="spendingMax" min="0" step="any" class="inputLimit" name="spendingMax" />
-        </label>
+        <h3>Limites chargées</h3>
+        @if (limits == null)
+        {
+            <div>Aucune limite chargée</div>
+        }
+        else if (!limits.Any())
+        {
+            <div>Liste vide</div>
+        }
+        else
+        {
+            <ul>
+                @foreach (var l in limits)
+                {
+                    <li>
+                        <strong>@(l.LimitType?.LimitTypeName ?? "(sans type)")</strong>
+                        — Montant : @(l.LimitAmount.HasValue ? l.LimitAmount.Value.ToString() : "null")
+                        — TypeId: @l.LimitTypeId
+                        — UserId: @l.UserId
+                    </li>
+                }
+            </ul>
+        }
     </div>
-    
-
-
 }
 else
 {
     <h1>CHARGEMENT</h1>
 }
 
-
-
 @code {
     [Inject]
     private AuthService AuthService { get; set; } = default!;
+
     private User? currentUser;
     private List<MoneyTransaction> transactionsList;
+    private List<Limit>? limits;
 
-    private string topUpPeriod = "none";
-    private int? topUpMax = null;
-    private string casesPeriod = "none";
-    private int? casesMax = null;
-    private string spendingPeriod = "none";
-    private int? spendingMax = null;
-
+    private string type = "Aucune";
+    private string period = "Aucune";
+    private double? amount = null;
     
+
     protected override async Task OnInitializedAsync()
     {
         await UpdateUserState();
 
         string jwtToken = await authService.GetTokenAsync();
         transactionsList = await moneyTransactionRepository.GetByUserAsync(jwtToken);
-        
-        
+        limits = await limitRepository.GetByUserAsync(jwtToken);
+    }
 
+    private async Task SaveLimitAsync(string prefix, string period, double? amount)
+    {
 
+        if (limits == null)
+        {
+            Console.WriteLine("Aucune limite chargée.");
+            return;
+        }
 
+        if (string.IsNullOrEmpty(period) || period == "Aucune")
+        {
+            Console.WriteLine("Sélectionne une période avant de sauvegarder.");
+            return;
+        }
+
+        var limitTypeName = $"{prefix} {period}";
+
+        var found = limits.FirstOrDefault(l => l.LimitType != null && l.LimitType.LimitTypeName == limitTypeName);
+        if (found == null)
+        {
+            Console.WriteLine($"Limite introuvable pour {limitTypeName}");
+            return;
+        }
+
+        var limitTypeId = found.LimitTypeId;
+
+        var token = await authService.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Console.WriteLine("Utilisateur non authentifié.");
+            return;
+        }
+
+        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+        var payload = new { LimitAmount = amount, LimitTypeName = limitTypeName };
+        var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"limit/update/{limitTypeId}")
+        {
+            Content = JsonContent.Create(payload)
+        };
+
+        var resp = await Http.SendAsync(request);
+        if (resp.IsSuccessStatusCode)
+        {
+            // recharger
+            var jwtToken = await authService.GetTokenAsync();
+            limits = await limitRepository.GetByUserAsync(jwtToken);
+            StateHasChanged();
+        }
+        else
+        {
+            var err = await resp.Content.ReadAsStringAsync();
+            Console.WriteLine($"Erreur sauvegarde limite: {err}");
+        }
     }
     
     private async Task UpdateUserState()
@@ -131,10 +177,9 @@ else
         {
             await AuthService.LoadCurrentUserAsync();
         }
-        
+
         currentUser = AuthService.CurrentUser;
     }
-
 }
 
 
