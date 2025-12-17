@@ -16,7 +16,11 @@
                     <span class="bottom bar-list"></span>
                 </div>
                 <section class="menu-container">
-                    <div class="menu-list">Profile</div>
+                    @if (currentUser?.IsAdmin == true)
+                    {
+                        <div class="menu-list">Admin Panel</div>
+                    }
+                    <div class="menu-list" @onclick="NavigateToProfile" style="cursor: pointer;">Profile</div>
                     <div class="menu-list" @onclick="NavigateToWallet">Portefeuille : @currentUser.Wallet.ToString("F2")€</div>
                     <div class="menu-list" @onclick="HandleLogout" style="cursor: pointer;">Déconnexion</div>
                 </section>
@@ -76,6 +80,16 @@
     private void NavigateToWallet()
     {
         Navigation.NavigateTo("/wallet");
+    }
+
+    private void NavigateToProfile()
+    {
+        Navigation.NavigateTo("/profile");
+    }
+
+    private void NavigateToAdmin()
+    {
+        Navigation.NavigateTo("/admin");
     }
 
     private async Task HandleLogout()

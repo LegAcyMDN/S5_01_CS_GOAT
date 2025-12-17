@@ -6,23 +6,41 @@
 
 <PageTitle>CS:GOAT</PageTitle>
 
+<div class="search-bar">
+    <input type="text" 
+           <!--@bind="SearchTerm"
+           @bind:event="oninput"-->
+           placeholder="Rechercher une caisse par nom..." />
+</div>
+
 <div class="display-cases">
     @if (cases.Count == 0)
     {
         <p><em>Loading...</em></p>    
     } else
     {
-        @foreach (Case singleCase in cases) {
-            <CaseComponent CaseObject="@singleCase"></CaseComponent>
+        @if (filteredCases.Count == 0)
+        {
+            <p><em>Aucune caisse trouvée pour votre recherche.</em></p>
+        }
+        else
+        {
+            @foreach (Case singleCase in filteredCases) {
+                <CaseComponent CaseObject="@singleCase"></CaseComponent>
+            }
         }
     }
 </div>
 
 @code {
     private List<Case> cases = new List<Case>();
+    private List<Case> filteredCases = new List<Case>();
+    private string searchTerm = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         cases = await caseRepository.GetAllAsync();
+        filteredCases = cases;
         Console.WriteLine(cases);
     }
 }

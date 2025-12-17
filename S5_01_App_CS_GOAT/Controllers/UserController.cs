@@ -13,6 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [Authorize]
     [AllowAnonymous]
+    [SetThreadPrincipal]
     public class UserController(
         IUserRepository manager,
         IMapper mapper,

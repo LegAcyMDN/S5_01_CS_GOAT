@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_Blazor_CS_GOAT", "S5_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S5_01_App_CS_GOATTests", "S5_01_App_CS_GOATTests\S5_01_App_CS_GOATTests.csproj", "{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{9BF93FB9-D3B4-43FC-AB49-6CEB5891ECBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4E213CE-83AD-4314-B0CF-C8FE54A2D5A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF93FB9-D3B4-43FC-AB49-6CEB5891ECBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF93FB9-D3B4-43FC-AB49-6CEB5891ECBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF93FB9-D3B4-43FC-AB49-6CEB5891ECBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF93FB9-D3B4-43FC-AB49-6CEB5891ECBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
