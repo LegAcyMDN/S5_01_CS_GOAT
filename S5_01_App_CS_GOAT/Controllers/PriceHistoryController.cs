@@ -33,6 +33,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             return Ok(result);
         }
 
+
+// TODO: CLEANUP le endpoint
 #if DEBUG
         /// <summary>
         /// Get AI prediction for price history
@@ -49,7 +51,11 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             if (!response.IsSuccessStatusCode) return BadRequest();
 
-            return Ok();
+            Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
+            IEnumerable<PriceHistory> result = wear.PriceHistories();
+            IEnumerable<PriceHistoryDTO> priceHistoryDTOs = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
+
+            return Ok(priceHistoryDTOs);
         }
 #endif
     }
