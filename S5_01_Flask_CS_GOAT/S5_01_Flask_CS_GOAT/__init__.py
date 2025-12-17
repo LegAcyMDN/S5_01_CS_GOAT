@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 from .services.model import db
-from .Controllers.price_history_controller import price_history_bp
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -17,9 +17,15 @@ app = Flask(__name__)
 # Configure the app for PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-debug = app.config["DEBUG"]
+app.config['DEBUG'] = os.getenv("DEBUG")
 # Initialize SQLAlchemy with the app
 db.init_app(app)
 
+# Configure debug mode
+def get_debug_print():
+    debug = app.config['DEBUG']
+    return debug
+print(f" * Debug print is {'on!' if get_debug_print() else 'off!'}")
+from .Controllers.price_history_controller import price_history_bp
 # Register blueprints
 app.register_blueprint(price_history_bp)
