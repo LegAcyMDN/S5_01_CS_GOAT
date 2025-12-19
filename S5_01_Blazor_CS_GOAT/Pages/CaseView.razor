@@ -138,18 +138,21 @@
 
 
 
-    // private async Task<MultipleCaseResultDTO> CallCaseOpen(int numberOfCases)
-    // {
-    //     CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
-    //     {
-    //         CaseId = activeCase.CaseId,
-    //         Quantity =  numberOfCases,
-    //         RaffleRollerLength = 
-    //     }
-    //     
-    //     // TODO if esthetic put the info in the case roll component but call the case API before
-    //     caseRepository.OpenCaseAsync()
-    // }
+    private async Task<List<MultipleCaseResultDTO>> CallCaseOpen(int numberOfCases)
+    {
+        CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
+        {
+            CaseId = activeCase.CaseId,
+            Quantity = numberOfCases,
+            RaffleRollerLength = 80,
+            PromoCode = null // TODO implement promocode
+        };
+        
+        // TODO if esthetic put the info in the case roll component but call the case API before
+        string jwtToken = await authService.GetTokenAsync();
+        List<MultipleCaseResultDTO> casesReturn = await caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
+        return casesReturn;
+    }
 
     private void ClosePopup()
     {
