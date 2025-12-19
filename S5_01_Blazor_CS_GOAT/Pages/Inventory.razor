@@ -1,27 +1,25 @@
 @page "/inventory"
 @using S5_01_Blazor_CS_GOAT.Layout
 @using S5_01_Blazor_CS_GOAT.Models
-@using S5_01_Blazor_CS_GOAT.Service
-@inject IService<InventoryItemDetail> inventoryService
-@inject AuthService authService
-@inject NavigationManager navigationManager
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject InventoryViewModel ViewModel
 
 <div class="inventory-page">
     <h1>Mon Inventaire</h1>
     
-    @if (isLoading)
+    @if (ViewModel.IsLoading)
     {
         <div class="loading">
             <p>Chargement de votre inventaire...</p>
         </div>
     }
-    else if (!isAuthenticated)
+    else if (!ViewModel.IsAuthenticated)
     {
         <div class="inventory-content">
             <p>Vous devez être connecté pour voir votre inventaire.</p>
         </div>
     }
-    else if (inventoryItems == null || !inventoryItems.Any())
+    else if (ViewModel.IsInventoryEmpty)
     {
         <div class="inventory-content">
             <p>Votre inventaire est vide. Commencez à ouvrir des caisses pour obtenir des skins !</p>
@@ -31,19 +29,19 @@
     {
         <div class="inventory-content">
             <div class="inventory-stats">
-                <p>Total d'items : @inventoryItems.Count</p>
+                <p>Total d'items : @ViewModel.TotalItemsCount</p>
             </div>
             
             <div class="inventory-grid">
-                @foreach (var item in GetSortedInventoryItems())
+                @foreach (var item in ViewModel.GetSortedInventoryItems())
                 {
-                    <div class="inventory-item" style="border-color: @item.RarityColor" @onclick="() => NavigateToItemDetail(item.InventoryItemId)">
+                    <div class="inventory-item" style="border-color: @item.RarityColor" @onclick="() => ViewModel.NavigateToItemDetail(item.InventoryItemId)">
                         <div class="item-image">
-                            <img src="@GetItemImageUrl(item)" alt="@item.SkinName" />
+                            <img src="@ViewModel.GetItemImageUrl(item)" alt="@item.SkinName" />
                         </div>
                         
                         <button class="btn-favorite @(item.IsFavorite ? "is-favorite" : "")" 
-                                @onclick="() => ToggleFavorite(item.InventoryItemId)"
+                                @onclick="async () => await ViewModel.ToggleFavoriteAsync(item.InventoryItemId)"
                                 @onclick:stopPropagation="true">
                             @(item.IsFavorite ? "★" : "☆")
                         </button>
@@ -57,79 +55,9 @@
 </div>
 
 @code {
-    private List<InventoryItemDetail>? inventoryItems;
-    private bool isLoading = true;
-    private bool isAuthenticated = false;
-
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            isAuthenticated = await authService.IsAuthenticatedAsync();
-            
-            if (isAuthenticated)
-            {
-                var token = await authService.GetTokenAsync();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    inventoryItems = await inventoryService.GetByUserAsync(token);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors du chargement de l'inventaire: {ex.Message}");
-            inventoryItems = new List<InventoryItemDetail>();
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private IEnumerable<InventoryItemDetail> GetSortedInventoryItems()
-    {
-        if (inventoryItems == null)
-            return Enumerable.Empty<InventoryItemDetail>();
-        
-        // Tri par date d'acquisition, du plus récent au plus ancien
-        return inventoryItems.OrderByDescending(item => item.AcquiredOn);
-    }
-
-    private void NavigateToItemDetail(int inventoryItemId)
-    {
-        navigationManager.NavigateTo($"/viewmodel/{inventoryItemId}");
-    }
-
-    private string GetItemImageUrl(InventoryItemDetail item)
-    {
-        if (!string.IsNullOrEmpty(item.Uuid))
-        {
-            return $"https://screenshots.cs.money/csmoney2/{item.Uuid}_icon.png";
-        }
-        return "images/default-item.png";
-    }
-
-    private async Task ToggleFavorite(int inventoryItemId)
-    {
-        try
-        {
-            var token = await authService.GetTokenAsync();
-            if (!string.IsNullOrEmpty(token))
-            {
-                var item = inventoryItems?.FirstOrDefault(i => i.InventoryItemId == inventoryItemId);
-                if (item != null)
-                {
-                    item.IsFavorite = !item.IsFavorite;
-                    StateHasChanged();
-                    
-                    await inventoryService.ToggleFavoriteAsync(inventoryItemId, token);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
-        }
+        await ViewModel.InitializeAsync();
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
     }
 }

@@ -1,33 +1,33 @@
 @using S5_01_Blazor_CS_GOAT.Models
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject WeaponDisplayComponentViewModel ViewModel
 
-<div style="height: @Height; width: @Width; border: 2px solid @WeaponSkin.RarityColor; --rarity-color: @WeaponSkin.RarityColor;" class="weapon-showcase">
+<div style="height: @ViewModel.Height; width: @ViewModel.Width; border: 2px solid @ViewModel.WeaponSkin?.RarityColor; --rarity-color: @ViewModel.WeaponSkin?.RarityColor;" class="weapon-showcase">
     <div id="weapon-container">
-        <img id="weapon-img" src="@ImageLink"/>
+        <img id="weapon-img" src="@ViewModel.ImageLink"/>
     </div>
-    <div id="weapon-rarity" style="background-color: @WeaponSkin.RarityColor">
-        
+    <div id="weapon-rarity" style="background-color: @ViewModel.WeaponSkin?.RarityColor">
     </div>
 </div>
 
 @code {
     [Parameter]
     public required string ImageLink { get; set; }
+    
     [Parameter]
     public required Skin WeaponSkin { get; set; }
 
-    [Parameter] public string? Height { get; set; } = "100px"; 
-    [Parameter] public string? Width { get; set; } = "100px"; 
-
-
+    [Parameter] 
+    public string? Height { get; set; } = "100px"; 
     
-    protected override async Task OnInitializedAsync()
+    [Parameter] 
+    public string? Width { get; set; } = "100px"; 
+
+    protected override void OnParametersSet()
     {
-
-
+        ViewModel.ImageLink = ImageLink;
+        ViewModel.WeaponSkin = WeaponSkin;
+        ViewModel.Height = Height ?? "100px";
+        ViewModel.Width = Width ?? "100px";
     }
-
-
-
-    
-    
 }
