@@ -2,8 +2,10 @@
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.Service
+@using Shared.DTO.Helpers
 @inject IService<Skin> skinRepository
 @inject IService<Case> caseRepository
+@inject AuthService authService
 
 <PageTitle>CS:GOAT - Caisses</PageTitle>
 
@@ -133,6 +135,21 @@
         showPopup = true;
         
     }
+
+
+
+    // private async Task<MultipleCaseResultDTO> CallCaseOpen(int numberOfCases)
+    // {
+    //     CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
+    //     {
+    //         CaseId = activeCase.CaseId,
+    //         Quantity =  numberOfCases,
+    //         RaffleRollerLength = 
+    //     }
+    //     
+    //     // TODO if esthetic put the info in the case roll component but call the case API before
+    //     caseRepository.OpenCaseAsync()
+    // }
 
     private void ClosePopup()
     {
