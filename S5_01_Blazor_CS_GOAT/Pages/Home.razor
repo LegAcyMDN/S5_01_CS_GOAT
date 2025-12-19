@@ -2,15 +2,14 @@
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.Service
-@using S5_01_Blazor_CS_GOAT.Utils
 @inject IService<Case> caseRepository
 
 <PageTitle>CS:GOAT</PageTitle>
 
 <div class="search-bar">
     <input type="text" 
-           @bind="SearchTerm" 
-           @bind:event="oninput"
+           <!--@bind="SearchTerm"
+           @bind:event="oninput"-->
            placeholder="Rechercher une caisse par nom..." />
 </div>
 
@@ -43,78 +42,5 @@
         cases = await caseRepository.GetAllAsync();
         filteredCases = cases;
         Console.WriteLine(cases);
-    }
-
-    private string SearchTerm
-    {
-        get => searchTerm;
-        set
-        {
-            searchTerm = value;
-            FilterCases();
-        }
-    }
-
-    private void FilterCases()
-    {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            filteredCases = cases;
-            return;
-        }
-
-        string search = searchTerm.Trim().ToLowerInvariant();
-        
-        // Niveau 1 : Recherche exacte (insensible à la casse)
-        var exactMatches = cases.Where(c => 
-            c.CaseName.ToLowerInvariant() == search).ToList();
-
-        if (exactMatches.Any())
-        {
-            filteredCases = exactMatches;
-            return;
-        }
-
-        // Niveau 2 : Recherche par préfixe/acronyme
-        var prefixMatches = cases.Where(c =>
-        {
-            string caseName = c.CaseName.ToLowerInvariant();
-            
-            // Recherche par préfixe
-            if (caseName.StartsWith(search))
-                return true;
-            
-            // Recherche par acronyme (première lettre de chaque mot)
-            string[] words = c.CaseName.Split(new[] { ' ', '-', '_' }, StringSplitOptions.RemoveEmptyEntries);
-            string acronym = string.Concat(words.Select(w => w[0])).ToLowerInvariant();
-            
-            return acronym.StartsWith(search) || acronym == search;
-        }).ToList();
-
-        if (prefixMatches.Any())
-        {
-            filteredCases = prefixMatches;
-            return;
-        }
-
-        // Niveau 3 : Recherche par distance de Levenshtein
-        // On considère qu'une distance <= 2 est acceptable pour des noms courts
-        // et une distance <= 3 pour des noms plus longs
-        var levenshteinMatches = cases
-            .Select(c => new 
-            { 
-                Case = c, 
-                Distance = StringHelper.LevenshteinDistance(search, c.CaseName.ToLowerInvariant())
-            })
-            .Where(x => 
-            {
-                int maxDistance = search.Length <= 4 ? 1 : (search.Length <= 8 ? 2 : 3);
-                return x.Distance <= maxDistance;
-            })
-            .OrderBy(x => x.Distance)
-            .Select(x => x.Case)
-            .ToList();
-
-        filteredCases = levenshteinMatches;
     }
 }
