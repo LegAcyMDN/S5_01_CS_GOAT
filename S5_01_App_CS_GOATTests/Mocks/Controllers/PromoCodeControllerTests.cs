@@ -101,7 +101,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
                 It.IsAny<Expression<Func<PromoCode, bool>>>(),
                 It.IsAny<string[]>()))
-                .ReturnsAsync(promoCodeList);
+                .ReturnsAsync(new List<PromoCode> { promoCode });
+
+            promoCodeRepositoryMock.Setup(r => r.Check(
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int?>()
+            )).ReturnsAsync(promoCode);
 
             mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
                 .Returns(expectedDto);
@@ -136,12 +142,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
                 .ReturnsAsync(testCase);
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
-                It.IsAny<Expression<Func<PromoCode, bool>>>(),
-                It.IsAny<string[]>()))
-                .ReturnsAsync(promoCodeList);
+            promoCodeRepositoryMock.Setup(r => r.Check(
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int?>()
+            )).ReturnsAsync(userPromoCode);
 
-            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
+            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
                 .Returns(expectedDto);
 
             // When
@@ -261,10 +268,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
                 .ReturnsAsync(testCase);
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
-                It.IsAny<Expression<Func<PromoCode, bool>>>(),
-                It.IsAny<string[]>()))
-                .ReturnsAsync(promoCodeList);
+            promoCodeRepositoryMock.Setup(r => r.Check(
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int?>()
+            )).ReturnsAsync(userPromoCode);
 
             mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
                 .Returns(expectedDto);
