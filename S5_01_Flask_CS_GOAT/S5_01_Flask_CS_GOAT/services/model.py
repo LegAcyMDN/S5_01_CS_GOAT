@@ -12,6 +12,19 @@ class Skin(db.Model):
     uv_type = db.Column('skn_uvtype', db.Integer, nullable=False)
     item_id = db.Column('itm_id', db.Integer, nullable=False)
     rarity_id = db.Column('rar_id', db.Integer, nullable=False)
+    
+    def to_dict(self):
+        return {
+            'skinid': self.skin_id,
+            'skinname': self.skin_name,
+            'paintindex': self.paint_index,
+            'uvtype': self.uv_type,
+            'itemid': self.item_id,
+            'rarityid': self.rarity_id
+        }
+    
+    def __str__(self):
+        return str(self.to_dict())
 
 class Wear(db.Model):
     __tablename__ = 't_e_wear_wer'
