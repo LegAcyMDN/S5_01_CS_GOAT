@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.DTO;
+using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -12,6 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [Authorize]
     [AllowAnonymous]
+    [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
         IMapper mapper,

@@ -1,18 +1,18 @@
 @using S5_01_Blazor_CS_GOAT.Models
-@inject NavigationManager Navigation
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject CaseComponentViewModel ViewModel
 
-<div class="case-format" @onclick="NavigateToCase">
-    <img src="cases/@CaseObject.CaseImage"/>
-    <h3>@CaseObject.CaseName | @CaseObject.CasePrice€</h3>
+<div class="case-format" @onclick="ViewModel.NavigateToCase">
+    <img src="cases/@ViewModel.CaseObject?.CaseImage"/>
+    <h3>@ViewModel.CaseObject?.CaseName | @ViewModel.CaseObject?.CasePrice€</h3>
 </div>
 
 @code {
     [Parameter]
     public required Case CaseObject { get; set; }
-    
-    
-    private void NavigateToCase()
+
+    protected override void OnParametersSet()
     {
-        Navigation.NavigateTo($"/caseview/{CaseObject.CaseId}");
+        ViewModel.CaseObject = CaseObject;
     }
 }

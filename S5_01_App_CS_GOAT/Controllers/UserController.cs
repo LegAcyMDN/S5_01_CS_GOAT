@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.DTO;
-using S5_01_App_CS_GOAT.DTO.Helpers;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -13,6 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [Authorize]
     [AllowAnonymous]
+    [SetThreadPrincipal]
     public class UserController(
         IUserRepository manager,
         IMapper mapper,

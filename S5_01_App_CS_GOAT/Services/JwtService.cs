@@ -167,6 +167,9 @@ namespace S5_01_App_CS_GOAT.Services
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
+            // Set Thread.CurrentPrincipal from HttpContext.User
+            Thread.CurrentPrincipal = context.HttpContext.User;
+            
             IConfiguration configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -179,6 +182,23 @@ namespace S5_01_App_CS_GOAT.Services
                 context.Result = new ForbidResult();
                 return;
             }
+        }
+    }
+    
+    /// <summary>
+    /// Action filter attribute to automatically set Thread.CurrentPrincipal from HttpContext
+    /// </summary>
+    /// Usage: [SetThreadPrincipal] on controller or controller actions
+    public class SetThreadPrincipalAttribute : Attribute, IActionFilter
+    {
+        public void OnActionExecuting(ActionExecutingContext context)
+        {
+            Thread.CurrentPrincipal = context.HttpContext.User;
+        }
+
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
+            // Nothing to do after action execution
         }
     }
 }

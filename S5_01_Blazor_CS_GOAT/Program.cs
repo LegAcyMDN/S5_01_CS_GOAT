@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using S5_01_Blazor_CS_GOAT;
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
+using S5_01_Blazor_CS_GOAT.ViewModels;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -15,11 +16,7 @@ builder.Services.AddScoped<IService<User>>(sp => new WebService<User>("user"));
 builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<InventoryItemDetail>("inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
 builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
-
-
-
-
-
+builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -28,6 +25,27 @@ builder.Services.AddScoped<CacheService>(sp =>
 });
 
 builder.Services.AddScoped<AuthService>();
+
+// Enregistrement des ViewModels pour le pattern MVVM
+builder.Services.AddScoped<HomeViewModel>();
+builder.Services.AddScoped<InventoryViewModel>();
+builder.Services.AddScoped<ProfileViewModel>();
+builder.Services.AddScoped<ThreeDViewViewModel>();
+builder.Services.AddScoped<CaseViewViewModel>();
+builder.Services.AddScoped<LoginViewModel>();
+builder.Services.AddScoped<WalletViewModel>();
+builder.Services.AddScoped<RegisterViewModel>();
+builder.Services.AddScoped<HistoryViewModel>();
+builder.Services.AddScoped<UpgradeViewModel>();
+builder.Services.AddScoped<NavMenuViewModel>();
+builder.Services.AddScoped<ConnectMenuViewModel>();
+builder.Services.AddScoped<LiveFeedViewModel>();
+builder.Services.AddScoped<AuthOverlayViewModel>();
+
+// Enregistrement des ViewModels pour les composants
+builder.Services.AddTransient<CaseComponentViewModel>();
+builder.Services.AddTransient<CaseRollComponentViewModel>();
+builder.Services.AddTransient<WeaponDisplayComponentViewModel>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
