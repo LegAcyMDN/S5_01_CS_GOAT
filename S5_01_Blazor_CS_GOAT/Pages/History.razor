@@ -1,16 +1,29 @@
 @page "/history"
 @using S5_01_Blazor_CS_GOAT.Layout
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject HistoryViewModel ViewModel
 
 <div class="history-page">
     <h1>Historique des transactions</h1>
     <div class="history-content">
-        <p>Consultez l'historique de toutes vos transactions et ouvertures de caisses.</p>
-        <!-- Votre contenu de page ici -->
+        @if (ViewModel.IsLoading)
+        {
+            <p>Chargement...</p>
+        }
+        else
+        {
+            <p>Consultez l'historique de toutes vos transactions et ouvertures de caisses.</p>
+            <!-- Votre contenu de page ici -->
+        }
     </div>
     
     <AuthOverlay />
 </div>
 
 @code {
-    // Votre code C# ici
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.InitializeAsync();
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
 }
