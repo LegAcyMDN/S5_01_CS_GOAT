@@ -25,7 +25,7 @@ db.init_app(app)
 debug = app.config['DEBUG']
 print(f" * Debug print is {'on!' if debug  else 'off!'}")
 
-def PRINT(msg: str) -> None:
+def debug_print(msg: str) -> None:
     if debug:
         print(msg)
 
