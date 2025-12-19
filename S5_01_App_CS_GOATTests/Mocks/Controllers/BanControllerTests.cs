@@ -71,7 +71,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_AsAdmin_ReturnsOk()
         {
             JwtService.AuthentifyController(controller, admin);
-            banRepositoryMock.Setup(r => r.GetAllAsync(null)).ReturnsAsync(banList);
+            banRepositoryMock.Setup(r => r.GetAllAsync(null, "BanType")).ReturnsAsync(banList);
             mapperMock.Setup(m => m.Map<IEnumerable<BanDTO>>(banList))
                        .Returns(banDTOList);
 
@@ -80,7 +80,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            banRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            banRepositoryMock.Verify(r => r.GetAllAsync(null, "BanType"), Times.Once);
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             JwtService.AuthentifyController(controller, normalUser);
             
-            banRepositoryMock.Setup(r => r.GetAllAsync(null)).ReturnsAsync(banList);
+            banRepositoryMock.Setup(r => r.GetAllAsync(null, "BanType")).ReturnsAsync(banList);
             mapperMock.Setup(m => m.Map<IEnumerable<BanDTO>>(banList))
                        .Returns(banDTOList);
 
@@ -110,7 +110,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            banRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            banRepositoryMock.Verify(r => r.GetAllAsync(null, "BanType"), Times.Once);
         }
 
         [TestMethod]

@@ -18,13 +18,15 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task UpdateUserDetails(User existing, UpdateUserDTO userDTO)
     {
-        if (userDTO.Email == null && userDTO.Phone == null)
-            throw new InvalidOperationException("At least one contact method (email or phone) must be provided.");
-
         _context.Set<User>().Attach(existing);
 
         bool needPasswordCheck = false;
 
+        if (userDTO.Email == null && userDTO.Phone == null)
+        {
+            userDTO.Email = existing.Email;
+            userDTO.Phone = existing.Phone;
+        }
         existing.DisplayName = userDTO.DisplayName ?? existing.DisplayName;
         existing.Seed = userDTO.Seed ?? existing.Seed;
 
