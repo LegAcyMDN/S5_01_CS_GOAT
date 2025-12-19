@@ -3,8 +3,17 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+class Skin(db.Model):
+    __tablename__ = 't_e_skin_skn'
+    
+    skin_id = db.Column('skn_id', db.Integer, primary_key=True, autoincrement=True)
+    skin_name = db.Column('skn_skinname', db.String(255), nullable=False, index=True)
+    paint_index = db.Column('skn_paintindex', db.Integer, nullable=False, index=True)
+    uv_type = db.Column('skn_uvtype', db.Integer, nullable=False)
+    item_id = db.Column('itm_id', db.Integer, nullable=False)
+    rarity_id = db.Column('rar_id', db.Integer, nullable=False)
+
 class Wear(db.Model):
-    """Table Wear"""
     __tablename__ = 't_e_wear_wer'
     
     wear_id = db.Column('wer_id', db.Integer, primary_key=True, autoincrement=True)
@@ -12,7 +21,6 @@ class Wear(db.Model):
     skin_id = db.Column('skn_id', db.Integer, nullable=False)
 
 class PriceHistory(db.Model):
-    """Table pour l'historique des prix"""
     __tablename__ = 't_e_pricehistory_prh'
     
     price_history_id = db.Column('prh_id', db.Integer, primary_key=True, autoincrement=True)
@@ -23,8 +31,6 @@ class PriceHistory(db.Model):
     
     skin_id = db.Column('skn_id', db.Integer, nullable=False)
     wear_type_id = db.Column('wrt_id', db.Integer, nullable=False)
-
-    
     
     def to_dict(self):
         return {
@@ -36,5 +42,3 @@ class PriceHistory(db.Model):
         }
     def __str__(self):
         return str(self.to_dict())
-
-    

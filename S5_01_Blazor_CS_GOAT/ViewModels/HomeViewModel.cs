@@ -116,12 +116,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 FilteredCases = Cases;
             }
-            else
+            /*else
             {
                 FilteredCases = Cases
                     .Where(c => c.Name != null && c.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
                     .ToList();
-            }
+            }*/
         }
     }
 }
