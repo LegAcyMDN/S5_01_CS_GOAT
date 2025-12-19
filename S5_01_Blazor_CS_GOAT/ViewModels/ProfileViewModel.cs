@@ -110,6 +110,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 IsLoading = true;
+                
                 var userId = await _authService.GetUserIdAsync();
 
                 if (userId == null)
@@ -119,6 +120,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 }
 
                 var token = await _authService.GetTokenAsync();
+                
                 if (string.IsNullOrEmpty(token))
                 {
                     _navigation.NavigateTo("/login");
@@ -127,30 +129,24 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-#if DEBUG
-                _httpClient.BaseAddress = new Uri("https://localhost:7009/api/");
-#else
-                _httpClient.BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/");
-#endif
-
                 var response = await _httpClient.GetAsync($"User/details/{userId}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     CurrentUser = await response.Content.ReadFromJsonAsync<User>();
                     InitializeUpdateModel();
+                    IsLoading = false;
                 }
                 else
                 {
+                    var errorContent = await response.Content.ReadAsStringAsync();
                     ErrorMessage = "Impossible de charger les informations du profil.";
+                    IsLoading = false;
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Erreur : {ex.Message}";
-            }
-            finally
-            {
                 IsLoading = false;
             }
         }
