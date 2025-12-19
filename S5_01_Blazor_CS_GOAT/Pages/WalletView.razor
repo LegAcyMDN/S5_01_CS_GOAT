@@ -1,26 +1,21 @@
 @page "/wallet"
-@using S5_01_Blazor_CS_GOAT.Models
-@using S5_01_Blazor_CS_GOAT.Service
-@inject IService<MoneyTransaction> moneyTransactionRepository
-@inject IService<Limit> limitRepository
-@inject AuthService authService
-@inject HttpClient Http
-
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject WalletViewModel ViewModel
 
 <h3>Portefeuille</h3>
 
-@if (currentUser != null)
+@if (!ViewModel.IsLoading && ViewModel.CurrentUser != null)
 {
-    <h1>@currentUser.Wallet €</h1>
+    <h1>@ViewModel.CurrentUser.Wallet €</h1>
 
     <button style="color: green">Ajouter de l'argent</button>
     <button style="color: red">Retirer de l'argent</button>
 
     <br/>
     <h2>Historique des paiements</h2>
-    @if (transactionsList != null)
+    @if (ViewModel.TransactionsList != null)
     {
-        @foreach (MoneyTransaction transaction in transactionsList)
+        @foreach (var transaction in ViewModel.TransactionsList)
         {
             <div>
                 <p>Méthode de paiement : @transaction.PaymentMethod</p>
@@ -38,7 +33,7 @@
         <h2>Budget</h2>
         <label>
             Limite :
-            <select @bind="type" class="inputLimit" name="type">
+            <select @bind="ViewModel.Type" class="inputLimit" name="type">
                 <option value="Dépôt">Dépôt</option>
                 <option value="Dépenses">Dépenses</option>
                 <option value="Ouvertures">Ouvertures</option>
@@ -48,7 +43,7 @@
         <br />
         <label>
             Période :
-            <select @bind="period" class="inputLimit" name="period">
+            <select @bind="ViewModel.Period" class="inputLimit" name="period">
                 <option value="Horaire">Horaire</option>
                 <option value="Quotidien">Quotidien</option>
                 <option value="Hebdomadaire">Hebdomadaire</option>
@@ -58,24 +53,24 @@
         <br />
         <label>
             Montant Max :
-            <input type="number" @bind="amount" min="0" step="any" class="inputLimit" name="amount" />
+            <input type="number" @bind="ViewModel.Amount" min="0" step="any" class="inputLimit" name="amount" />
             <br />
-            <button class="inputLimit" @onclick="() => SaveLimitAsync(type, period, amount)">Sauver</button>
+            <button class="inputLimit" @onclick="async () => await ViewModel.SaveLimitAsync()">Sauver</button>
         </label>
 
         <h3>Limites chargées</h3>
-        @if (limits == null)
+        @if (ViewModel.Limits == null)
         {
             <div>Aucune limite chargée</div>
         }
-        else if (!limits.Any())
+        else if (!ViewModel.Limits.Any())
         {
             <div>Liste vide</div>
         }
         else
         {
             <ul>
-                @foreach (var l in limits)
+                @foreach (var l in ViewModel.Limits)
                 {
                     <li>
                         <strong>@(l.LimitType?.LimitTypeName ?? "(sans type)")</strong>
@@ -94,91 +89,10 @@ else
 }
 
 @code {
-    [Inject]
-    private AuthService AuthService { get; set; } = default!;
-
-    private User? currentUser;
-    private List<MoneyTransaction> transactionsList;
-    private List<Limit>? limits;
-
-    private string type = "Aucune";
-    private string period = "Aucune";
-    private double? amount = null;
-    
-
     protected override async Task OnInitializedAsync()
     {
-        await UpdateUserState();
-
-        string jwtToken = await authService.GetTokenAsync();
-        transactionsList = await moneyTransactionRepository.GetByUserAsync(jwtToken);
-        limits = await limitRepository.GetByUserAsync(jwtToken);
-    }
-
-    private async Task SaveLimitAsync(string prefix, string period, double? amount)
-    {
-
-        if (limits == null)
-        {
-            Console.WriteLine("Aucune limite chargée.");
-            return;
-        }
-
-        if (string.IsNullOrEmpty(period) || period == "Aucune")
-        {
-            Console.WriteLine("Sélectionne une période avant de sauvegarder.");
-            return;
-        }
-
-        var limitTypeName = $"{prefix} {period}";
-
-        var found = limits.FirstOrDefault(l => l.LimitType != null && l.LimitType.LimitTypeName == limitTypeName);
-        if (found == null)
-        {
-            Console.WriteLine($"Limite introuvable pour {limitTypeName}");
-            return;
-        }
-
-        var limitTypeId = found.LimitTypeId;
-
-        var token = await authService.GetTokenAsync();
-        if (string.IsNullOrEmpty(token))
-        {
-            Console.WriteLine("Utilisateur non authentifié.");
-            return;
-        }
-
-        Http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-        var payload = new { LimitAmount = amount, LimitTypeName = limitTypeName };
-        var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"limit/update/{limitTypeId}")
-        {
-            Content = JsonContent.Create(payload)
-        };
-
-        var resp = await Http.SendAsync(request);
-        if (resp.IsSuccessStatusCode)
-        {
-            // recharger
-            var jwtToken = await authService.GetTokenAsync();
-            limits = await limitRepository.GetByUserAsync(jwtToken);
-            StateHasChanged();
-        }
-        else
-        {
-            var err = await resp.Content.ReadAsStringAsync();
-            Console.WriteLine($"Erreur sauvegarde limite: {err}");
-        }
-    }
-    
-    private async Task UpdateUserState()
-    {
-        if (AuthService.CurrentUser == null && await AuthService.IsLoggedInAsync())
-        {
-            await AuthService.LoadCurrentUserAsync();
-        }
-
-        currentUser = AuthService.CurrentUser;
+        await ViewModel.InitializeAsync();
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
     }
 }
 
