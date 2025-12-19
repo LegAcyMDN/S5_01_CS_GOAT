@@ -1,0 +1,272 @@
+@page "/admin"
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject AdminViewModel ViewModel
+@implements IDisposable
+
+<PageTitle>Administration - CS GOAT</PageTitle>
+
+<div class="admin-container">
+    @if (ViewModel.IsLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Chargement...</p>
+        </div>
+    }
+    else if (ViewModel.Requires2FA && !ViewModel.Is2FAVerified)
+    {
+        <!-- Écran de vérification 2FA -->
+        <div class="twofa-verification">
+            <div class="twofa-card">
+                <h2>🔐 Vérification 2FA requise</h2>
+                <p>Pour accéder au panneau d'administration, veuillez entrer votre code de vérification.</p>
+                
+                @if (ViewModel.CurrentUser?.TwoFA == 1)
+                {
+                    <p class="info-text">Un code a été envoyé à votre téléphone.</p>
+                }
+                else if (ViewModel.CurrentUser?.TwoFA == 2)
+                {
+                    <p class="info-text">Un code a été envoyé à votre adresse e-mail.</p>
+                }
+
+                <div class="form-group">
+                    <label>Code de vérification</label>
+                    <input type="text" 
+                           class="form-control" 
+                           @bind="ViewModel.TwoFACode" 
+                           placeholder="Entrez le code à 6 chiffres"
+                           maxlength="6" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewModel.TwoFAError))
+                {
+                    <div class="alert alert-error">@ViewModel.TwoFAError</div>
+                }
+
+                <button class="btn btn-primary" 
+                        @onclick="async () => await ViewModel.Verify2FAAsync()"
+                        disabled="@ViewModel.IsProcessing">
+                    @if (ViewModel.IsProcessing)
+                    {
+                        <span>Vérification...</span>
+                    }
+                    else
+                    {
+                        <span>Vérifier</span>
+                    }
+                </button>
+
+                <button class="btn btn-secondary" @onclick="@(() => ViewModel.NavigateTo("/"))">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Panneau d'administration principal -->
+        <div class="admin-header">
+            <h1>Panneau d'Administration</h1>
+            <p>Bienvenue, @ViewModel.CurrentUser?.DisplayName</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+        {
+            <div class="alert alert-error">@ViewModel.ErrorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+        {
+            <div class="alert alert-success">@ViewModel.SuccessMessage</div>
+        }
+
+        <!-- Statistiques -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <h3>@ViewModel.TotalUsers</h3>
+                    <p>Utilisateurs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>@($"{ViewModel.TotalRevenue:F2}€")</h3>
+                    <p>Portefeuilles totaux</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-content">
+                    <h3>@ViewModel.TotalTransactions</h3>
+                    <p>Transactions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gestion des utilisateurs -->
+        <div class="users-section">
+            <div class="section-header">
+                <h2>Gestion des Utilisateurs</h2>
+                <div class="search-box">
+                    <input type="text" 
+                           class="search-input" 
+                           @bind="ViewModel.SearchQuery" 
+                           @bind:event="oninput"
+                           placeholder="Rechercher un utilisateur..." />
+                </div>
+            </div>
+
+            <div class="users-table-container">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Login</th>
+                            <th>Nom d'affichage</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Portefeuille</th>
+                            <th>2FA</th>
+                            <th>Admin</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewModel.FilteredUsers != null && ViewModel.FilteredUsers.Any())
+                        {
+                            @foreach (var user in ViewModel.FilteredUsers)
+                            {
+                                <tr class="@(user.UserId == ViewModel.CurrentUser?.UserId ? "current-user" : "")">
+                                    <td>@user.UserId</td>
+                                    <td>@user.Login</td>
+                                    <td>@user.DisplayName</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(user.Email))
+                                        {
+                                            <span>@user.Email</span>
+                                            @if (user.EmailIsVerified)
+                                            {
+                                                <span class="verified-badge">✓</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(user.Phone))
+                                        {
+                                            <span>@user.Phone</span>
+                                            @if (user.PhoneIsVerified)
+                                            {
+                                                <span class="verified-badge">✓</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>@($"{user.Wallet:F2}€")</td>
+                                    <td>
+                                        @if (user.TwoFA == 0)
+                                        {
+                                            <span class="badge badge-grey">Désactivé</span>
+                                        }
+                                        else if (user.TwoFA == 1)
+                                        {
+                                            <span class="badge badge-blue">SMS</span>
+                                        }
+                                        else if (user.TwoFA == 2)
+                                        {
+                                            <span class="badge badge-green">Email</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.IsAdmin)
+                                        {
+                                            <span class="badge badge-admin">Admin</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-user">User</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            @if (user.UserId != ViewModel.CurrentUser?.UserId)
+                                            {
+                                                <button class="btn-action btn-admin" 
+                                                        @onclick="async () => await ViewModel.ToggleAdminRoleAsync(user.UserId)"
+                                                        title="@(user.IsAdmin ? "Retirer admin" : "Promouvoir admin")">
+                                                    @(user.IsAdmin ? "👤" : "🛡️")
+                                                </button>
+                                                <button class="btn-action btn-ban" 
+                                                        @onclick="async () => await ViewModel.ToggleBanUserAsync(user.UserId)"
+                                                        title="Bannir/Débannir">
+                                                    🚫
+                                                </button>
+                                                <button class="btn-action btn-delete" 
+                                                        @onclick="async () => await ConfirmDeleteUser(user.UserId, user.DisplayName)"
+                                                        title="Supprimer">
+                                                    🗑️
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">C'est vous</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="no-data">Aucun utilisateur trouvé</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bouton retour -->
+        <div class="admin-footer">
+            <button class="btn btn-secondary" @onclick="@(() => ViewModel.NavigateTo("/"))">
+                ← Retour à l'accueil
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.InitializeAsync();
+        ViewModel.PropertyChanged += (s, e) => InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ConfirmDeleteUser(int userId, string displayName)
+    {
+        // Simple confirmation - dans une vraie app, utiliser un modal
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer l'utilisateur '{displayName}' ? Cette action est irréversible."))
+        {
+            await ViewModel.DeleteUserAsync(userId);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= (s, e) => InvokeAsync(StateHasChanged);
+        }
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+}
