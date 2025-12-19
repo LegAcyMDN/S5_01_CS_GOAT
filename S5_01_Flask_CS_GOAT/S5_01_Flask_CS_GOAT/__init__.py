@@ -25,9 +25,8 @@ db.init_app(app)
 debug = app.config['DEBUG']
 print(f" * Debug print is {'on!' if debug  else 'off!'}")
 
-def PRINT(msg: str) -> None:
-    if debug:
-        print(msg)
+#Stub PRINT function
+PRINT = print if debug else (lambda msg: None)
 
 from .Controllers.price_history_controller import price_history_bp
 # Register blueprints
