@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
+using Shared.DTO.Helpers;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -54,6 +55,21 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/bycase/{id}");
     }
 
+    
+    
+    public async Task<List<MultipleCaseResultDTO>?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        var response = await _httpClient.PostAsJsonAsync($"{_endpoint}/open", caseOpenInfo);
+    
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<List<MultipleCaseResultDTO>?>();
+        }
+    
+        return null;
+    }
+    
     public async Task UpdateAsync(TEntity updatedEntity)
     {
         var idProp = typeof(TEntity).GetProperty("Id");

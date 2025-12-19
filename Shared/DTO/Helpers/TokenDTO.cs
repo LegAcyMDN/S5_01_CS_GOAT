@@ -1,6 +1,6 @@
 namespace Shared.DTO.Helpers;
 
-public class Token
+public class TokenDTO
 {
     public int TokenId { get; set; }
     

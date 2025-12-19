@@ -1,6 +1,6 @@
 ﻿using S5_01_App_CS_GOAT.Models.Partials;
 
-namespace S5_01_App_CS_GOAT.DTO;
+namespace Shared.DTO;
 
 public class UserDTO
 {

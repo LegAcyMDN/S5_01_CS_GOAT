@@ -8,6 +8,6 @@
 
         public string JwtToken { get; set; } = null!;
 
-        public Token? RememberToken { get; set; }
+        public TokenDTO? RememberToken { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using S5_01_App_CS_GOAT.Models.Partials;
 
-namespace S5_01_App_CS_GOAT.DTO.Helpers
+namespace Shared.DTO.Helpers
 {
     public class UpdateUserDTO
     {
