@@ -5,10 +5,15 @@ from datetime import datetime, timedelta
 import numpy as np
 from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, db
 from S5_01_Flask_CS_GOAT import debug 
+from enum import IntEnum
+
 
 ia_bp = Blueprint('ia', __name__)
 
-
+class Seasonality(IntEnum):
+    DAILY = 7
+    WEEKLY = 14
+    YEARLY = 365
 
 def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type_id:int=None) -> bool:
     if wear_id:
@@ -18,6 +23,24 @@ def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type
     if skin_id is None or wear_type_id is None:
         return None
     return _predict_and_save_internal(skin_id, wear_type_id, jours)
+
+
+def check_seasonality(training_days: int = 7) -> tuple[bool, bool, bool]:
+    yearly: bool = False
+    weekly: bool = False
+    daily: bool = False
+
+    if(training_days < Seasonality.DAILY):
+        training_days = Seasonality.DAILY
+
+    if training_days >= Seasonality.DAILY:
+        daily = True
+    if training_days >= Seasonality.WEEKLY:
+        weekly = True
+    if training_days >= Seasonality.YEARLY:
+        yearly = True
+                    
+    return yearly, weekly, daily
 
 
 def predict_with_wear(wear_id:int) -> tuple[int,int] :
@@ -34,8 +57,7 @@ def predict_with_wear(wear_id:int) -> tuple[int,int] :
 def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, training_days:int=7) -> bool:
 
     price_history = get_all(skin_id, wear_type_id)
-    if price_history is None or len(price_history) < training_days:
-        return None
+
 
     df = pd.DataFrame([{
         'ds': datetime.fromisoformat(ph['pricedate']),
@@ -44,9 +66,6 @@ def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, trainin
     } for ph in price_history])
 
     df = df.sort_values('ds')
-
-    if len(df) < training_days:
-        return None
     
     if debug:
         print("="*80)
@@ -54,11 +73,13 @@ def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, trainin
         print(df.to_string())
         print("="*80)
 
+    yearly, weekly, daily = check_seasonality(training_days)
+
     model = Prophet(
-        yearly_seasonality=False,
-        weekly_seasonality=False,
-        daily_seasonality=False,
-        changepoint_prior_scale=0.05,
+       yearly_seasonality= yearly,
+        weekly_seasonality= weekly,
+        daily_seasonality= daily,
+        changepoint_prior_scale=0.5,
     )
     
     model.add_regressor('volume')
