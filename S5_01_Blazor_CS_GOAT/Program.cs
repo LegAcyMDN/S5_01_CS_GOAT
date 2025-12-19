@@ -47,7 +47,12 @@ builder.Services.AddTransient<CaseComponentViewModel>();
 builder.Services.AddTransient<CaseRollComponentViewModel>();
 builder.Services.AddTransient<WeaponDisplayComponentViewModel>();
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// Configuration du HttpClient avec la bonne BaseAddress de l'API
+#if DEBUG
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7009/api/") });
+#else
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/") });
+#endif
 
 var host = builder.Build();
 
