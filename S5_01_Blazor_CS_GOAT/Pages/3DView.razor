@@ -133,7 +133,7 @@
         StateHasChanged();
     }
     
-    private void OnObjectLoaded(HomagGroup.Blazor3D.Events.Object3DArgs e)
+    private async Task OnObjectLoaded(HomagGroup.Blazor3D.Events.Object3DArgs e)
     {
         ViewModel.OnObjectLoaded(e);
         StateHasChanged();

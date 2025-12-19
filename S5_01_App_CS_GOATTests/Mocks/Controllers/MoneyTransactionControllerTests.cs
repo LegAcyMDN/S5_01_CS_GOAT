@@ -13,12 +13,14 @@ using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using AutoMapper;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
     [TestClass()]
     public class MoneyTransactionControllerTests
     {
+        private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<MoneyTransaction, int>>? moneyTransactionRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private MoneyTransactionController? controller;
@@ -32,6 +34,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
+            mapperMock = new Mock<IMapper>();
             moneyTransactionRepositoryMock = new Mock<IDataRepository<MoneyTransaction, int>>();
             configurationMock = new Mock<IConfiguration>();
 
@@ -42,6 +45,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             allMoneyTransactions = TransactionFixture.GetAllMoneyTransactions();
 
             controller = new MoneyTransactionController(
+                mapperMock.Object,
                 moneyTransactionRepositoryMock.Object,
                 configurationMock.Object
             );
@@ -63,7 +67,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null, "PaymentMethod"), Times.Never);
         }
 
         [TestMethod]
@@ -71,7 +75,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(null))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(null, "PaymentMethod"))
                                           .ReturnsAsync(moneyTransactions);
 
             // When
@@ -79,7 +83,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null, "PaymentMethod"), Times.Once);
         }
 
         #endregion
@@ -108,7 +112,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null, "PaymentMethod"), Times.Never);
         }
 
         [TestMethod]
@@ -116,7 +120,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(null))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(null, "PaymentMethod"))
                                           .ReturnsAsync(allMoneyTransactions);
 
             // When
@@ -124,7 +128,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(null, "PaymentMethod"), Times.Once);
         }
 
         #endregion

@@ -33,7 +33,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
             
-            IEnumerable<Ban> bans = await manager.GetAllAsync();
+            IEnumerable<Ban> bans = await manager.GetAllAsync(null, "BanType");
 
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(bansDTO);
@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true);
+            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, null, "BanType");
 
             IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(userBansDTO);

@@ -244,7 +244,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Gère l'événement de chargement complet de l'objet 3D
         /// </summary>
-        public void OnObjectLoaded(Object3DArgs e)
+        public async Task OnObjectLoaded(Object3DArgs e)
         {
             foreach (var item in Scene.Children)
             {
@@ -253,10 +253,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     LoadingProgress = 100;
                     LoadingMessage = "Chargement terminé !";
                     
-                    Task.Delay(500).ContinueWith(_ => 
-                    {
-                        IsLoading = false;
-                    });
+                    await Task.Delay(500);
+                    IsLoading = false;
                     break;
                 }
             }
