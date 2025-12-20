@@ -37,8 +37,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public bool IsDueForDelete()
         {
             if (this.RefreshDelay != null) return false;
-            if (this.IsExpired() || this.RemainingUses == 0) return false;
-            return false;
+            return this.IsExpired() || this.RemainingUses == 0;
         }
 
         public bool IsValid()

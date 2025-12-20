@@ -3,8 +3,10 @@ from prophet import Prophet
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
-from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, db
-from S5_01_Flask_CS_GOAT import debug 
+import joblib
+import os
+from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, Skin, db
+from S5_01_Flask_CS_GOAT import debug, debug_print
 from enum import IntEnum
 
 
@@ -15,13 +17,15 @@ class Seasonality(IntEnum):
     WEEKLY = 14
     YEARLY = 365
 
+MODELS_DIR = os.path.join(os.path.dirname(__file__), 'models')
+os.makedirs(MODELS_DIR, exist_ok=True)
+
 def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type_id:int=None) -> bool:
     if wear_id:
-        (skin_id, wear_type_id) =predict_with_wear(wear_id)
-        if debug:
-            print(f"Wear found {wear_id} skin_id: {skin_id}, wear_type_id: {wear_type_id}")
+        (skin_id, wear_type_id) = predict_with_wear(wear_id)
     if skin_id is None or wear_type_id is None:
         return None
+    debug_print(f"Wear found {wear_id} skin_id: {skin_id}, wear_type_id: {wear_type_id}")
     return _predict_and_save_internal(skin_id, wear_type_id, jours)
 
 
@@ -42,22 +46,53 @@ def check_seasonality(training_days: int = 7) -> tuple[bool, bool, bool]:
                     
     return yearly, weekly, daily
 
-
-def predict_with_wear(wear_id:int) -> tuple[int,int] :
-     if wear_id:
+def predict_with_wear(wear_id:int) -> tuple[int,int]:
+    if wear_id:
         wear = Wear.query.get(wear_id)
         if wear is None:
-            if debug: 
-                print(f"Wear {wear_id} introuvable.")
+            debug_print(f"Wear {wear_id} not found")
             return None, None
         skin_id = wear.skin_id
         wear_type_id = wear.wear_type_id
         return skin_id, wear_type_id
 
+def get_item_id_by_skin(skin_id: int) -> int:
+    skin = Skin.query.get(skin_id)
+    debug_print(f"{skin}")
+    if skin is None:
+        return None
+    debug_print(f"found item_id:{skin.item_id} for skin:{skin_id}")
+    return skin.item_id
+
+def get_model_path(item_id: int) -> str:
+    return os.path.join(MODELS_DIR, f'model_item_{item_id}.pkl')
+
+def load_model(item_id: int):
+    model_path = get_model_path(item_id)
+    
+    if not os.path.exists(model_path):
+        return None
+    
+    model = joblib.load(model_path)
+    debug_print(f"Loaded model from {model_path}")
+    return model
+
+def save_model(model, item_id: int):
+    model_path = get_model_path(item_id)
+    joblib.dump(model, model_path)
+    debug_print(f"Saved model to {model_path}")
+
 def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, training_days:int=7) -> bool:
 
-    price_history = get_all(skin_id, wear_type_id)
+    item_id = get_item_id_by_skin(skin_id)
+    if item_id is None:
+        debug_print(f"Skin {skin_id} not found")
+        return False
 
+    price_history = get_all(skin_id, wear_type_id)
+    if len(price_history) < training_days:
+        debug_print(f"Not enough data to train the model for skin_id: {skin_id}, wear_type_id: {wear_type_id}. Required: {training_days}, Available: {len(price_history)}")
+        return False
 
     df = pd.DataFrame([{
         'ds': datetime.fromisoformat(ph['pricedate']),
@@ -67,26 +102,32 @@ def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, trainin
 
     df = df.sort_values('ds')
     
-    if debug:
-        print("="*80)
-        print(f"Training data (last {training_days} days from today):")
-        print(df.to_string())
-        print("="*80)
+    # debug_print("="*80)
+    # debug_print(f"Training data (last {training_days} days from today):")
+    # debug_print(df.to_string())
+    # debug_print("="*80)
 
     yearly, weekly, daily = check_seasonality(training_days)
 
-    model = Prophet(
-       yearly_seasonality= yearly,
-        weekly_seasonality= weekly,
-        daily_seasonality= daily,
-        changepoint_prior_scale=0.5,
-    )
+    model = load_model(item_id)
     
-    model.add_regressor('volume')
-    
-    print("Training the model with volume regressor...")
-
-    model.fit(df)
+    if model is None:
+        debug_print("No existing model found, training new model...")
+        model = Prophet(
+            yearly_seasonality=yearly,
+            weekly_seasonality=weekly,
+            daily_seasonality=daily,
+            changepoint_prior_scale=0.5,
+        )
+        
+        model.add_regressor('volume')
+        
+        print("Training the model with volume regressor...")
+        model.fit(df)
+        
+        save_model(model, item_id)
+    else:
+        debug_print("Using existing model from local file")
 
     tomorrow = datetime.now() + timedelta(days=1)
     tomorrow = tomorrow.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -99,16 +140,15 @@ def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, trainin
         'volume': [avg_volume] * jours
     })
     
-    if debug:
-        print(f"Predicting for {len(future_dates)} days: {future_dates[0]} to {future_dates[-1]}")
-        print(f"Using average volume: {avg_volume:.2f}")
+    debug_print(f"Predicting for {len(future_dates)} days: {future_dates[0]} to {future_dates[-1]}")
+    debug_print(f"Using average volume: {avg_volume:.2f}")
     
     forecast = model.predict(future_df)
-    if debug:
-        print("="*80)
-        print("PREDICTIONS:")
-        print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
-        print("="*80)
+   
+    debug_print("="*80)
+    debug_print("PREDICTIONS:")
+    debug_print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']])
+    debug_print("="*80)
 
     for idx, row in forecast.iterrows():
         new_prediction = PriceHistory(
@@ -119,14 +159,14 @@ def _predict_and_save_internal(skin_id:int, wear_type_id:int, jours:int, trainin
             guess_date=datetime.now(),
             volume=1        
         )
-        if debug :
-            print(new_prediction)
-        else:
+        debug_print(new_prediction)
+        if not debug:
             db.session.add(new_prediction)
-        if debug:
-            print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
-        if not debug: 
-         db.session.commit()
+        
+        debug_print(f"Day {idx+1}: {row['ds'].date()} → {row['yhat']:.2f}€")
+    
+    if not debug: 
+        db.session.commit()
     
     print(f"Saved {len(forecast)} predictions!")
     

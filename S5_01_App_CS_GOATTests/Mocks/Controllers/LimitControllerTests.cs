@@ -92,7 +92,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            limitRepositoryMock.Setup(r => r.GetAllAsync(null))
+            limitRepositoryMock.Setup(r => r.GetAllAsync(null, "LimitType"))
                                .ReturnsAsync(limits);
             mapperMock.Setup(m => m.Map<IEnumerable<LimitDTO>>(limits))
                       .Returns(limitDTOs);
@@ -102,7 +102,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            limitRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            limitRepositoryMock.Verify(r => r.GetAllAsync(null, "LimitType"), Times.Once);
         }
 
         #endregion

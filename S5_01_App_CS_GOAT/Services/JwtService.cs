@@ -46,10 +46,11 @@ namespace S5_01_App_CS_GOAT.Services
         public async Task<IEnumerable<T1>> GetByUser<T1, T2>(
                 IReadableRepository<T1, T2> manager,
                 bool adminOverride,
-                Expression<Func<T1, bool>>? where = null)
+                Expression<Func<T1, bool>>? where = null,
+                params string[] includes)
                 where T1 : IUserDependant
         {
-            IEnumerable<T1> allObjects = await manager.GetAllAsync(where);
+            IEnumerable<T1> allObjects = await manager.GetAllAsync(where, includes);
             AuthResult self = this;
             return allObjects.Where(o => self.IsAllowed(o, adminOverride));
         }

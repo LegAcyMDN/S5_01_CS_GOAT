@@ -25,6 +25,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         private Mock<IReadableRepository<Case, int>>? caseRepositoryMock;
         private Mock<IDataRepository<Favorite, (int, int)>>? favoriteRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
+        private Mock<CaseOpenningService>? caseOpenningServiceMock;
         private CaseController? controller;
 
         private User? normalUser;
@@ -45,6 +46,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             mapperMock = new Mock<IMapper>();
             caseRepositoryMock = new Mock<IReadableRepository<Case, int>>();
             favoriteRepositoryMock = new Mock<IDataRepository<Favorite, (int, int)>>();
+            caseOpenningServiceMock = new Mock<CaseOpenningService>(
+                new Mock<CSGOATDbContext>().Object,
+                mapperMock.Object,
+                caseRepositoryMock.Object,
+                new Mock<IFairRandomRepository>().Object,
+                new Mock<IDataRepository<InventoryItem, int>>().Object,
+                new Mock<IPromoCodeRepository>().Object,
+                new Mock<IDataRepository<RandomTransaction, int>>().Object,
+                new Mock<IUserRepository>().Object
+                );
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();
@@ -62,6 +73,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 mapperMock.Object,
                 caseRepositoryMock.Object,
                 favoriteRepositoryMock.Object,
+                caseOpenningServiceMock.Object,
                 configurationMock.Object
             );
         }
