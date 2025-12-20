@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using S5_01_App_CS_GOAT.DTO;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Fixtures
 {

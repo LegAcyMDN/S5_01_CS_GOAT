@@ -1,5 +1,7 @@
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -8,25 +10,27 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class CaseViewViewModel : ViewModelBase
     {
-        private readonly IService<Skin> _skinRepository;
+        private readonly AuthService _authService;
+        private readonly IService<SkinDTO> _skinRepository;
         private readonly IService<Case> _caseRepository;
         private static readonly Random _rng = new();
 
-        private List<Skin> _skinsList = new();
+        private List<SkinDTO> _skinsList = new();
         private Case? _activeCase;
-        private List<Skin> _wonSkins = new();
+        private List<SkinDTO> _wonSkins = new();
         private bool _isEsthetic;
         private bool _showPopup;
         private int _selectedCount = 1;
         private bool _isLoading = true;
+        private List<Skin> _caseOpenList = new();
 
-        public CaseViewViewModel(IService<Skin> skinRepository, IService<Case> caseRepository)
+        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
         }
 
-        public List<Skin> SkinsList
+        public List<SkinDTO> SkinsList
         {
             get => _skinsList;
             set => SetProperty(ref _skinsList, value);
@@ -38,7 +42,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _activeCase, value);
         }
 
-        public List<Skin> WonSkins
+        public List<SkinDTO> WonSkins
         {
             get => _wonSkins;
             set => SetProperty(ref _wonSkins, value);
@@ -131,5 +135,68 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             SelectedCount = count;
         }
+        
+        
+        
+        private async Task<List<MultipleCaseResultDTO>> CallCaseOpen(int numberOfCases)
+        {
+            CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
+            {
+                CaseId = _activeCase.CaseId,
+                Quantity = numberOfCases,
+                RaffleRollerLength = 82,
+                PromoCode = null // TODO implement promocode
+            };
+        
+            // TODO if esthetic put the info in the case roll component but call the case API before
+            string jwtToken = await _authService.GetTokenAsync();
+            List<MultipleCaseResultDTO> casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
+            return casesReturn;
+        }
+
+        private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(List<MultipleCaseResultDTO> multipleCaseResults)
+        {
+            List<List<SkinDTO>> casesWithSkins = new();
+            int caseNumber = 0;
+            foreach (var multipleCaseResultDto in multipleCaseResults)
+            {
+                for (int i = 0; i <= 71; i++)
+                {
+                    SkinDTO skinOfThisIteration = multipleCaseResultDto.Skins[
+                        multipleCaseResultDto.Results[caseNumber].Roller[i]
+                    ];
+                    
+                    casesWithSkins[caseNumber].Add(skinOfThisIteration);
+                }
+
+                InventoryItemDetailDTO wonSkinDetail = multipleCaseResultDto.Results[caseNumber].Reward;
+                
+                casesWithSkins[caseNumber].Add(new SkinDTO
+                {
+                    AnyUuid = wonSkinDetail.Uuid,
+                    ItemName = wonSkinDetail.ItemName,
+                    RarityColor = wonSkinDetail.RarityColor,
+                    RarityName = wonSkinDetail.RarityName,
+                    SkinName =  wonSkinDetail.SkinName,
+                    BestPrice = 1, // dummy numbers because we dont use them here
+                    WorstPrice = 1 // dummy numbers because we dont use them here
+                } );
+                
+                for (int i = 72; i <= 82; i++)
+                {
+                    SkinDTO skinOfThisIteration = multipleCaseResultDto.Skins[
+                        multipleCaseResultDto.Results[caseNumber].Roller[i]
+                    ];
+                    
+                    casesWithSkins[caseNumber].Add(skinOfThisIteration);
+                }
+                
+                
+                caseNumber++;
+            }
+
+            return casesWithSkins;
+        }
+        
     }
 }

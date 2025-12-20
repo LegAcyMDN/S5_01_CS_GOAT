@@ -1,5 +1,6 @@
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.ViewModels
+@using Shared.DTO
 @inject WeaponDisplayComponentViewModel ViewModel
 
 <div style="height: @ViewModel.Height; width: @ViewModel.Width; border: 2px solid @ViewModel.WeaponSkin?.RarityColor; --rarity-color: @ViewModel.WeaponSkin?.RarityColor;" class="weapon-showcase">
@@ -15,7 +16,7 @@
     public required string ImageLink { get; set; }
     
     [Parameter]
-    public required Skin WeaponSkin { get; set; }
+    public required SkinDTO WeaponSkin { get; set; }
 
     [Parameter] 
     public string? Height { get; set; } = "100px"; 

@@ -1,6 +1,6 @@
 ﻿
 
-using S5_01_App_CS_GOAT.Models.Partials;
+using Shared.Enum;
 
 namespace Shared.DTO;
 

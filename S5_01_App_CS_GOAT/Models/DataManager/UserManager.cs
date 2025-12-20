@@ -1,9 +1,8 @@
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using S5_01_App_CS_GOAT.Models.Partials;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using Shared.DTO.Helpers;
+using Shared.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;

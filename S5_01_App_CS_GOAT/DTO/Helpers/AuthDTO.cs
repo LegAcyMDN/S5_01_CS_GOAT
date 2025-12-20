@@ -1,4 +1,4 @@
-﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
 
 namespace Shared.DTO.Helpers
 {

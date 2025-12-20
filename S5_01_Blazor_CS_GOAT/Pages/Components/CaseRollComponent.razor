@@ -1,5 +1,6 @@
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.ViewModels
+@using Shared.DTO
 @inject CaseRollComponentViewModel ViewModel
 
 <div class="raffle-roller">
@@ -11,7 +12,7 @@
             }
             else
             {
-                @foreach (Skin skin in ViewModel.ListSkinsInCaseRoll)
+                @foreach (SkinDTO skin in ViewModel.ListSkinsInCaseRoll)
                 {
                     <div class="skin-in-case">
                         <WeaponDisplayComponent WeaponSkin=@skin ImageLink=@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")></WeaponDisplayComponent>
@@ -31,13 +32,25 @@
 
 @code {
     [Parameter]
-    public required List<Skin> listSkins { get; set; }
+    public required List<SkinDTO> listSkins { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    private bool _hasRendered = false;
+
+    protected override void OnInitialized()
     {
         ViewModel.ListSkins = listSkins;
-        await ViewModel.InitializeAsync();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_hasRendered)
+        {
+            _hasRendered = true;
+            // Now the DOM is ready, populate the list
+            await ViewModel.InitializeAsync();
+            StateHasChanged();
+        }
     }
 
     protected override void OnParametersSet()

@@ -1,4 +1,5 @@
 using S5_01_Blazor_CS_GOAT.Models;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -8,7 +9,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class WeaponDisplayComponentViewModel : ViewModelBase
     {
         private string _imageLink = string.Empty;
-        private Skin? _weaponSkin;
+        private SkinDTO? _weaponSkin;
         private string _height = "100px";
         private string _width = "100px";
 
@@ -18,7 +19,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _imageLink, value);
         }
 
-        public Skin? WeaponSkin
+        public SkinDTO? WeaponSkin
         {
             get => _weaponSkin;
             set => SetProperty(ref _weaponSkin, value);

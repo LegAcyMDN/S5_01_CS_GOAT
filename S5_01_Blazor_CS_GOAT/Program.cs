@@ -5,13 +5,14 @@ using S5_01_Blazor_CS_GOAT;
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
 using S5_01_Blazor_CS_GOAT.ViewModels;
+using Shared.DTO;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped<IService<Case>>(sp => new WebService<Case>("case"));
-builder.Services.AddScoped<IService<Skin>>(sp => new WebService<Skin>("skin"));
+builder.Services.AddScoped<IService<SkinDTO>>(sp => new WebService<SkinDTO>("skin"));
 builder.Services.AddScoped<IService<User>>(sp => new WebService<User>("user"));
 builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<InventoryItemDetail>("inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));

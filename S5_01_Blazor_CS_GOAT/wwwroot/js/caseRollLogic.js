@@ -2,6 +2,8 @@ window.caseRollLogic = {
 
     rollForItem: async function ()
     {
+        
+        
         let randomSign = Math.random() > 0.5 ? 1 : -1;
         let randomEnding = Math.floor(Math.random() * 30 * randomSign);
         let endingPixel = 6850 + randomEnding //6850
