@@ -1,3 +1,30 @@
+#popup-case-roll {
+    z-index: 99;
+    position: fixed;
+
+    /* Center on screen */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    /* Size */
+    width: 90vw;  /* 90% of viewport width */
+    max-width: 1200px;  /* Maximum width */
+    height: 80vh;  /* 80% of viewport height */
+    max-height: 800px;  /* Maximum height */
+
+    /* Scrollable content */
+    overflow-y: auto;  /* Vertical scroll */
+    overflow-x: hidden;  /* No horizontal scroll */
+
+    /* Styling */
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+
 .case-to-open {
     align-items: center;
 }

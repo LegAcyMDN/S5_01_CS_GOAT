@@ -5,14 +5,14 @@
 
 <div class="raffle-roller">
     <div class="raffle-roller-holder">
-        <div class="raffle-roller-container" style="margin-left: 0px; display: flex; flex-direction: row">
+        <div class="raffle-roller-container raffle-container-@ComponentId" style="margin-left: 0px; display: flex; flex-direction: row">
             @if (ViewModel.ListSkins.Count == 0)
             {
                 <!-- Empty state -->
             }
             else
             {
-                @foreach (SkinDTO skin in ViewModel.ListSkinsInCaseRoll)
+                @foreach (SkinDTO skin in ViewModel.ListSkins)
                 {
                     <div class="skin-in-case">
                         <WeaponDisplayComponent WeaponSkin=@skin ImageLink=@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")></WeaponDisplayComponent>
@@ -22,23 +22,20 @@
         </div>
     </div>
 </div>
-<div style="text-align: center;">
-    <span style="font-size: 25px;">You winning is 
-        <span style="color: green;" id="rolled">rolling</span>
-    </span>
-    <br>
-    <button @onclick="async () => await ViewModel.OpenCaseAsync()" style="color: black">go</button>
-</div>
-
 @code {
     [Parameter]
     public required List<SkinDTO> listSkins { get; set; }
+    
+    [Parameter]
+    public EventCallback OnAnimationComplete { get; set; }
 
     private bool _hasRendered = false;
+    private string ComponentId = Guid.NewGuid().ToString();
 
     protected override void OnInitialized()
     {
         ViewModel.ListSkins = listSkins;
+        ViewModel.AnimationCompleted += OnAnimationCompleted;
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
     }
 
@@ -47,14 +44,23 @@
         if (firstRender && !_hasRendered)
         {
             _hasRendered = true;
-            // Now the DOM is ready, populate the list
-            await ViewModel.InitializeAsync();
-            StateHasChanged();
+            await ViewModel.OpenCaseAsyncWithId(ComponentId);
         }
+    }
+
+    private async void OnAnimationCompleted(object? sender, string componentId)
+    {
+        Console.WriteLine($"Component {componentId} animation finished!");
+        await OnAnimationComplete.InvokeAsync();
     }
 
     protected override void OnParametersSet()
     {
         ViewModel.ListSkins = listSkins;
+    }
+
+    public void Dispose()
+    {
+        ViewModel.AnimationCompleted -= OnAnimationCompleted;
     }
 }

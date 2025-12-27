@@ -57,14 +57,14 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     
     
-    public async Task<List<MultipleCaseResultDTO>?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken)
+    public async Task<MultipleCaseResultDTO>? OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         var response = await _httpClient.PostAsJsonAsync($"{_endpoint}/open", caseOpenInfo);
     
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<List<MultipleCaseResultDTO>?>();
+            return await response.Content.ReadFromJsonAsync<MultipleCaseResultDTO?>();
         }
     
         return null;

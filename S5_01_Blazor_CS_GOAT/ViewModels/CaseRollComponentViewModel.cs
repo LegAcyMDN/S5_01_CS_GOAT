@@ -1,91 +1,40 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using Microsoft.JSInterop;
+using S5_01_Blazor_CS_GOAT.ViewModels;
 using Shared.DTO;
 
-namespace S5_01_Blazor_CS_GOAT.ViewModels
+public class CaseRollComponentViewModel : ViewModelBase
 {
-    /// <summary>
-    /// ViewModel pour CaseRollComponent - Gère l'animation de roulette d'ouverture de caisse
-    /// </summary>
-    public class CaseRollComponentViewModel : ViewModelBase
+    private readonly IJSRuntime _jsRuntime;
+    
+    // Event that fires when animation completes
+    public event EventHandler<string>? AnimationCompleted;
+
+    public CaseRollComponentViewModel(IJSRuntime jsRuntime)
     {
-        private readonly IJSRuntime _jsRuntime;
-        private static readonly Random _random = new();
+        _jsRuntime = jsRuntime;
+    }
 
-        private List<SkinDTO> _listSkins = new();
-        private List<SkinDTO> _listSkinsInCaseRoll = new();
+    public List<SkinDTO> ListSkins { get; set; } = new();
+    public List<SkinDTO> ListSkinsInCaseRoll { get; set; } = new();
 
-        public CaseRollComponentViewModel(IJSRuntime jsRuntime)
+    public async Task OpenCaseAsyncWithId(string componentId)
+    {
+        if (ListSkins.Count == 0)
+            return;
+
+        ListSkinsInCaseRoll.Clear();
+        ListSkinsInCaseRoll = ListSkins;
+
+        Console.WriteLine($"Opening case with ID: {componentId}");
+
+        // Wait for animation to complete
+        var success = await _jsRuntime.InvokeAsync<bool>("caseRollLogic.rollForItem", componentId);
+        
+        if (success)
         {
-            _jsRuntime = jsRuntime;
-        }
-
-        public List<SkinDTO> ListSkins
-        {
-            get => _listSkins;
-            set => SetProperty(ref _listSkins, value);
-        }
-
-        public List<SkinDTO> ListSkinsInCaseRoll
-        {
-            get => _listSkinsInCaseRoll;
-            set => SetProperty(ref _listSkinsInCaseRoll, value);
-        }
-
-        public override async Task InitializeAsync()
-        {
-            await OpenCaseAsync();
-        }
-
-        /// <summary>
-        /// Génère la séquence d'items pour l'animation de roulette
-        /// </summary>
-        public async Task OpenCaseAsync()
-        {
-            if (ListSkins.Count == 0)
-                return;
-
-            ListSkinsInCaseRoll.Clear();
-
-            ListSkinsInCaseRoll = ListSkins;
-
-            // // Ajouter 72 items aléatoires avant le résultat
-            // for (int i = 0; i <= 71; i++)
-            // {
-            //     int indexOfListToAdd = _random.Next(ListSkins.Count);
-            //     SkinDTO itemWithWeight = ListSkins[indexOfListToAdd];
-            //     ListSkinsInCaseRoll.Add(itemWithWeight);
-            // }
-            //
-            // // Ajouter le skin gagné
-            // ListSkinsInCaseRoll.Add(ListSkins[0]);
-            // await _jsRuntime.InvokeVoidAsync("eval", $"console.log('item to win : ' + '{ListSkins[0].ItemName} | {ListSkins[0].SkinName}')");
-            //
-            // foreach (var oneSkin in ListSkins)
-            // {
-            //     await _jsRuntime.InvokeVoidAsync("eval", $"console.log('{oneSkin.ItemName} | {oneSkin.SkinName}')");
-            // }
-            //
-            // // Ajouter 10 items aléatoires après le résultat
-            // for (int i = 0; i <= 9; i++)
-            // {
-            //     int indexOfListToAdd = _random.Next(ListSkins.Count);
-            //     Skin itemWithWeight = ListSkins[indexOfListToAdd];
-            //     ListSkinsInCaseRoll.Add(itemWithWeight);
-            //
-            //     await _jsRuntime.InvokeVoidAsync("caseRollLogic.printStuff");
-            // }
-
-            // Déclencher l'animation de roulette
-            await _jsRuntime.InvokeVoidAsync("caseRollLogic.rollForItem");
-        }
-
-        /// <summary>
-        /// Déclenche l'animation de roulette
-        /// </summary>
-        public async Task RollAsync()
-        {
-            await _jsRuntime.InvokeVoidAsync("CaseRollComponent.rollForItem", "myElement");
+            Console.WriteLine($"Animation completed for {componentId}");
+            // Raise event
+            AnimationCompleted?.Invoke(this, componentId);
         }
     }
 }

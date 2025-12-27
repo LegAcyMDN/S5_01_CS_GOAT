@@ -1,6 +1,7 @@
 ﻿@page "/caseview/{CaseId:int}"
 @using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.ViewModels
+@using Shared.DTO
 @inject CaseViewViewModel ViewModel
 
 <PageTitle>CS:GOAT - Caisses</PageTitle>
@@ -83,7 +84,31 @@
             }
         </div>
     </div>
-    <CaseRollComponent listSkins="ViewModel.SkinsList"></CaseRollComponent>
+    @* <CaseRollComponent listSkins="ViewModel.SkinsList"></CaseRollComponent> *@
+    
+    @if (ViewModel.JustBoughtCase)
+    {
+        @if (ViewModel.IsEsthetic)
+        {
+            <div class="popup-backdrop">
+                <div id="popup-case-roll">
+                    @foreach (List<SkinDTO> caseContent in ViewModel.BoughtCasesListWithSkins)
+                    {
+                        <CaseRollComponent 
+                            listSkins="@caseContent"
+                            OnAnimationComplete="@ViewModel.OnCaseAnimationComplete">
+                        </CaseRollComponent>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            
+        }
+    }
+    
+    
 }
 else
 {

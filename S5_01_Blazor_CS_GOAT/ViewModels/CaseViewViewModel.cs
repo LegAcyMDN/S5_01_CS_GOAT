@@ -23,11 +23,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _selectedCount = 1;
         private bool _isLoading = true;
         private List<Skin> _caseOpenList = new();
+        private bool _justBoughtCase  = false;
+        private List<List<SkinDTO>> _boughtCasesListWithSkins = new();
+        
+        private int _completedAnimations = 0;
+        private int _totalAnimations = 0;
 
-        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository)
+
+
+        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
+            _authService = authService;
+        }
+
+
+        public List<List<SkinDTO>> BoughtCasesListWithSkins
+        {
+            get => _boughtCasesListWithSkins;
+            set => SetProperty(ref _boughtCasesListWithSkins, value);
         }
 
         public List<SkinDTO> SkinsList
@@ -71,6 +86,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
+        
+        public bool JustBoughtCase
+        {
+            get => _justBoughtCase;
+            set => SetProperty(ref _justBoughtCase, value);
+        }
 
         /// <summary>
         /// Charge les données de la caisse et ses skins
@@ -105,19 +126,70 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
             if (IsEsthetic)
             {
-                // Animation Esthétique - à implémenter
-            }
-
-            Console.WriteLine($"Achat de {SelectedCount} cases");
+                Console.WriteLine(SelectedCount);
+                BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(await CallCaseOpen(SelectedCount));
             
-            for (int i = 0; i < SelectedCount; i++)
-            {
-                int index = _rng.Next(SkinsList.Count);
-                WonSkins.Add(SkinsList[index]);
+                _totalAnimations = BoughtCasesListWithSkins.Count;
+                _completedAnimations = 0;
+            
+                JustBoughtCase = true;
             }
+            else
+            {
+                // Non-esthetic mode - skip animations, show results immediately
+                Console.WriteLine($"Opening {SelectedCount} cases without animation");
+        
+                var results = await CallCaseOpen(SelectedCount);
+        
+                // Extract won skins directly from results
+                foreach (var oneCase in results.Results)
+                {
+                    var wonSkin = oneCase.Reward;
+                    WonSkins.Add(new SkinDTO
+                    {
+                        AnyUuid = wonSkin.Uuid,
+                        ItemName = wonSkin.ItemName,
+                        RarityColor = wonSkin.RarityColor,
+                        RarityName = wonSkin.RarityName,
+                        SkinName = wonSkin.SkinName,
+                        BestPrice = 1,
+                        WorstPrice = 1
+                    });
+                }
+        
+                // Show popup immediately
+                ShowPopup = true;
+            }
+        }
+        
+        public void OnCaseAnimationComplete()
+        {
+            _completedAnimations++;
+            Console.WriteLine($"Completed: {_completedAnimations}/{_totalAnimations}");
+    
+            if (_completedAnimations >= _totalAnimations)
+            {
+                // All animations done - show popup!
+                ShowResultsPopup();
+            }
+        }
 
+        private void ShowResultsPopup()
+        {
+            Console.WriteLine("All animations complete! Showing results...");
+    
+            // Extract won skins from the roller results
+            foreach (var caseList in BoughtCasesListWithSkins)
+            {
+                // The won skin is at position 72 (middle of the 82 items)
+                if (caseList.Count > 72)
+                {
+                    WonSkins.Add(caseList[72]);
+                }
+            }
+    
             ShowPopup = true;
-            await Task.CompletedTask;
+            JustBoughtCase = false; // Hide the rollers
         }
 
         /// <summary>
@@ -138,7 +210,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         
         
         
-        private async Task<List<MultipleCaseResultDTO>> CallCaseOpen(int numberOfCases)
+        private async Task<MultipleCaseResultDTO> CallCaseOpen(int numberOfCases)
         {
             CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
             {
@@ -147,29 +219,30 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 RaffleRollerLength = 82,
                 PromoCode = null // TODO implement promocode
             };
-        
-            // TODO if esthetic put the info in the case roll component but call the case API before
+            
             string jwtToken = await _authService.GetTokenAsync();
-            List<MultipleCaseResultDTO> casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
+            MultipleCaseResultDTO casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
             return casesReturn;
         }
 
-        private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(List<MultipleCaseResultDTO> multipleCaseResults)
+        private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(MultipleCaseResultDTO multipleCaseResults)
         {
             List<List<SkinDTO>> casesWithSkins = new();
             int caseNumber = 0;
-            foreach (var multipleCaseResultDto in multipleCaseResults)
+            foreach (var oneCase in multipleCaseResults.Results)
             {
+                casesWithSkins.Add(new List<SkinDTO>());
                 for (int i = 0; i <= 71; i++)
                 {
-                    SkinDTO skinOfThisIteration = multipleCaseResultDto.Skins[
-                        multipleCaseResultDto.Results[caseNumber].Roller[i]
+                    SkinDTO skinOfThisIteration = multipleCaseResults.Skins[
+                        oneCase.Roller[i]
                     ];
                     
                     casesWithSkins[caseNumber].Add(skinOfThisIteration);
                 }
 
-                InventoryItemDetailDTO wonSkinDetail = multipleCaseResultDto.Results[caseNumber].Reward;
+                // Add the skin won from the API
+                InventoryItemDetailDTO wonSkinDetail = oneCase.Reward;
                 
                 casesWithSkins[caseNumber].Add(new SkinDTO
                 {
@@ -181,11 +254,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     BestPrice = 1, // dummy numbers because we dont use them here
                     WorstPrice = 1 // dummy numbers because we dont use them here
                 } );
+                Console.WriteLine(oneCase.Roller.Length);
+                Console.WriteLine("item found UUID : "  + wonSkinDetail.Uuid);
+                Console.WriteLine("item : "   + wonSkinDetail.ItemName);
                 
-                for (int i = 72; i <= 82; i++)
+                
+                for (int i = 72; i < 82; i++)
                 {
-                    SkinDTO skinOfThisIteration = multipleCaseResultDto.Skins[
-                        multipleCaseResultDto.Results[caseNumber].Roller[i]
+                    SkinDTO skinOfThisIteration = multipleCaseResults.Skins[
+                        oneCase.Roller[i]
                     ];
                     
                     casesWithSkins[caseNumber].Add(skinOfThisIteration);
@@ -195,6 +272,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 caseNumber++;
             }
 
+            Console.WriteLine("cases with skins : " + casesWithSkins[0].Count);
             return casesWithSkins;
         }
         
