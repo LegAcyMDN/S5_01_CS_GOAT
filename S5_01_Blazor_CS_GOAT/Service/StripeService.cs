@@ -5,6 +5,7 @@ public class StripeService
 {
     private readonly HttpClient _httpClient;
     private readonly AuthService _authService;
+    private readonly string _appURL = "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net";
 
     public StripeService(HttpClient httpClient, AuthService authService)
     {
@@ -26,8 +27,13 @@ public class StripeService
         {
             userId = userId.Value,
             amount = amount,
+            #if DEBUG
             successUrl = "https://localhost:7030/payment-success",
-            cancelUrl = "https://localhost:7030/wallet"
+            cancelUrl =  "https://localhost:7030/wallet"
+            #else 
+            successUrl = _appURL + "/payment-success",
+            cancelUrl = _appURL + "/wallet"
+            #endif
         };
 
         var response = await _httpClient.PostAsJsonAsync("stripe/create-checkout-session", request);
@@ -55,8 +61,13 @@ public class StripeService
         {
             userId = userId.Value,
             amount = amount,
+#if DEBUG
             successUrl = "https://localhost:7030/withdrawal-success",
             cancelUrl = "https://localhost:7030/wallet"
+#else 
+            successUrl = _appURL + "/withdrawal-success",
+            cancelUrl = _appURL + "/wallet"
+#endif
         };
 
         var response = await _httpClient.PostAsJsonAsync("stripe/create-payout-session", request);
