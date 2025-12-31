@@ -8,8 +8,21 @@
 {
     <h1>@ViewModel.CurrentUser.Wallet €</h1>
 
-    <button style="color: green">Ajouter de l'argent</button>
-    <button style="color: red">Retirer de l'argent</button>
+    <h3>Ajouter des fonds</h3>
+    <div class="add-funds">
+        <button @onclick="() => ViewModel.AddFunds(10)">+10€</button>
+        <button @onclick="() => ViewModel.AddFunds(25)">+25€</button>
+        <button @onclick="() => ViewModel.AddFunds(50)">+50€</button>
+        <button @onclick="() => ViewModel.AddFunds(100)">+100€</button>
+        <button @onclick="() => ViewModel.AddFunds(-50)">-50€</button>
+    </div>
+    <h3>Retirer des fonds</h3>
+    <div class="withdraw-funds">
+        <button @onclick="() => ViewModel.WithdrawFunds(10)">-10€</button>
+        <button @onclick="() => ViewModel.WithdrawFunds(25)">-25€</button>
+        <button @onclick="() => ViewModel.WithdrawFunds(50)">-50€</button>
+        <button @onclick="() => ViewModel.WithdrawFunds(100)">-100€</button>
+    </div>
 
     <br/>
     <h2>Historique des paiements</h2>
@@ -94,6 +107,5 @@ else
         await ViewModel.InitializeAsync();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
     }
+
 }
-
-

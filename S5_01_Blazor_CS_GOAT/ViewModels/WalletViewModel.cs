@@ -1,6 +1,7 @@
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Components;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -13,6 +14,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private readonly IService<Limit> _limitRepository;
         private readonly AuthService _authService;
         private readonly HttpClient _httpClient;
+        private readonly NavigationManager  _navigationManager;
+        private readonly StripeService _stripeService;
 
         private User? _currentUser;
         private List<MoneyTransaction>? _transactionsList;
@@ -26,12 +29,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             IService<MoneyTransaction> moneyTransactionRepository,
             IService<Limit> limitRepository,
             AuthService authService,
-            HttpClient httpClient)
+            HttpClient httpClient, 
+            NavigationManager navigationManager, 
+            StripeService stripeService)
         {
             _moneyTransactionRepository = moneyTransactionRepository;
             _limitRepository = limitRepository;
             _authService = authService;
             _httpClient = httpClient;
+            _navigationManager = navigationManager;
+            _stripeService = stripeService;
         }
 
         public User? CurrentUser
@@ -178,5 +185,53 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur sauvegarde limite: {err}");
             }
         }
+        public async Task AddFunds(double amount)
+        {
+            var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(amount);
+        
+            if (checkoutUrl != null)
+            {
+                // Redirect to Stripe checkout
+                _navigationManager.NavigateTo(checkoutUrl, forceLoad: true);
+            }
+            else
+            {
+                Console.WriteLine("Failed to create checkout session");
+            }
+        }
+        
+        public async Task WithdrawFunds(double amount)
+        {
+            if (amount <= 0)
+            {
+                Console.WriteLine("Amount must be positive");
+                return;
+            }
+
+            if (CurrentUser?.Wallet < amount)
+            {
+                Console.WriteLine("Insufficient funds");
+                return;
+            }
+
+            try
+            {
+                var withdrawalUrl = await _stripeService.CreateWithdrawalSessionAsync(amount);
+    
+                if (withdrawalUrl != null)
+                {
+                    _navigationManager.NavigateTo(withdrawalUrl, forceLoad: true);
+                }
+                else
+                {
+                    Console.WriteLine("Failed to create withdrawal session");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error withdrawing funds: {ex.Message}");
+            }
+        }
     }
+    
 }

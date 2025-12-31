@@ -55,6 +55,11 @@
                         </span> 
                     </a>
                 </div>
+                <input type="text" @bind="ViewModel.PromoCode"/>
+                @if (ViewModel.IsInvalidPromoCode)
+                {
+                    <p>Code promo invalide !</p>
+                }
             </div>
             @if (ViewModel.ShowPopup && ViewModel.WonSkins.Count > 0)
             {

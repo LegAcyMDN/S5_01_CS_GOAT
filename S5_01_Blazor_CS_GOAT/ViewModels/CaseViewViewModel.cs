@@ -2,6 +2,7 @@ using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
 using Shared.DTO;
 using Shared.DTO.Helpers;
+using Shared.Exceptions.CaseExceptions;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -21,6 +22,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _isEsthetic;
         private bool _showPopup;
         private int _selectedCount = 1;
+        private string _promoCode = "";
         private bool _isLoading = true;
         private List<Skin> _caseOpenList = new();
         private bool _justBoughtCase  = false;
@@ -28,6 +30,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         
         private int _completedAnimations = 0;
         private int _totalAnimations = 0;
+        
+        private bool _isInvalidPromoCode = false;
 
 
 
@@ -38,6 +42,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             _authService = authService;
         }
 
+
+        public string PromoCode
+        {
+            get => _promoCode;
+            set => SetProperty(ref _promoCode, value);
+        }
+
+        public bool IsInvalidPromoCode
+        {
+            get => _isInvalidPromoCode;
+            set => _isInvalidPromoCode = value;
+        }
 
         public List<List<SkinDTO>> BoughtCasesListWithSkins
         {
@@ -127,20 +143,35 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             if (IsEsthetic)
             {
                 Console.WriteLine(SelectedCount);
-                BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(await CallCaseOpen(SelectedCount));
-            
-                _totalAnimations = BoughtCasesListWithSkins.Count;
-                _completedAnimations = 0;
-            
-                JustBoughtCase = true;
+                try
+                {
+                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(await CallCaseOpen(SelectedCount));
+
+                    _totalAnimations = BoughtCasesListWithSkins.Count;
+                    _completedAnimations = 0;
+
+                    IsInvalidPromoCode = false;
+                    JustBoughtCase = true;
+                }
+                catch (CaseOpeningException e)
+                {
+                    switch (e)
+                    {
+                        case InvalidPromoCodeException:
+                            IsInvalidPromoCode = true;
+                            break;
+                        // Add the other exceptions if needed
+                    }
+                }
             }
             else
             {
                 // Non-esthetic mode - skip animations, show results immediately
                 Console.WriteLine($"Opening {SelectedCount} cases without animation");
-        
+                try
+                {
                 var results = await CallCaseOpen(SelectedCount);
-        
+                IsInvalidPromoCode = false;
                 // Extract won skins directly from results
                 foreach (var oneCase in results.Results)
                 {
@@ -159,6 +190,20 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         
                 // Show popup immediately
                 ShowPopup = true;
+
+                }
+                catch (CaseOpeningException e)
+                {
+                    switch (e)
+                    {
+                        case InvalidPromoCodeException:
+                            IsInvalidPromoCode = true;
+                            break;
+                        // Add the other exceptions if needed
+                    }
+                }
+        
+
             }
         }
         
@@ -210,19 +255,24 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         
         
         
-        private async Task<MultipleCaseResultDTO> CallCaseOpen(int numberOfCases)
+        private async Task<MultipleCaseResultDTO?> CallCaseOpen(int numberOfCases)
         {
             CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
             {
                 CaseId = _activeCase.CaseId,
                 Quantity = numberOfCases,
                 RaffleRollerLength = 82,
-                PromoCode = null // TODO implement promocode
+                PromoCode = PromoCode == "" ? null : PromoCode
             };
             
             string jwtToken = await _authService.GetTokenAsync();
-            MultipleCaseResultDTO casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
-            return casesReturn;
+
+                MultipleCaseResultDTO? casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
+                return casesReturn;
+            
+
+
+            
         }
 
         private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(MultipleCaseResultDTO multipleCaseResults)

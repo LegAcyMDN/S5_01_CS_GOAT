@@ -19,6 +19,7 @@ builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDMod
 builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
 builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
 
+
 builder.Services.AddScoped<CacheService>(sp => 
 {
     var httpClient = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
@@ -26,6 +27,7 @@ builder.Services.AddScoped<CacheService>(sp =>
 });
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<StripeService>();
 
 // Enregistrement des ViewModels pour le pattern MVVM
 builder.Services.AddScoped<HomeViewModel>();

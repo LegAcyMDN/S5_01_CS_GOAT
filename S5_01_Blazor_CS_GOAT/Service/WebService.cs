@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using Shared.DTO.Helpers;
+using Shared.Enum;
+using Shared.Exceptions.CaseExceptions;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -57,7 +59,8 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     
     
-    public async Task<MultipleCaseResultDTO>? OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken)
+    // TODO handle bad request if promocode is not valid
+    public async Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken) 
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         var response = await _httpClient.PostAsJsonAsync($"{_endpoint}/open", caseOpenInfo);
@@ -67,6 +70,21 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
             return await response.Content.ReadFromJsonAsync<MultipleCaseResultDTO?>();
         }
     
+        var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        string errorMessage = errorResponse?["message"];
+
+        switch (errorMessage)
+        {
+            case "User not found":
+                throw new UserNotFoundException();
+            case "Quantity must be greater than zero.":
+                throw new InvalidQuantityException();
+            case "Case not found.":
+                throw new CaseNotFoundException();
+            case "Promo code is invalid.":
+                throw new InvalidPromoCodeException();
+        }
+        
         return null;
     }
     
