@@ -12,6 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [Authorize]
     [AllowAnonymous]
+    [SetThreadPrincipal]
     public class MoneyTransactionController(
         IMapper mapper,
         IDataRepository<MoneyTransaction, int> manager,
