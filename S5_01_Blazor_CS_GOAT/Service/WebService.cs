@@ -59,7 +59,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     
     
-    // TODO handle bad request if promocode is not valid
+    
     public async Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken) 
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);

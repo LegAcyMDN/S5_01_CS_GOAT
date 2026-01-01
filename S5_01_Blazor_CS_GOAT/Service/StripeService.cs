@@ -5,7 +5,7 @@ public class StripeService
 {
     private readonly HttpClient _httpClient;
     private readonly AuthService _authService;
-    private readonly string _appURL = "blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net";
+    private readonly string _appURL = "https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net";
 
     public StripeService(HttpClient httpClient, AuthService authService)
     {
