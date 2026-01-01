@@ -9,8 +9,10 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers  
 { // TODO REFACTO CETTE HORREUR  
-    [Route("api/[controller]")]  
-        [ApiController]  
+    [Route("api/stripe")]  
+        [ApiController]
+    [Authorize]
+    [AllowAnonymous]
         public class StripeController : ControllerBase  
     {      
         private readonly IConfiguration _config;      
