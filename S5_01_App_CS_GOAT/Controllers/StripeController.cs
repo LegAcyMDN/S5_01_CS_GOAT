@@ -78,55 +78,82 @@ namespace S5_01_App_CS_GOAT.Controllers
             }  
         } 
         
-        [HttpPost("webhook")]  
-        [Consumes("application/json")]  
-        [AllowAnonymous] // Important!  
-        public async Task<IActionResult> Webhook()  
-        {  
-            Console.WriteLine("=== WEBHOOK RECEIVED ==="); 
-            
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();  
-            var stripeSignature = Request.Headers["Stripe-Signature"].ToString(); 
-            
-            if (string.IsNullOrEmpty(stripeSignature))      
-                return BadRequest("No signature"); 
-            
-            try  
-            {      
-                var webhookSecret = _config["Stripe:WebhookSecret"];      
-                var stripeEvent = EventUtility.ConstructEvent(      
-                    json,      
-                    stripeSignature,      
-                    webhookSecret,      
-                    throwOnApiVersionMismatch: false      
-                    ); 
-                
-                Console.WriteLine($"✅ Event verified: {stripeEvent.Type}"); 
-                
-                switch (stripeEvent.Type)      
-                {      
-                    case "checkout.session.completed":      
-                        await HandleCheckoutSessionCompleted(stripeEvent);      
-                        break; 
-                    
-                    case "setup_intent.succeeded": // For withdrawal card setup      
-                        await HandleSetupIntentSucceeded(stripeEvent);      
-                        break; 
-                    
-                    default:      
-                        Console.WriteLine($"⚠️ Unhandled event type: {stripeEvent.Type}");      
-                        break;  
-                } 
-                
-                return Ok();  
-            }  
-            catch (StripeException e)  
-            {
-                Console.WriteLine($"❌ Stripe webhook error: {e.Message}");      
-                return BadRequest(e.Message);
-                
-            }  
-        } 
+[HttpPost("webhook")]
+[AllowAnonymous]
+[IgnoreAntiforgeryToken]
+public async Task<IActionResult> Webhook()
+{
+    Console.WriteLine("=== WEBHOOK RECEIVED ===");
+    
+    try
+    {
+        // Read the request body
+        string json;
+        using (var reader = new StreamReader(HttpContext.Request.Body))
+        {
+            json = await reader.ReadToEndAsync();
+        }
+        
+        Console.WriteLine($"Raw JSON length: {json?.Length ?? 0}");
+        
+        var stripeSignature = Request.Headers["Stripe-Signature"].FirstOrDefault();
+        Console.WriteLine($"Stripe Signature present: {!string.IsNullOrEmpty(stripeSignature)}");
+
+        if (string.IsNullOrEmpty(stripeSignature))
+        {
+            Console.WriteLine("❌ No Stripe signature found!");
+            return BadRequest("No signature");
+        }
+
+        if (string.IsNullOrEmpty(json))
+        {
+            Console.WriteLine("❌ Empty request body!");
+            return BadRequest("Empty body");
+        }
+
+        var webhookSecret = _config["Stripe:WebhookSecret"];
+        Console.WriteLine($"Using webhook secret: {webhookSecret?.Substring(0, 10)}...");
+
+        var stripeEvent = EventUtility.ConstructEvent(
+            json,
+            stripeSignature,
+            webhookSecret,
+            throwOnApiVersionMismatch: false
+        );
+
+        Console.WriteLine($"✅ Event verified: {stripeEvent.Type}");
+
+        switch (stripeEvent.Type)
+        {
+            case "checkout.session.completed":
+                await HandleCheckoutSessionCompleted(stripeEvent);
+                break;
+
+            case "setup_intent.succeeded":
+                await HandleSetupIntentSucceeded(stripeEvent);
+                break;
+
+            default:
+                Console.WriteLine($"⚠️ Unhandled event type: {stripeEvent.Type}");
+                break;
+        }
+
+        Console.WriteLine("=== WEBHOOK COMPLETED SUCCESSFULLY ===");
+        return Ok();
+    }
+    catch (StripeException e)
+    {
+        Console.WriteLine($"❌ Stripe webhook error: {e.Message}");
+        Console.WriteLine($"Stack trace: {e.StackTrace}");
+        return BadRequest(e.Message);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"❌ General error: {e.Message}");
+        Console.WriteLine($"Stack trace: {e.StackTrace}");
+        return StatusCode(500, e.Message);
+    }
+}
         
         private async Task HandleSetupIntentSucceeded(Event stripeEvent)  
         {  
