@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stripe;
 using Stripe.Checkout;
@@ -75,6 +76,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
 [HttpPost("webhook")]
+[Consumes("application/json")]
+[AllowAnonymous] // Important!
 public async Task<IActionResult> Webhook()
 {
     Console.WriteLine("=== WEBHOOK RECEIVED ===");
