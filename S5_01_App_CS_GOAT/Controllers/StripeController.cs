@@ -11,8 +11,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 { // TODO REFACTO CETTE HORREUR  
     [Route("api/stripe")]  
         [ApiController]
-    [Authorize]
-    [AllowAnonymous]
         public class StripeController : ControllerBase  
     {      
         private readonly IConfiguration _config;      
@@ -83,7 +81,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("webhook")]  
         [Consumes("application/json")]  
         [AllowAnonymous] // Important!  
-        [IgnoreAntiforgeryToken] // Important for webhooks!  
         public async Task<IActionResult> Webhook()  
         {  
             Console.WriteLine("=== WEBHOOK RECEIVED ==="); 
