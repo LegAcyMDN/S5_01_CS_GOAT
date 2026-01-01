@@ -79,8 +79,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         } 
         
 [HttpPost("webhook")]
-[AllowAnonymous]
-[IgnoreAntiforgeryToken]
+// test si ça marche sans les decorators là
+// [AllowAnonymous]
+// [IgnoreAntiforgeryToken]
 public async Task<IActionResult> Webhook()
 {
     Console.WriteLine("=== WEBHOOK RECEIVED ===");
@@ -334,35 +335,6 @@ public async Task<IActionResult> Webhook()
             
             Console.WriteLine($"✅✅✅ COMPLETED: Added €{amount} to user {userId}. New balance: €{user.Wallet}");  
             Console.WriteLine(">>> HandleCheckoutSessionCompleted ENDED");  
-        } 
-        
-        [HttpGet("webhook-test")]  
-            [AllowAnonymous]  
-            public IActionResult WebhookTest()  
-        {
-            Console.WriteLine("✅ GET webhook-test hit");  
-            return Ok(new 
-            {
-                message = "Webhook endpoint is reachable",      
-                    timestamp = DateTime.UtcNow,      
-                    environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
-                
-            });
-            
-        } 
-        
-        [HttpPost("webhook-test")]  
-            [AllowAnonymous]  
-            public IActionResult WebhookTestPost()  
-        {
-            Console.WriteLine("✅ POST webhook-test hit");  
-            return Ok(new 
-            {
-                message = "POST to webhook endpoint works",      
-                    timestamp = DateTime.UtcNow
-                
-            });
-            
         } 
         
         [HttpPost("create-payout-session")]  
