@@ -11,7 +11,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 { // TODO REFACTO CETTE HORREUR
     [Route("api/[controller]")]
     [ApiController]
-    [SetThreadPrincipal]
     public class StripeController : ControllerBase
     {
         private readonly IConfiguration _config;
