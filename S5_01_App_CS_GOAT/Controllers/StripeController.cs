@@ -78,6 +78,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 [HttpPost("webhook")]
 [Consumes("application/json")]
 [AllowAnonymous] // Important!
+[IgnoreAntiforgeryToken] // Important for webhooks!
 public async Task<IActionResult> Webhook()
 {
     Console.WriteLine("=== WEBHOOK RECEIVED ===");
