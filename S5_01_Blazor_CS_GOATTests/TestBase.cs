@@ -1,5 +1,7 @@
-namespace S5_01_Blazor_CS_GOATTests;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Playwright.MSTest;
+
+namespace S5_01_Blazor_CS_GOATTests;
 
 public class TestBase : PageTest
 {
@@ -9,10 +11,13 @@ public class TestBase : PageTest
     public async Task TestSetup()
     {
         // Load configuration
+        var environment = GetEnvironment();
+        Console.WriteLine($"🌍 Environment: {environment}");
+        
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{GetEnvironment()}.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
@@ -20,12 +25,64 @@ public class TestBase : PageTest
                   ?? throw new Exception("BaseUrl not configured");
 
         Console.WriteLine($"🔍 Testing against: {BaseUrl}");
+        
+        // Wait for deployment to be ready
+        if (environment == "Azure")
+        {
+            Console.WriteLine("⏳ Waiting 30s for Azure deployment to stabilize...");
+            await Task.Delay(30000);
+        }
     }
 
     private static string GetEnvironment()
     {
-        // Check if running in Azure DevOps/GitHub Actions
-        var environment = Environment.GetEnvironmentVariable("TEST_ENVIRONMENT");
-        return environment ?? "Local";
+        // Check GitHub Actions environment variable
+        var testEnv = Environment.GetEnvironmentVariable("TEST_ENVIRONMENT");
+        
+        if (!string.IsNullOrEmpty(testEnv))
+        {
+            Console.WriteLine($"Using TEST_ENVIRONMENT: {testEnv}");
+            return testEnv;
+        }
+        
+        // Check if running in CI
+        var isCI = Environment.GetEnvironmentVariable("CI");
+        if (isCI == "true")
+        {
+            Console.WriteLine("Detected CI environment");
+            return "Azure";
+        }
+        
+        Console.WriteLine("Using Local environment");
+        return "Local";
+    }
+
+    [TestCleanup]
+    public async Task TestCleanup()
+    {
+        // Save video only on failure
+        if (TestContext.CurrentTestOutcome == UnitTestOutcome.Failed)
+        {
+            try
+            {
+                var videoPath = await Page.Video.PathAsync();
+                var testName = TestContext.TestName;
+                var destinationPath = $"test-results/videos/{testName}-{DateTime.Now:yyyyMMdd-HHmmss}.webm";
+                
+                // Ensure directory exists
+                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                
+                // Copy video
+                if (File.Exists(videoPath))
+                {
+                    File.Copy(videoPath, destinationPath, overwrite: true);
+                    Console.WriteLine($"📹 Video saved: {destinationPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Could not save video: {ex.Message}");
+            }
+        }
     }
 }
