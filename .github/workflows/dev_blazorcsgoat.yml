@@ -1,4 +1,4 @@
-name: Deploy Blazor to Azure
+name: Deploy Blazor to Azure with E2E Tests
 
 on:
   push:
@@ -6,44 +6,139 @@ on:
       - dev
   workflow_dispatch:
 
+env:
+  DOTNET_VERSION: '8.x'
+  BLAZOR_PROJECT_PATH: 'S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj'
+  TEST_PROJECT_PATH: 'S5_01_Blazor_CS_GOATTests/S5_01_Blazor_CS_GOATTests.csproj'
+
 jobs:
   build:
     runs-on: windows-latest
     permissions:
       contents: read
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
+
+      - name: Build Blazor Project
+        run: dotnet build ${{ env.BLAZOR_PROJECT_PATH }} -c Release --no-restore
 
       - name: Publish Blazor Project
-        run: dotnet publish S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj -c Release -o ./release
+        run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./release --no-build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: blazor-app
-          path: ./release/wwwroot  # Remove the /** - upload the entire folder
+          path: ./release/wwwroot
 
   deploy:
     runs-on: windows-latest
     needs: build
-
+    environment:
+      name: 'Production'
+      url: https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: blazor-app
-          path: ./deploy  # Download to a specific path
+          path: ./deploy
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'blazorcsgoat'
           slot-name: 'Production'
-          package: ./deploy  # Deploy from the download path
+          package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
+
+  test:
+    runs-on: windows-latest
+    needs: deploy
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore test project dependencies
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build test project
+        run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
+
+      - name: Ensure Playwright is installed
+        run: |
+          pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+        shell: pwsh
+
+      - name: Run Playwright E2E Tests
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} `
+            --configuration Release `
+            --no-build `
+            --logger "trx;LogFileName=test-results.trx" `
+            --logger "console;verbosity=detailed" `
+            -- MSTest.Parallelize.Workers=1
+        env:
+          TEST_ENVIRONMENT: Azure
+        shell: pwsh
+        continue-on-error: false
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
+
+      - name: Upload Playwright traces (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: '**/test-results/**'
+          retention-days: 7
+
+      - name: Publish Test Results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: E2E Test Results
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: true
+
+  notify:
+    runs-on: windows-latest
+    needs: [build, deploy, test]
+    if: always()
+    steps:
+      - name: Check workflow status
+        run: |
+          if ("${{ needs.test.result }}" -eq "failure") {
+            Write-Host "❌ E2E Tests Failed!"
+            exit 1
+          } elseif ("${{ needs.deploy.result }}" -eq "failure") {
+            Write-Host "❌ Deployment Failed!"
+            exit 1
+          } elseif ("${{ needs.build.result }}" -eq "failure") {
+            Write-Host "❌ Build Failed!"
+            exit 1
+          } else {
+            Write-Host "✅ All stages completed successfully!"
+          }
+        shell: pwsh
