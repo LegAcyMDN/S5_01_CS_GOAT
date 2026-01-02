@@ -1,7 +1,7 @@
+
 """
 This script runs the S5_01_Flask_CS_GOAT application using a development server.
 """
-
 from os import environ
 from S5_01_Flask_CS_GOAT import app
 
