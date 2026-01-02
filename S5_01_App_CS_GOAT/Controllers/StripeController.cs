@@ -79,9 +79,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         } 
         
 [HttpPost("webhook")]
-// test si ça marche sans les decorators là
-// [AllowAnonymous]
-// [IgnoreAntiforgeryToken]
 public async Task<IActionResult> Webhook()
 {
     Console.WriteLine("=== WEBHOOK RECEIVED ===");
