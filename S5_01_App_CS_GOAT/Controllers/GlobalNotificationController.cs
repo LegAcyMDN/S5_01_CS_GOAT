@@ -11,8 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/GlobalNotification")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class GlobalNotificationController(
         IMapper mapper,
         IDataRepository<GlobalNotification, int> manager,
@@ -26,7 +25,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="notificationDTO">The NotificationDTO object to create</param>
         /// <returns>The created NotificationDTO object</returns>
         [HttpPost("create")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create(NotificationDTO notificationDTO)

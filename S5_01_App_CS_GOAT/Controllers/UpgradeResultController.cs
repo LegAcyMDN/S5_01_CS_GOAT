@@ -10,8 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/UpgradeResult")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class UpgradeResultController(
         IMapper mapper,
         IDataRepository<UpgradeResult, (int,int)> manager,

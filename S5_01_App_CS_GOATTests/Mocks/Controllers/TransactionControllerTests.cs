@@ -8,6 +8,7 @@ using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
 using System;
 using System.Threading;
+using Microsoft.Extensions.Configuration;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -15,6 +16,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class TransactionControllerTests
     {
         private Mock<IDataRepository<Transaction, int>>? transactionRepositoryMock;
+        private Mock<IConfiguration> configurationMock;
         private TransactionController? controller;
 
         private User? admin;
@@ -24,11 +26,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             transactionRepositoryMock = new Mock<IDataRepository<Transaction, int>>();
+            configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
 
             controller = new TransactionController(
+                configurationMock.Object,
                 transactionRepositoryMock.Object
             );
         }

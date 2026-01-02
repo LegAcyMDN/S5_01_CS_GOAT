@@ -9,8 +9,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Wear")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     public class WearController(
         IMapper mapper,
         IReadableRepository<Wear, int> manager

@@ -10,8 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/FairRandom")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class FairRandomController(
         IMapper mapper,
         IFairRandomRepository manager,
@@ -23,8 +22,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Only returns resolved FairRandoms
         /// <returns>List of FairRandomDTO objects for the user</returns>
         [HttpGet("byuser")]
-        [Authorize]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByUser()
         {
@@ -45,8 +42,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>ServerHash string</returns>
         /// <response code="200">Returns the ServerHash string</response>
         [HttpGet("serverhash")]
-        [Authorize]
-        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetServerHash()
         {

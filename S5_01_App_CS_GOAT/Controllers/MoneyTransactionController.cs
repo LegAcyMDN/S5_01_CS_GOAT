@@ -1,17 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using S5_01_App_CS_GOAT.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/MoneyTransaction")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     [SetThreadPrincipal]
     public class MoneyTransactionController(
         IMapper mapper,
@@ -42,7 +40,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all MoneyTransactionDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
@@ -52,6 +49,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
+            
             IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync(null, "PaymentMethod");
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(transactionsDto);

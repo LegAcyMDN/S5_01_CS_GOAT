@@ -9,8 +9,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Skin")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     public class SkinController(
         IMapper mapper,
         IReadableRepository<Case, int> caseManager

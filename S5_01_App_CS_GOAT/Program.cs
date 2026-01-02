@@ -75,13 +75,13 @@ builder.Services.AddScoped<IUserRepository, UserManager>();
 
 // Timed services
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
-builder.Services.AddHostedService<TimedActionService<IDataRepository<PromoCode, int>, PromoCode, int>>();
+builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, PromoCode, int>>();
 
 // Overseer services
 builder.Services.AddScoped<CaseOpenningService>();
 
-string? secret = builder.Configuration.GetValue<string>("JWT_SECRET");
-if (secret == null) throw new Exception("JWT_SECRET environment variable is not set in appssettings.");
+string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
+if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  .AddJwtBearer(options =>
@@ -94,8 +94,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
          ValidateAudience = true,
          ValidateLifetime = true,
          ValidateIssuerSigningKey = true,
-         ValidIssuer = builder.Configuration.GetValue<string>("JWT_ISSUER"),
-         ValidAudience = builder.Configuration.GetValue<string>("JWT_AUDIENCE"),
+         ValidIssuer = builder.Configuration["Jwt:Issuer"],
+         ValidAudience = builder.Configuration["Jwt:Audience"],
          IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
          ClockSkew = TimeSpan.Zero
      };
@@ -114,6 +114,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazorApp");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

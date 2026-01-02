@@ -4,15 +4,20 @@ using S5_01_App_CS_GOAT.Services;
 using Shared.DTO.Helpers;
 using Shared.Enum;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
 public class UserManager : CrudRepository<User, int>, IUserRepository
 {
     protected readonly CSGOATDbContext _context;
-    public UserManager(CSGOATDbContext context) : base(context)
+    protected readonly IMapper _mapper;
+
+    public UserManager(CSGOATDbContext context, IMapper mapper) : base(context)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     public async Task UpdateUserDetails(User existing, UpdateUserDTO userDTO)
@@ -164,12 +169,12 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         return user;
     }
 
-    public async Task<User?> Recall(RememberDTO rememberDTO)
+    public async Task<User?> Recall(TokenDTO rememberDTO)
     {
         Token? token = await _context.Set<Token>().FindAsync(rememberDTO.TokenId);
         if (
             token == null
-            || token.TokenValue != rememberDTO.Token
+            || token.TokenValue != rememberDTO.TokenValue
             || token.UserId != rememberDTO.UserId
             || token.TokenTypeId != 1
         ) return null;
@@ -189,6 +194,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
     public async Task<AuthDTO> Auth(User user, IConfiguration config, int? remember = null)
     {
+        _context.Set<User>().Attach(user);
         string jwtToken = JwtService.GenerateJwtToken(user, config);
         Token? rememberToken = null;
         if (remember != null && remember > 0)
@@ -205,14 +211,17 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         {
             UserId = user.UserId,
             DisplayName = user.DisplayName,
-            JwtToken = jwtToken,
-            RememberToken = rememberToken
+            JwtToken = jwtToken
         };
         if (rememberToken != null)
         {
             await _context.Set<Token>().AddAsync(rememberToken);
-            await _context.SaveChangesAsync();
         }
+        user.LastLogin = DateTime.Now;
+        await _context.SaveChangesAsync();
+        authDTO.RememberToken = rememberToken != null!
+            ? _mapper.Map<TokenDTO>(rememberToken)
+            : null;
         return authDTO;
     }
 

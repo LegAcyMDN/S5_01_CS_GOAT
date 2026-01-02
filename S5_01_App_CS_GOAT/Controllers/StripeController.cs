@@ -10,8 +10,9 @@ using S5_01_App_CS_GOAT.Services;
 namespace S5_01_App_CS_GOAT.Controllers  
 { // TODO REFACTO CETTE HORREUR  
     [Route("api/stripe")]  
-        [ApiController]
-        public class StripeController : ControllerBase  
+    [ApiController]
+    [SetThreadPrincipal]
+    public class StripeController : ControllerBase  
     {      
         private readonly IConfiguration _config;      
         private readonly IUserRepository _userRepository;      
