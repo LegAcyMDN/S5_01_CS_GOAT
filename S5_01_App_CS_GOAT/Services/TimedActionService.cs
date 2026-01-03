@@ -31,7 +31,9 @@ namespace S5_01_App_CS_GOAT.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<TimedActionService<TRepository, TEntity, TIdentifier>> _logger;
 
-        public TimedActionService(IServiceProvider serviceProvider, ILogger<TimedActionService<TRepository, TEntity, TIdentifier>> logger)
+        public TimedActionService(
+            IServiceProvider serviceProvider,
+            ILogger<TimedActionService<TRepository, TEntity, TIdentifier>> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -47,7 +49,6 @@ namespace S5_01_App_CS_GOAT.Services
                     {
                         TRepository repository = scope.ServiceProvider.GetRequiredService<TRepository>();
 
-                        TimedActionFrequency frequency = TEntity.TickFrequency;
                         IEnumerable<TEntity> entities = await repository.GetAllAsync();
                         foreach (TEntity entity in entities)
                         {

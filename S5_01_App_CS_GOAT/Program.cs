@@ -39,11 +39,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Readonly repositories for web-scraped entities
-builder.Services.AddScoped<IReadableRepository<Case, int>, CrudRepository<Case>>();
-builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, CrudRepository<CaseContent, (int,int)>>();
-builder.Services.AddScoped<IReadableRepository<PriceHistory, int>, CrudRepository<PriceHistory>>();
-builder.Services.AddScoped<IReadableRepository<Skin, int>, CrudRepository<Skin>>();
-builder.Services.AddScoped<IReadableRepository<Wear, int>, CrudRepository<Wear>>();
+builder.Services.AddScoped<IReadableRepository<Case, int>, ReadRepository<Case>>();
+builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, ReadRepository<CaseContent, (int,int)>>();
+builder.Services.AddScoped<IReadableRepository<Skin, int>, ReadRepository<Skin>>();
+builder.Services.AddScoped<IReadableRepository<Wear, int>, ReadRepository<Wear>>();
 
 // Type Repositories for type entities
 builder.Services.AddScoped<ITypeRepository<BanType>, TypeRepository<BanType>>();
@@ -70,6 +69,7 @@ builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepositor
 
 // Custom managers for complex entities
 builder.Services.AddScoped<IFairRandomRepository, FairRandomManager>();
+builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryManager>();
 builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 

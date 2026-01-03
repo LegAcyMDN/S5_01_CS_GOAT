@@ -15,7 +15,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     [TestClass()]
     public class PriceHistoryControllerTests
     {
-        private Mock<IDataRepository<PriceHistory, int>>? priceHistoryRepositoryMock;
+        private Mock<IPriceHistoryRepository>? priceHistoryRepositoryMock;
         private Mock<IDataRepository<Wear, int>>? wearRepositoryMock;
         private Mock<IMapper>? mapperMock;
         private PriceHistoryController? controller;
@@ -27,7 +27,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
-            priceHistoryRepositoryMock = new Mock<IDataRepository<PriceHistory, int>>();
+            priceHistoryRepositoryMock = new Mock<IPriceHistoryRepository>();
             wearRepositoryMock = new Mock<IDataRepository<Wear, int>>();
             mapperMock = new Mock<IMapper>();
 
@@ -42,7 +42,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             );
         }
 
-        #region GetByInventoryItem Tests
+        #region GetByWear Tests
 
         [TestMethod]
         public void GetByInventoryItem_ReturnsOk()
@@ -54,10 +54,49 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                       .Returns(priceHistoryDTOs);
 
             // When
-            IActionResult? result = controller.GetByInventoryItem(wear.WearId).GetAwaiter().GetResult();
+            IActionResult? result = controller.GetByWear(wear.WearId).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            wearRepositoryMock.Verify(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"), Times.Once);
+        }
+
+        #endregion
+
+        #region GetAIPrediction Tests
+
+        [TestMethod]
+        public void GetAIPrediction_ReturnsOk()
+        {
+            // Given
+            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"))
+                                  .ReturnsAsync(wear);
+            priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30))
+                                      .ReturnsAsync(priceHistories);
+            mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
+                      .Returns(priceHistoryDTOs);
+
+            // When
+            IActionResult? result = controller.GetAiPrediction(wear.WearId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            priceHistoryRepositoryMock.Verify(r => r.PredictWithAI(wear, It.IsAny<int>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void GetAIPrediction_WearNotFound_ReturnsNotFound()
+        {
+            // Given
+            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"))
+                                  .ReturnsAsync((Wear)null);
+
+            // When
+            IActionResult? result = controller.GetAiPrediction(wear.WearId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+            wearRepositoryMock.Verify(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"), Times.Once);
         }
 
         #endregion

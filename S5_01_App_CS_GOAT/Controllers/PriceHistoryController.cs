@@ -11,18 +11,18 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     public class PriceHistoryController(
         IReadableRepository<Wear, int> wearManager,
-       IReadableRepository<PriceHistory,int> manager,
+        IPriceHistoryRepository manager,
         IMapper mapper
     ) : ControllerBase
     {
         /// <summary>
-        /// Get price history by inventory item
+        /// Get price history by wear
         /// </summary>
         /// <param name="wearId">The ID of the wear</param>
         /// <returns>Price history data for wear</returns>
         [HttpGet("bywear/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetByInventoryItem(int wearId)
+        public async Task<IActionResult> GetByWear(int wearId)
         {
             Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
             if (wear == null) return NotFound();
@@ -32,8 +32,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
 
-// TODO: CLEANUP le endpoint
-#if DEBUG
         /// <summary>
         /// Get AI prediction for price history
         /// </summary>
@@ -41,20 +39,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>AI prediction data</returns>
         [HttpGet("aiprediction")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetAiPrediction(int wearId)
         {
-            HttpClient httpClient = new HttpClient();
-            string flaskApiUrl = $"http://localhost:5555/api/price_history/predict_price/bywear/{wearId}";
-            HttpResponseMessage response = await httpClient.GetAsync(flaskApiUrl);
-
-            if (!response.IsSuccessStatusCode) return BadRequest();
-
             Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
-            IEnumerable<PriceHistory> result = wear.PriceHistories();
+            if (wear == null) return NotFound();
+            IEnumerable<PriceHistory>? result = await manager.PredictWithAI(wear);
+            if (result == null) return StatusCode(StatusCodes.Status503ServiceUnavailable);
             IEnumerable<PriceHistoryDTO> priceHistoryDTOs = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
 
             return Ok(priceHistoryDTOs);
         }
-#endif
     }
 }

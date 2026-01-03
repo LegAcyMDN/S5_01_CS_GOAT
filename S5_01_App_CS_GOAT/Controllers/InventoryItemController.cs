@@ -30,9 +30,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             IEnumerable<InventoryItem> inventoryItems = await manager.GetAllAsync(
-                null,
-                "Wear",
-                "Wear.Skin.Rarity"
+                null, "Wear", "Wear.Skin.Rarity"
             );
 
             inventoryItems = inventoryItems.Where(item => item.UserId == authResult.AuthUserId && item.RemovedOn == null);
