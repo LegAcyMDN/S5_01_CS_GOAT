@@ -86,15 +86,15 @@ namespace S5_01_App_CS_GOAT.Services
         /// <returns>The serialized encrypted JWT token</returns>
         public static string GenerateJwtToken(User user, IConfiguration configuration)
         {
-            string? secret = configuration["JWT_SECRET"];
-            if (secret == null) throw new Exception("JWT_SECRET is not configured in appsettings.json");
+            string? secret = configuration["Jwt:Secret"];
+            if (secret == null) throw new Exception("Jwt Secret is not configured in appsettings.json");
             SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             List<Claim> claims = GetClaims(user);
             JwtSecurityToken token = new JwtSecurityToken
             (
-                issuer: configuration["JWT_ISSUER"],
-                audience: configuration["JWT_AUDIENCE"],
+                issuer: configuration["Jwt:Issuer"],
+                audience: configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddDays(30),
                 signingCredentials: credentials
@@ -109,27 +109,25 @@ namespace S5_01_App_CS_GOAT.Services
         /// <returns>AuthResult containing authentication and authorization status with user ID</returns>
         public static AuthResult JwtAuth(IConfiguration? configuration = null)
         {
-            // Bypass JWT authentification if the JWT_BYPASS environment variable is set (for testing)
-            // Format: "@123" to spoof admin user with ID 123, "123" to spoof normal user with ID 123
-            string? bypassAuth = configuration?["JWT_BYPASS"];
-            if (!string.IsNullOrEmpty(bypassAuth))
-            {
-                bool spoofIsAdmin = bypassAuth.StartsWith('@');
-                int? spoofUserId = int.Parse(bypassAuth.TrimStart('@'));
-                return new AuthResult(spoofUserId, spoofIsAdmin);
-            }
-
             // Find current context JWT authentification if present
             ClaimsIdentity? identity = Thread.CurrentPrincipal?.Identity as ClaimsIdentity;
-            if (identity == null) return new AuthResult();
+            // Get the user information
+            Claim? userIdClaim = identity?.FindFirst(nameof(User.UserId));
+            Claim? isAdminClaim = identity?.FindFirst(nameof(User.IsAdmin));
 
-            // Get the inserted UserID
-            Claim? userIdClaim = identity.FindFirst(nameof(User.UserId));
-            if (userIdClaim == null) return new AuthResult();
-
-            // Get the inserted IsAdmin
-            Claim? isAdminClaim = identity.FindFirst(nameof(User.IsAdmin));
-            if (isAdminClaim == null) return new AuthResult();
+            if (identity == null || userIdClaim == null || isAdminClaim == null)
+            {
+                // Bypass JWT authentification if the JWT_BYPASS environment variable is set (for testing)
+                // Format: "@123" to spoof admin user with ID 123, "123" to spoof normal user with ID 123
+                string? bypassAuth = configuration?["Jwt:Bypass"];
+                if (!string.IsNullOrEmpty(bypassAuth))
+                {
+                    bool spoofIsAdmin = bypassAuth.StartsWith('@');
+                    int? spoofUserId = int.Parse(bypassAuth.TrimStart('@'));
+                    return new AuthResult(spoofUserId, spoofIsAdmin);
+                }
+                return new AuthResult();
+            }
 
             // Get the user information
             bool isAdmin = bool.Parse(isAdminClaim.Value);
@@ -156,32 +154,6 @@ namespace S5_01_App_CS_GOAT.Services
                 HttpContext = httpContext
             };
             controller.ControllerContext = controllerContext;
-        }
-    }
-
-    /// <summary>
-    /// Authorization filter attribute to restrict access to admin users only
-    /// </summary>
-    /// Useage: [Admin] on controller actions
-    public class AdminAttribute : Attribute, IAuthorizationFilter
-    {
-        public void OnAuthorization(AuthorizationFilterContext context)
-        {
-            // Set Thread.CurrentPrincipal from HttpContext.User
-            Thread.CurrentPrincipal = context.HttpContext.User;
-            
-            IConfiguration configuration = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
-            AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-            {
-                context.Result = new UnauthorizedResult();
-                return;
-            }
-            if (!authResult.IsAdmin)
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
         }
     }
     

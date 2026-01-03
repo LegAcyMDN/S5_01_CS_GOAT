@@ -8,9 +8,9 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Transaction")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class TransactionController(
+        IConfiguration configuration,
         IDataRepository<Transaction, int> manager
     ) : ControllerBase
     {
@@ -21,12 +21,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="id">The ID of the transaction to cancel</param>
         /// <returns>No content on success</returns>
         [HttpDelete("remove/{id}")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-          throw new NotImplementedException();
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+            throw new NotImplementedException();
         }
     }
 }

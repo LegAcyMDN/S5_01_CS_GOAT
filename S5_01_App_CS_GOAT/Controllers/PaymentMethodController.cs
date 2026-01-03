@@ -7,8 +7,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/PaymentMethod")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     public class PaymentMethodController(
         ITypeRepository<PaymentMethod> manager
     ) : ControllerBase

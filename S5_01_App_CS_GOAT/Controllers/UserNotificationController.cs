@@ -12,8 +12,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/UserNotification")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class UserNotificationController(
         IMapper mapper,
         IDataRepository<UserNotification, int> manager,

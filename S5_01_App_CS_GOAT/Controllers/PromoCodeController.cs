@@ -11,8 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/PromoCode")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class PromoCodeController(
         IMapper mapper,
         IPromoCodeRepository manager,
@@ -78,7 +77,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="promoCode">The PromoCode object to create</param>
         /// <returns>The created PromoCode object</returns>
         [HttpPost("create")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> Create([FromBody] PromoCode promoCode)
@@ -101,7 +99,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="updatedPromoCode">The updated PromoCode object</param>
         /// <returns>No content on success</returns>
         [HttpPut("update/{id}")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

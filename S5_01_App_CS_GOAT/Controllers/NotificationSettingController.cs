@@ -8,8 +8,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/NotificationSetting")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class NotificationSettingController(
         IDataRepository<NotificationSetting, (int,int)> manager,
         IConfiguration configuration) : ControllerBase

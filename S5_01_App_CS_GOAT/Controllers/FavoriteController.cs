@@ -9,8 +9,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Favorite")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class FavoriteController(
         IMapper mapper,
         IDataRepository<Favorite, (int, int)> manager,

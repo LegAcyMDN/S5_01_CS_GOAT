@@ -10,8 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/RandomTransaction")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class RandomTransactionController(
         IMapper mapper,
         IDataRepository<RandomTransaction, int> manager,

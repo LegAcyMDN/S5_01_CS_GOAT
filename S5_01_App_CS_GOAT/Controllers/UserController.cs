@@ -11,8 +11,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/User")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     [SetThreadPrincipal]
     public class UserController(
         IUserRepository manager,
@@ -26,10 +24,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all UserDetailDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
+            AuthResult authResult = JwtService.JwtAuth(configuration);
+            if (!authResult.IsAuthenticated)
+                return Unauthorized();
+            if (!authResult.IsAdmin)
+                return Forbid();
+
             IEnumerable<User> users = await manager.GetAllAsync();
             IEnumerable<UserDTO> dtos = mapper.Map<IEnumerable<UserDTO>>(users);
             return Ok(dtos);
@@ -88,25 +91,22 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Update user details
         /// </summary>
-        /// <param name="id">The ID of the user to update</param>
         /// <param name="userDTO">The updated user data</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("update/{id}")]
+        [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDTO userDTO)
+        public async Task<IActionResult> Update([FromBody] UpdateUserDTO userDTO)
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
-            if (auth.AuthUserId != id)
-                return Forbid();
 
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User? existing = await manager.GetByIdAsync(id);
+            User? existing = await manager.GetByIdAsync((int)auth.AuthUserId);
             if (existing == null)
                 return NotFound();
 
@@ -148,7 +148,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> Recall([FromBody] RememberDTO rememberDTO)
+        public async Task<IActionResult> Recall([FromBody] TokenDTO rememberDTO)
         {
             User? user = await manager.Recall(rememberDTO);
             if (user == null) return Unauthorized();

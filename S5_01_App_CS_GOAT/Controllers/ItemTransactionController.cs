@@ -11,8 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
     [Route("api/itemTransaction")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class ItemTransactionController(
        IMapper mapper,
        IDataRepository<ItemTransaction, int> manager,
@@ -27,7 +26,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <param name="sorts">Optional sort parameters</param>
         /// <returns>List of all PromoCode objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()

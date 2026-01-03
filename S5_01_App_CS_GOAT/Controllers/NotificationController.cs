@@ -10,8 +10,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Notification")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class NotificationController(
         IMapper mapper,
         IDataRepository<Notification, int> manager,
@@ -25,7 +24,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>List of all NotificationDTO objects</returns>
         [HttpGet("all")]
-        [Admin]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
@@ -35,6 +33,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
+            
             IEnumerable<Notification> notifications = await manager.GetAllAsync();
             if (!notifications.Any())
                 return NotFound();

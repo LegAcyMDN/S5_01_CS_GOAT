@@ -9,8 +9,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/PriceHistory")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     public class PriceHistoryController(
         IReadableRepository<Wear, int> wearManager,
        IReadableRepository<PriceHistory,int> manager,

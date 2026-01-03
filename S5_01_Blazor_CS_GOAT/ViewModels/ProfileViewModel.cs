@@ -221,7 +221,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     NewPassword = null
                 };
 
-                var response = await _httpClient.PatchAsJsonAsync($"User/update/{userId}", profileUpdate);
+                var response = await _httpClient.PatchAsJsonAsync($"User/update", profileUpdate);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -303,7 +303,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.PatchAsJsonAsync($"User/update/{userId}", PasswordModel);
+                var response = await _httpClient.PatchAsJsonAsync($"User/update", PasswordModel);
 
                 if (response.IsSuccessStatusCode)
                 {

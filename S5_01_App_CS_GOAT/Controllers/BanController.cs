@@ -11,8 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/Ban")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
+    [SetThreadPrincipal]
     public class BanController(
         IMapper mapper,
         IDataRepository<Ban, int> manager,

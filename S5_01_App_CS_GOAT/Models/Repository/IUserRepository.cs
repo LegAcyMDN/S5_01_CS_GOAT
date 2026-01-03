@@ -16,7 +16,7 @@ public interface IUserRepository : IDataRepository<User, int>
 
     Task<User?> Login(LoginDTO loginDTO);
 
-    Task<User?> Recall(RememberDTO rememberDTO);
+    Task<User?> Recall(TokenDTO rememberDTO);
 
     Task<User?> GetByIdentifier(string identifier);
     Task<User?> GetByLogin(string login);

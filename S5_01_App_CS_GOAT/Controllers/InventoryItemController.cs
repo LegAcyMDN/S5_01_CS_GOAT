@@ -10,8 +10,6 @@ namespace S5_01_App_CS_GOAT.Controllers
 {
     [Route("api/InventoryItem")]
     [ApiController]
-    [Authorize]
-    [AllowAnonymous]
     [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
