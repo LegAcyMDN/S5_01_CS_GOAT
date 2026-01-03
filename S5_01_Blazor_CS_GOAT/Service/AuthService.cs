@@ -12,6 +12,8 @@ namespace S5_01_Blazor_CS_GOAT.Service
 
         private User? _currentUser;
         public User? CurrentUser => _currentUser;
+        
+        public event EventHandler? UserDataChanged;
 
         public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
         {
@@ -197,7 +199,15 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
                 var response = await _httpClient.GetAsync($"user/details/{userId}");
                 if (response.IsSuccessStatusCode)
                 {
+                    var oldWallet = _currentUser?.Wallet ?? 0;
                     _currentUser = await response.Content.ReadFromJsonAsync<User>();
+                    
+                    // Notify subscribers of changes
+                    if (_currentUser != null && _currentUser.Wallet != oldWallet)
+                    {
+                        Console.WriteLine($"💰 Wallet changed: {oldWallet} → {_currentUser.Wallet}");
+                        UserDataChanged?.Invoke(this, EventArgs.Empty);
+                    }
                 }
                 else
                 {
@@ -208,6 +218,10 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
             {
                 _currentUser = null;
             }
+        }
+        public void NotifyUserDataChanged()
+        {
+            UserDataChanged?.Invoke(this, EventArgs.Empty);
         }
         
         public async Task InitializeAsync()

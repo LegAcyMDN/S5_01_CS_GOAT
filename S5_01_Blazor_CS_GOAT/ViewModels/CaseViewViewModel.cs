@@ -232,9 +232,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     WonSkins.Add(caseList[72]);
                 }
             }
-    
+            
+            
+            
             ShowPopup = true;
             JustBoughtCase = false; // Hide the rollers
+            
         }
 
         /// <summary>
@@ -266,13 +269,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             };
             
             string jwtToken = await _authService.GetTokenAsync();
+            MultipleCaseResultDTO casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
+    
+            // Refresh wallet
+            await _authService.LoadCurrentUserAsync();
+    
+            // This will trigger the event and update the menu!
+            _authService.NotifyUserDataChanged();
 
-                MultipleCaseResultDTO? casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
-                return casesReturn;
-            
+            return casesReturn;
 
-
-            
         }
 
         private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(MultipleCaseResultDTO multipleCaseResults)

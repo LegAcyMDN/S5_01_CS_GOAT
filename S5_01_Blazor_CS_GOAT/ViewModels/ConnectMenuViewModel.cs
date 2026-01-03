@@ -12,12 +12,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private readonly AuthService _authService;
         private readonly NavigationManager _navigation;
         private User? _currentUser;
-        private System.Threading.Timer? _timer;
 
         public ConnectMenuViewModel(AuthService authService, NavigationManager navigation)
         {
             _authService = authService;
             _navigation = navigation;
+        
+            // Subscribe to AuthService changes
+            _authService.UserDataChanged += OnUserDataChanged;
         }
 
         public User? CurrentUser
@@ -31,12 +33,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public override async Task InitializeAsync()
         {
             await UpdateUserStateAsync();
-            StartPeriodicUpdate();
         }
 
-        /// <summary>
-        /// Met à jour l'état de l'utilisateur
-        /// </summary>
+        private void OnUserDataChanged(object? sender, EventArgs e)
+        {
+            // Update immediately when AuthService changes
+            CurrentUser = _authService.CurrentUser;
+            Console.WriteLine($"🔄 Menu updated: Wallet = {CurrentUser?.Wallet}");
+        }
+
         public async Task UpdateUserStateAsync()
         {
             if (_authService.CurrentUser == null && await _authService.IsLoggedInAsync())
@@ -47,52 +52,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             CurrentUser = _authService.CurrentUser;
         }
 
-        /// <summary>
-        /// Démarre la mise à jour périodique de l'état de connexion
-        /// </summary>
-        private void StartPeriodicUpdate()
-        {
-            _timer = new System.Threading.Timer(async _ =>
-            {
-                await UpdateUserStateAsync();
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-        }
-
-        /// <summary>
-        /// Navigation vers la page de login
-        /// </summary>
         public void NavigateToLogin()
         {
             _navigation.NavigateTo("/login");
         }
 
-        /// <summary>
-        /// Navigation vers la page du portefeuille
-        /// </summary>
         public void NavigateToWallet()
         {
             _navigation.NavigateTo("/wallet");
         }
 
-        /// <summary>
-        /// Navigation vers la page du profil
-        /// </summary>
         public void NavigateToProfile()
         {
             _navigation.NavigateTo("/profile");
         }
 
-        /// <summary>
-        /// Navigation vers le panneau d'administration
-        /// </summary>
         public void NavigateToAdmin()
         {
             _navigation.NavigateTo("/admin");
         }
 
-        /// <summary>
-        /// Déconnexion de l'utilisateur
-        /// </summary>
         public async Task HandleLogoutAsync()
         {
             await _authService.LogoutAsync();
@@ -100,12 +79,10 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             _navigation.NavigateTo("/", forceLoad: true);
         }
 
-        /// <summary>
-        /// Dispose des ressources
-        /// </summary>
         public void Dispose()
         {
-            _timer?.Dispose();
+            // Unsubscribe when disposed
+            _authService.UserDataChanged -= OnUserDataChanged;
         }
     }
 }

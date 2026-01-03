@@ -1,3 +1,11 @@
 .inputLimit {
 	background-color: #2a2836;
 }
+
+.add-funds-button {
+	color: darkgreen;
+}
+
+.withdraw-funds-button {
+	color: limegreen;
+}
