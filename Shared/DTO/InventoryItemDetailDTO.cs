@@ -23,4 +23,6 @@ public class InventoryItemDetailDTO
     public string RarityColor { get; set; } = null!; // return has an hexadecimal color
 
     public string RarityName { get; set;} = null!; // name of the rarity return by the rarity color
+
+    public double LastPrice { get; set; }
 }

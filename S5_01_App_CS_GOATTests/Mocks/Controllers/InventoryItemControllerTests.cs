@@ -1,20 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using AutoMapper;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
+using S5_01_App_CS_GOAT.Mapper;
+using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -23,6 +26,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     {
         private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<InventoryItem, int>>? inventoryItemRepositoryMock;
+        private Mock<ISellingService>? sellingServiceMock;
         private Mock<IConfiguration>? configurationMock;
         private InventoryItemController? controller;
 
@@ -39,6 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             mapperMock = new Mock<IMapper>();
             inventoryItemRepositoryMock = new Mock<IDataRepository<InventoryItem, int>>();
+            sellingServiceMock = new Mock<ISellingService>();
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();
@@ -51,6 +56,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             controller = new InventoryItemController(
                 inventoryItemRepositoryMock.Object,
+                sellingServiceMock.Object,
                 mapperMock.Object,
                 configurationMock.Object
             );
@@ -81,9 +87,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             inventoryItemRepositoryMock.Setup(r => r.GetAllAsync(
-                null,
-                "Wear",
-                "Wear.Skin.Rarity"
+                i => i.RemovedOn == null, "Wear.Skin.Rarity"
                 )).ReturnsAsync(inventoryItems);
 
             // When
@@ -92,9 +96,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             inventoryItemRepositoryMock.Verify(r => r.GetAllAsync(
-                null,
-                "Wear",
-                "Wear.Skin.Rarity"
+                i => i.RemovedOn == null, "Wear.Skin.Rarity"
                 ), Times.Once);
         }
 
@@ -122,9 +124,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             
             inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(
                 inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             ))
                                        .ReturnsAsync(inventoryItem);
@@ -137,9 +138,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             ), Times.Once);
         }
@@ -152,9 +152,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int inventoryItemId = 999;
             
             inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             )).ReturnsAsync((InventoryItem?)null);
 
@@ -164,9 +163,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
             inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             ), Times.Once);
         }
@@ -179,9 +177,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int inventoryItemId = 2;
             
             inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             )).ReturnsAsync(otherUserInventoryItem);
 
@@ -191,9 +188,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
             inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity",
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             ), Times.Once);
         }
@@ -325,16 +321,17 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             
             inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId))
                                        .ReturnsAsync(inventoryItem);
-            inventoryItemRepositoryMock.Setup(r => r.UpdateAsync(inventoryItem, inventoryItem))
-                                       .Returns(Task.CompletedTask);
+            sellingServiceMock.Setup(r => r.Sell(inventoryItemId))
+                                        .ReturnsAsync(StatusCodes.Status204NoContent);
 
             // When
             IActionResult? result = controller.Sell(inventoryItemId).GetAwaiter().GetResult();
 
             // Then
-            Assert.IsInstanceOfType(result, typeof(NoContentResult));
+            Assert.IsInstanceOfType(result, typeof(StatusCodeResult));
+            Assert.AreEqual(((StatusCodeResult)result).StatusCode, 204);
             inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
-            inventoryItemRepositoryMock.Verify(r => r.UpdateAsync(inventoryItem, inventoryItem), Times.Once);
+            sellingServiceMock.Verify(r => r.Sell(inventoryItemId), Times.Once);
         }
 
         [TestMethod]

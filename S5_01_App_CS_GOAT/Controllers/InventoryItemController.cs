@@ -13,6 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
+        ISellingService sellingService,
         IMapper mapper,
         IConfiguration configuration
         ) : ControllerBase
@@ -29,15 +30,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<InventoryItem> inventoryItems = await manager.GetAllAsync(
-                null, "Wear", "Wear.Skin.Rarity"
-            );
-
-            inventoryItems = inventoryItems.Where(item => item.UserId == authResult.AuthUserId && item.RemovedOn == null);
-
-            IEnumerable<InventoryItemDTO> inventory = inventoryItems
-                .Select(item => mapper.Map<InventoryItemDTO>(item));
-            
+            IEnumerable<InventoryItem> inventoryItems = await authResult.GetByUser(
+                manager, false, i => i.RemovedOn == null, "Wear.Skin.Rarity");
+            IEnumerable<InventoryItemDTO> inventory = mapper.Map< IEnumerable<InventoryItemDTO>>(inventoryItems);
             return Ok(inventory);
         }
 
@@ -56,9 +51,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             InventoryItem? item = await manager.GetByIdAsync(inventoryItemId,
-                "Wear.WearType",
+                "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity", 
-                "Wear.Skin.Item",
                 "Wear.Skin.Item.ItemType"
             );
             if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
@@ -122,7 +116,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
 
-            throw new NotImplementedException();
+            int responseCode = await sellingService.Sell(inventoryItemId);
+            return StatusCode(responseCode);
         }
     }
 }

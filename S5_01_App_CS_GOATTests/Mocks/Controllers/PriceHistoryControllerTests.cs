@@ -71,7 +71,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, "WearType.PriceHistories"))
                                   .ReturnsAsync(wear);
-            priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30))
+            priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30, false))
                                       .ReturnsAsync(priceHistories);
             mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
                       .Returns(priceHistoryDTOs);
@@ -81,7 +81,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            priceHistoryRepositoryMock.Verify(r => r.PredictWithAI(wear, It.IsAny<int>()), Times.Once);
+            priceHistoryRepositoryMock.Verify(r => r.PredictWithAI(wear, It.IsAny<int>(), false), Times.Once);
         }
 
         [TestMethod]

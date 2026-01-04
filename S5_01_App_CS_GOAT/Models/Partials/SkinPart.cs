@@ -2,6 +2,18 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Skin
     {
+        public IEnumerable<PriceHistory> Prices(bool allowGuess = false)
+        {
+            IEnumerable<PriceHistory> histories = new List<PriceHistory>();
+            foreach (Wear wear in this.Wears)
+            {
+                PriceHistory? lastPrice = wear.LastPrice(allowGuess);
+                if (lastPrice != null) histories.Append(lastPrice);
+            }
+            return histories;
+        }
+
+
         public Wear GetClosestWear(float floatValue)
         {
             Wear? closestWear = null;

@@ -4,9 +4,19 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Wear
     {
-        public IEnumerable<PriceHistory> PriceHistories()
+        public IEnumerable<PriceHistory> PriceHistories(bool allowGuess = false)
         {
-            return this.WearType.PriceHistories.Where(p => p.SkinId == this.SkinId);
+            IEnumerable<PriceHistory> histories = new List<PriceHistory>();
+            histories = this.WearType.PriceHistories.Where(p => p.SkinId == this.SkinId);
+            if (!allowGuess) histories = histories.Where(p => p.GuessDate == null);
+            return histories;
+        }
+
+        public PriceHistory? LastPrice(bool allowGuess = false)
+        {
+            return this.PriceHistories(allowGuess)
+                       .OrderByDescending(p => p.PriceDate)
+                       .FirstOrDefault();
         }
 
         public async Task<byte[]?[]> GetTexture()

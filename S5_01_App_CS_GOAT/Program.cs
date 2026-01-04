@@ -78,7 +78,8 @@ builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>
 builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, PromoCode, int>>();
 
 // Overseer services
-builder.Services.AddScoped<CaseOpenningService>();
+builder.Services.AddScoped<ICaseOpenningService, CaseOpenningService>();
+builder.Services.AddScoped<ISellingService, SellingService>();
 
 string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
 if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");

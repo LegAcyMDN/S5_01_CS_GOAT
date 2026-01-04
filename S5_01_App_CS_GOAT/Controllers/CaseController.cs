@@ -16,7 +16,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         IMapper mapper,
         IReadableRepository<Case, int> manager,
         IDataRepository<Favorite, (int,int)> favoriteManager,
-        CaseOpenningService caseOpenningService,
+        ICaseOpenningService caseOpenningService,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>

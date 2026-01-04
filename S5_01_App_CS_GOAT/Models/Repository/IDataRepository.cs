@@ -25,3 +25,10 @@ public interface IWriteRepository<TEntity>
 public interface IDataRepository<TEntity, TIdentifier>
     : IReadableRepository<TEntity, TIdentifier>, IWriteRepository<TEntity>
 {}
+
+public interface ITypeRepository<TEntity> :
+    IReadableRepository<TEntity, int>
+    where TEntity : class
+{
+    Task<TEntity?> GetTypeByNameAsync(string typeName);
+}

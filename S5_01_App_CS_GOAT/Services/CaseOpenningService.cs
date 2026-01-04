@@ -8,7 +8,7 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Services
 {
-    public class CaseOpenningService
+    public class CaseOpenningService : ICaseOpenningService
     {
         protected readonly CSGOATDbContext _context;
         protected readonly IMapper _mapper;
