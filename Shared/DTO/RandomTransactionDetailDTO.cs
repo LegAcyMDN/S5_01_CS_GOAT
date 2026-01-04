@@ -2,6 +2,8 @@
 {
     public class RandomTransactionDetailDTO
     {
+        public int TransactionId { get; set; }
+
         public int InventoryItemId { get; set; }
 
         public DateTime TransactionDate { get; set; }

@@ -30,6 +30,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
+
             IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsync();
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
             return Ok(transactionsDTO);
@@ -56,7 +57,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Get RandomTransaction details by ID
         /// </summary>
         /// <param name="id">The ID of the transaction</param>
-        /// <returns>RandomTransactionDTO object</returns>
+        /// <returns>RandomTransactionDetailDTO object</returns>
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -66,9 +67,13 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            RandomTransaction? result = await manager.GetByIdAsync(id);
+            RandomTransaction? result = await manager.GetByIdAsync(id,
+                "Case",
+                "InventoryItem.Wear.WearType",
+                "InventoryItem.Wear.Skin.Rarity",
+                "InventoryItem.Wear.Skin.Item.ItemType");
             if (result == null) return NotFound();
-            return Ok(mapper.Map<RandomTransactionDTO>(result));
+            return Ok(mapper.Map<RandomTransactionDetailDTO>(result));
         }
 
         /// <summary>
@@ -80,7 +85,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> LiveFeed(int count)
         {
-
             throw new NotImplementedException();
         }
     }
