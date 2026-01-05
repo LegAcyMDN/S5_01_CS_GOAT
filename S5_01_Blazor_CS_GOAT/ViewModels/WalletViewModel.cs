@@ -140,6 +140,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 return;
             }
 
+            if (string.IsNullOrEmpty(Type) || Type == "Aucune")
+            {
+                Console.WriteLine("Sélectionne un type avant de sauvegarder.");
+                return;
+            }
+
             if (string.IsNullOrEmpty(Period) || Period == "Aucune")
             {
                 Console.WriteLine("Sélectionne une période avant de sauvegarder.");
@@ -147,15 +153,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
 
             var limitTypeName = $"{Type} {Period}";
-
-            var found = Limits.FirstOrDefault(l => l.LimitType != null && l.LimitType.LimitTypeName == limitTypeName);
-            if (found == null)
-            {
-                Console.WriteLine($"Limite introuvable pour {limitTypeName}");
-                return;
-            }
-
-            var limitTypeId = found.LimitTypeId;
 
             var token = await _authService.GetTokenAsync();
             if (string.IsNullOrEmpty(token))
@@ -168,7 +165,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
             var payload = new { LimitAmount = Amount, LimitTypeName = limitTypeName };
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"limit/update/{limitTypeId}")
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"Limit/update")
             {
                 Content = JsonContent.Create(payload)
             };
