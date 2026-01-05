@@ -87,10 +87,8 @@
                 @foreach (var l in ViewModel.Limits)
                 {
                     <li>
-                        <strong>@(l.LimitType?.LimitTypeName ?? "(sans type)")</strong>
-                        — Montant : @(l.LimitAmount.HasValue ? l.LimitAmount.Value.ToString() : "null")
-                        — TypeId: @l.LimitTypeId
-                        — UserId: @l.UserId
+                        <strong>@(l.LimitTypeName ?? "(sans type)")</strong>
+                        — Montant : @(l.LimitAmount.ToString() ?? "null")
                     </li>
                 }
             </ul>
