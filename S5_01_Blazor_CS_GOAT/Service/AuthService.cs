@@ -199,13 +199,12 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
                 var response = await _httpClient.GetAsync($"user/details/{userId}");
                 if (response.IsSuccessStatusCode)
                 {
-                    var oldWallet = _currentUser?.Wallet ?? 0;
                     _currentUser = await response.Content.ReadFromJsonAsync<User>();
                     
                     // Notify subscribers of changes
-                    if (_currentUser != null && _currentUser.Wallet != oldWallet)
+                    if (_currentUser != null)
                     {
-                        Console.WriteLine($"💰 Wallet changed: {oldWallet} → {_currentUser.Wallet}");
+                        Console.WriteLine($"User data loaded: {_currentUser.DisplayName}");
                         UserDataChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
@@ -219,6 +218,7 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
                 _currentUser = null;
             }
         }
+
         public void NotifyUserDataChanged()
         {
             UserDataChanged?.Invoke(this, EventArgs.Empty);

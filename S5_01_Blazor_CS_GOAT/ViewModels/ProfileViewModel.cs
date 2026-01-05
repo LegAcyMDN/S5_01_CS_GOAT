@@ -231,7 +231,10 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                         SuccessMessage += " Le 2FA a été modifié.";
                     }
                     UpdateModel.OldPassword = null;
+                    
+                    // Recharger les données utilisateur pour mettre à jour le menu et la page
                     await LoadUserProfileAsync();
+                    await _authService.LoadCurrentUserAsync();
                 }
                 else
                 {
