@@ -293,11 +293,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 
-                var response = await _httpClient.GetAsync("User");
+                var response = await _httpClient.GetAsync("User/all");
                 if (response.IsSuccessStatusCode)
                 {
                     AllUsers = await response.Content.ReadFromJsonAsync<List<User>>();
                     TotalUsers = AllUsers?.Count ?? 0;
+                }
+                else
+                {
+                    ErrorMessage = $"Erreur lors du chargement des utilisateurs : {response.StatusCode}";
                 }
             }
             catch (Exception ex)
