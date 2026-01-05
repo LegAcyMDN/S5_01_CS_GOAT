@@ -16,8 +16,8 @@ namespace S5_01_App_CS_GOAT.Models.Repository
 
     public interface ISellingService
     {
-        Task<int> Sell(int invItemId);
+        Task<int> SellAsync(int invItemId);
 
-        Task<int> Sell(InventoryItem invItem);
+        Task<int> SellAsync(InventoryItem invItem);
     }
 }

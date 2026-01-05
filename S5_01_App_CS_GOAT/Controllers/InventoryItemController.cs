@@ -116,7 +116,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
 
-            int responseCode = await sellingService.Sell(inventoryItemId);
+            int responseCode = await sellingService.SellAsync(inventoryItemId);
             return StatusCode(responseCode);
         }
     }

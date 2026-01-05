@@ -321,7 +321,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             
             inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId))
                                        .ReturnsAsync(inventoryItem);
-            sellingServiceMock.Setup(r => r.Sell(inventoryItemId))
+            sellingServiceMock.Setup(r => r.SellAsync(inventoryItemId))
                                         .ReturnsAsync(StatusCodes.Status204NoContent);
 
             // When
@@ -331,7 +331,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(StatusCodeResult));
             Assert.AreEqual(((StatusCodeResult)result).StatusCode, 204);
             inventoryItemRepositoryMock.Verify(r => r.GetByIdAsync(inventoryItemId), Times.Once);
-            sellingServiceMock.Verify(r => r.Sell(inventoryItemId), Times.Once);
+            sellingServiceMock.Verify(r => r.SellAsync(inventoryItemId), Times.Once);
         }
 
         [TestMethod]
