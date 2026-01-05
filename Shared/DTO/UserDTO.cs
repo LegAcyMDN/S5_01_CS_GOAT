@@ -26,6 +26,8 @@ public class UserDTO
 
     public string Seed { get; set; } = null!; // seed of the user for the fair random
 
+    public int Nonce { get; set; } // nonce for the fair random
+
     public double Wallet { get; set; }
 
     public bool IsSteamLogin { get; set; } // has the user link is account steam
