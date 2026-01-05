@@ -367,3 +367,5 @@ FodyWeavers.xsd
 **/appsettings.*.json
 /S5_01_App_CS_GOAT/Controllers/UpgradeResultController.cs
 *.env
+/S5_01_Blazor_CS_GOAT/CaseView.razor.cs
+/stripe.exe

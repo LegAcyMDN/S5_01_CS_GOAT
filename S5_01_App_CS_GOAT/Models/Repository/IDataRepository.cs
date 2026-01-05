@@ -30,5 +30,5 @@ public interface ITypeRepository<TEntity> :
     IReadableRepository<TEntity, int>
     where TEntity : class
 {
-    Task<TEntity?> GetTypeByNameAsync(string typeName);
+    TEntity? GetTypeByName(string typeName);
 }

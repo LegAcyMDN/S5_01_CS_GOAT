@@ -31,15 +31,15 @@ namespace S5_01_App_CS_GOAT.Services
             _itemTransactionRepository = itemTransactionRepository;
         }
 
-        public async Task<int> Sell(int invItemId)
+        public async Task<int> SellAsync(int invItemId)
         {
             InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsync(
                 invItemId, "User", "Wear.WearType.PriceHistories");
             if (invItem == null) return StatusCodes.Status404NotFound;
-            return await this.Sell(invItem);
+            return await this.SellAsync(invItem);
         }
 
-        public async Task<int> Sell(InventoryItem invItem)
+        public async Task<int> SellAsync(InventoryItem invItem)
         {
             // TODO: Check if the user is not restricted by a ban
             // return StatusCodes.Status403Forbidden;

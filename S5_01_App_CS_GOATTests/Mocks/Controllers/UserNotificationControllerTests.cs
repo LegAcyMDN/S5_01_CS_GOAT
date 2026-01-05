@@ -63,8 +63,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_AsAdmin_ValidNotification_ReturnsCreatedAtRoute()
         {
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName))
-                                           .ReturnsAsync(notificationType);
+            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+                                           .Returns(notificationType);
             mapperMock.Setup(m => m.Map<UserNotification>(notificationDTO))
                        .Returns(userNotification);
             notificationRepositoryMock.Setup(r => r.AddAsync(userNotification))
@@ -112,15 +112,15 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_InvalidNotificationType_ReturnsBadRequest()
         {
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName))
-                                           .ReturnsAsync((NotificationType?)null);
+            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+                                           .Returns((NotificationType?)null);
 
             // When
             IActionResult? result = controller.Create(notificationDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName), Times.Once);
+            notificationTypeRepositoryMock.Verify(r => r.GetTypeByName(notificationDTO.NotificationTypeName), Times.Once);
             notificationRepositoryMock.Verify(r => r.AddAsync(userNotification), Times.Never);
         }
 

@@ -16,10 +16,10 @@ public class TypeRepository<TEntity> :
         _context = context;
     }
 
-    public async Task<TEntity?> GetTypeByNameAsync(string typeName)
+    public TEntity? GetTypeByName(string typeName)
     {
-        return await _context.Set<TEntity>()
+        return _context.Set<TEntity>().ToList()
             .Where(t => t.TypeName == typeName)
-            .FirstOrDefaultAsync();
+            .FirstOrDefault();
     }
 }

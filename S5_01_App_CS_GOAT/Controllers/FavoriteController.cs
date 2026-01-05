@@ -13,30 +13,35 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class FavoriteController(
         IMapper mapper,
         IDataRepository<Favorite, (int, int)> manager,
+        IReadableRepository<Case, int> caseRepository,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
         /// Create a new favorite
         /// </summary>
-        /// <param name="favorite">The Favorite object to create</param>
+        /// <param name="caseId">The case id to make a favorite for</param>
         /// <returns>The created Favorite object</returns>
-        [HttpPost("create")]
+        [HttpPost("create/{caseId}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] Favorite favorite)
+        public async Task<IActionResult> Create(int caseId)
         {
+            Case? targetCase = await caseRepository.GetByIdAsync(caseId);
+            if (targetCase == null)
+                return NotFound();
+
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            
-            if (favorite.UserId != authResult.AuthUserId)
-                return Forbid();
+            Favorite favorite = new Favorite
+            {
+                CaseId = caseId,
+                UserId = authResult.AuthUserId!.Value
+            };
 
             await manager.AddAsync(favorite);
-            return CreatedAtAction(null, new { id = favorite.UserId, favorite.CaseId }, favorite);
+            return CreatedAtAction(null, new { id = favorite.UserId, favorite.CaseId });
         }
 
         /// <summary>

@@ -64,8 +64,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 configurationMock.Object
             );
 
-            limitTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(limitType.LimitTypeName))
-                               .ReturnsAsync(limitType);
+            limitTypeRepositoryMock.Setup(r => r.GetTypeByName(limitType.LimitTypeName))
+                               .Returns(limitType);
         }
 
         [TestCleanup]
