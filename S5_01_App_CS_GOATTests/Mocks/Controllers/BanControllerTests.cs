@@ -132,8 +132,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_ValidBan_ReturnsCreatedAtAction()
         {
             JwtService.AuthentifyController(controller, admin);
-            banTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(banDTO.BanTypeName))
-                                   .ReturnsAsync(banType);
+            banTypeRepositoryMock.Setup(r => r.GetTypeByName(banDTO.BanTypeName))
+                                   .Returns(banType);
             mapperMock.Setup(m => m.Map<Ban>(banDTO)).Returns(ban);
             banRepositoryMock.Setup(r => r.AddAsync(ban)).ReturnsAsync(ban);
             mapperMock.Setup(m => m.Map<BanDTO>(ban)).Returns(banDTO);
@@ -165,15 +165,15 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_InvalidBanType_ReturnsBadRequest()
         {
             JwtService.AuthentifyController(controller, admin);
-            banTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(banDTO.BanTypeName))
-                                   .ReturnsAsync((BanType?)null);
+            banTypeRepositoryMock.Setup(r => r.GetTypeByName(banDTO.BanTypeName))
+                                   .Returns((BanType?)null);
 
             // When
             IActionResult? result = controller.Create(banDTO).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            banTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(banDTO.BanTypeName), Times.Once);
+            banTypeRepositoryMock.Verify(r => r.GetTypeByName(banDTO.BanTypeName), Times.Once);
             banRepositoryMock.Verify(r => r.AddAsync(ban), Times.Never);
         }
 

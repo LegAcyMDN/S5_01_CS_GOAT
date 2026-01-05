@@ -74,7 +74,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            BanType? banType = await typeManager.GetTypeByNameAsync(banDTO.BanTypeName);
+            BanType? banType = typeManager.GetTypeByName(banDTO.BanTypeName);
             if (banType == null)
                 return BadRequest($"Invalid ban type: {banDTO.BanTypeName}");
 

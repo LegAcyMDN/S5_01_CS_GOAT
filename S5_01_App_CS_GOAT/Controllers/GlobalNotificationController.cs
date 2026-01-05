@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return BadRequest(ModelState);
 
 
-            NotificationType? notificationType = await typeManager.GetTypeByNameAsync(notificationDTO.NotificationTypeName);
+            NotificationType? notificationType = typeManager.GetTypeByName(notificationDTO.NotificationTypeName);
             if (notificationType == null)
                 return BadRequest($"Invalid notification type: {notificationDTO.NotificationTypeName}");
 

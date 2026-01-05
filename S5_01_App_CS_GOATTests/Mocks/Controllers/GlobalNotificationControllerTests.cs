@@ -64,8 +64,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName))
-                                          .ReturnsAsync(notificationType);
+            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+                                          .Returns(notificationType);
             mapperMock.Setup(m => m.Map<GlobalNotification>(notificationDTO))
                       .Returns(globalNotification);
             globalNotificationRepositoryMock.Setup(r => r.AddAsync(globalNotification))
@@ -92,7 +92,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName), Times.Never);
+            notificationTypeRepositoryMock.Verify(r => r.GetTypeByName(notificationDTO.NotificationTypeName), Times.Never);
             globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
@@ -104,7 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName), Times.Never);
+            notificationTypeRepositoryMock.Verify(r => r.GetTypeByName(notificationDTO.NotificationTypeName), Times.Never);
             globalNotificationRepositoryMock.Verify(r => r.AddAsync(globalNotification), Times.Never);
         }
 
@@ -128,8 +128,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByNameAsync(notificationDTO.NotificationTypeName))
-                                          .ReturnsAsync((NotificationType?)null);
+            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+                                          .Returns((NotificationType?)null);
 
             // When
             IActionResult? result = controller.Create(notificationDTO).GetAwaiter().GetResult();

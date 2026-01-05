@@ -22,6 +22,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     {
         private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<Favorite, (int, int)>>? favoriteRepositoryMock;
+        private Mock<IReadableRepository<Case, int>>? caseRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private FavoriteController? controller;
 
@@ -35,6 +36,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             mapperMock = new Mock<IMapper>();
             favoriteRepositoryMock = new Mock<IDataRepository<Favorite, (int, int)>>();
+            caseRepositoryMock = new Mock<IReadableRepository<Case, int>>();
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();
@@ -44,6 +46,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             controller = new FavoriteController(
                 mapperMock.Object,
                 favoriteRepositoryMock.Object,
+                caseRepositoryMock.Object,
                 configurationMock.Object
             );
         }
@@ -59,8 +62,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Create_Unauthenticated_ReturnsUnauthorized()
         {
+            // Given
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+                                  .ReturnsAsync(new Case { CaseId = favorite.CaseId });
+
             // When
-            IActionResult? result = controller.Create(favorite).GetAwaiter().GetResult();
+            IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
@@ -72,45 +79,36 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+                                  .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteRepositoryMock.Setup(r => r.AddAsync(favorite))
                                   .ReturnsAsync(favorite);
 
             // When
-            IActionResult? result = controller.Create(favorite).GetAwaiter().GetResult();
+            IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(CreatedAtActionResult));
-            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.PatchAsync(favorite, new Dictionary<string, object>()
+                {
+                { "UserId", normalUser.UserId },
+                { "CaseId", favorite.CaseId } }
+                ), Times.Never);
         }
 
         [TestMethod]
-        public void Create_InvalidModelState_ReturnsBadRequest()
+        public void Create_UnknownCase_ReturnsBadRequest()
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             controller.ModelState.AddModelError("UserId", "Required");
 
             // When
-            IActionResult? result = controller.Create(favorite).GetAwaiter().GetResult();
+            IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
 
             // Then
-            Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
             favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
-        }
-
-        [TestMethod]
-        public void Create_UserIdMismatch_ReturnsForbid()
-        {
-            // Given
-            JwtService.AuthentifyController(controller, normalUser);
-            Favorite otherUserFavorite = FavoriteFixture.GetOtherUserFavorite();
-
-            // When
-            IActionResult? result = controller.Create(otherUserFavorite).GetAwaiter().GetResult();
-
-            // Then
-            Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            favoriteRepositoryMock.Verify(r => r.AddAsync(otherUserFavorite), Times.Never);
         }
 
         #endregion

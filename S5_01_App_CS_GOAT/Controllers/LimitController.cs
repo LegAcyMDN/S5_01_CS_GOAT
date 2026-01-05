@@ -42,7 +42,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <param name="limitDto">The updated limit data</param>
         /// <returns>No content on success</returns>
-        [HttpPatch("update/{limitTypeId}")]
+        [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -55,7 +55,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             int userId = authResult.AuthUserId!.Value;
-            LimitType? limitType = await typeManager.GetTypeByNameAsync(limitDto.LimitTypeName);
+            LimitType? limitType = typeManager.GetTypeByName(limitDto.LimitTypeName);
             if (limitType == null)
                 return NotFound($"LimitType not found: {limitDto.LimitTypeName}");
 
