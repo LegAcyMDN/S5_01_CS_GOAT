@@ -11,6 +11,7 @@ public class InventoryItemDetailMapper : Profile
         // Entity -> DTO
         CreateMap<InventoryItem, InventoryItemDetailDTO>()
             .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
+            .ForMember(dest => dest.WearId, opt => opt.MapFrom(src => src.WearId))
             .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float))
             .ForMember(dest => dest.IsFavorite, opt => opt.MapFrom(src => src.IsFavorite))
             .ForMember(dest => dest.AcquiredOn, opt => opt.MapFrom(src => src.AcquiredOn))
@@ -21,6 +22,6 @@ public class InventoryItemDetailMapper : Profile
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Wear.Skin.Rarity.RarityName))
             .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemName))
             .ForMember(dest => dest.ItemTypeName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemType.ItemTypeName))
-            .ForMember(dest => dest.LastPrice, opt => opt.MapFrom(src => src.LastPrice(false)));
+            .ForMember(dest => dest.LastPrice, opt => opt.MapFrom(src => (src.LastPrice(false) != null? src.LastPrice(false)!.PriceValue: 0.0)));
     }
 }

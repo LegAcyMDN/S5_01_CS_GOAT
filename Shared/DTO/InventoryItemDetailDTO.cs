@@ -4,6 +4,8 @@ public class InventoryItemDetailDTO
 {
     public int InventoryItemId { get; set; }
 
+    public int WearId { get; set; }
+
     public float Float { get; set; } // indication for the the quality of the wearname
 
     public bool IsFavorite { get; set; }
