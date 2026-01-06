@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
-        ISellingService sellingService,
+        ISellingRepository sellingService,
         IMapper mapper,
         IConfiguration configuration
         ) : ControllerBase

@@ -3,7 +3,7 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Models.Repository
 {
-    public interface ICaseOpenningService
+    public interface ICaseOpenningRepository
     {
         Task<MultipleCaseResultDTO> OpenCaseAsync(
             CaseOpenningDTO caseOpenningDTO,
@@ -12,12 +12,5 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         Task<MultipleCaseResultDTO> OpenCaseAsync(
             CaseOpenningDTO caseOpenningDTO,
             User user);
-    }
-
-    public interface ISellingService
-    {
-        Task<int> SellAsync(int invItemId);
-
-        Task<int> SellAsync(InventoryItem invItem);
     }
 }

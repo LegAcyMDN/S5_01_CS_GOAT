@@ -111,6 +111,22 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
         }
 
+        public void Create_DuplicateFavorite_ReturnsConflict()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+                                  .ReturnsAsync(new Case { CaseId = favorite.CaseId });
+            favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, favorite.CaseId);
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
+                                  .ReturnsAsync(favorite);
+            // When
+            IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
+            // Then
+            Assert.IsInstanceOfType(result, typeof(ConflictResult));
+            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Once);
+        }
+
         #endregion
 
         #region Delete Tests
