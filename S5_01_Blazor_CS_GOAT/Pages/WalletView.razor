@@ -47,7 +47,8 @@
         <h2>Budget</h2>
         <label>
             Limite :
-            <select @bind="ViewModel.Type" class="inputLimit" name="type">
+            <select class="inputLimit" name="type" @onchange="(e) => ViewModel.SortLimit(ViewModel.Period, e.Value.ToString())">
+                <option value=""></option>
                 <option value="Dépôt">Dépôt</option>
                 <option value="Dépenses">Dépenses</option>
                 <option value="Ouvertures">Ouvertures</option>
@@ -57,7 +58,8 @@
         <br />
         <label>
             Période :
-            <select @bind="ViewModel.Period" class="inputLimit" name="period">
+            <select class="inputLimit" name="period" @onchange="(e) => ViewModel.SortLimit(e.Value.ToString(), ViewModel.Type)">
+                <option value=""></option>
                 <option value="Horaire">Horaire</option>
                 <option value="Quotidien">Quotidien</option>
                 <option value="Hebdomadaire">Hebdomadaire</option>
@@ -72,19 +74,19 @@
             <button class="inputLimit" @onclick="async () => await ViewModel.SaveLimitAsync()">Sauver</button>
         </label>
 
-        <h3>Limites chargées</h3>
-        @if (ViewModel.Limits == null)
+        <h3>Valeur Actuelle</h3>
+        @if (ViewModel.SortedLimits == null)
         {
-            <div>Aucune limite chargée</div>
+            <div>Aucune limite sélectionnée</div>
         }
-        else if (!ViewModel.Limits.Any())
+        else if (!ViewModel.SortedLimits.Any())
         {
             <div>Liste vide</div>
         }
         else
         {
             <ul>
-                @foreach (var l in ViewModel.Limits)
+                @foreach (var l in ViewModel.SortedLimits)
                 {
                     <li>
                         <strong>@(l.LimitTypeName ?? "(sans type)")</strong>

@@ -20,8 +20,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private User? _currentUser;
         private List<MoneyTransaction>? _transactionsList;
         private List<Limit>? _limits;
-        private string _type = "Aucune";
-        private string _period = "Aucune";
+        private List<Limit>? _sortedLimits;
+        private string _type = "";
+        private string _period = "";
         private double? _amount = null;
         private bool _isLoading = true;
 
@@ -57,6 +58,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _limits;
             set => SetProperty(ref _limits, value);
+        }
+
+        public List<Limit>? SortedLimits
+        {
+            get => _sortedLimits;
+            set => SetProperty(ref _sortedLimits, value);
         }
 
         public string Type
@@ -140,13 +147,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 return;
             }
 
-            if (string.IsNullOrEmpty(Type) || Type == "Aucune")
+            if (string.IsNullOrEmpty(Type))
             {
                 Console.WriteLine("Sélectionne un type avant de sauvegarder.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(Period) || Period == "Aucune")
+            if (string.IsNullOrEmpty(Period))
             {
                 Console.WriteLine("Sélectionne une période avant de sauvegarder.");
                 return;
@@ -175,6 +182,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 var jwtToken = await _authService.GetTokenAsync();
                 Limits = await _limitRepository.GetByUserAsync(jwtToken);
+                SortLimit(Period, Type);
             }
             else
             {
@@ -182,6 +190,49 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur sauvegarde limite: {err}");
             }
         }
+
+        /// <summary>
+        /// Affiche les limites correspondantes a la selection
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public List<Limit> SortLimit(string? period, string? type)
+        {
+            SortedLimits = new List<Limit>();
+            Period = period;
+            Type = type;
+
+            foreach (var l in Limits)
+            {
+                bool containPeriod = l.LimitTypeName.Contains(period);
+                bool containType = l.LimitTypeName.Contains(type);
+
+                if (!string.IsNullOrEmpty(Period) && !string.IsNullOrEmpty(Type))
+                {
+                    if (containPeriod && containType)
+                        SortedLimits.Add(l);
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(Period) && !string.IsNullOrEmpty(Type))
+                {
+                    if (containType)
+                        SortedLimits.Add(l);
+                    continue;
+                }
+
+                if (!string.IsNullOrEmpty(Period) && string.IsNullOrEmpty(Type))
+                {
+                    if (containPeriod)
+                        SortedLimits.Add(l);
+                    continue;
+                }
+
+                SortedLimits.Add(l);
+            }
+            return SortedLimits;
+        }
+
         public async Task AddFunds(double amount)
         {
             var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(amount);
