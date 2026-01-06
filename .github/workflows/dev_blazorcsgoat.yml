@@ -1,4 +1,4 @@
-name: Deploy Blazor to Azure with E2E Tests
+name: Build, Test, and Deploy Blazor to Azure
 
 on:
   push:
@@ -15,9 +15,8 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
-    permissions:
-      contents: read
+    name: Build Application
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -29,26 +28,103 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
 
-      - name: Build Blazor Project
+      - name: Build
         run: dotnet build ${{ env.BLAZOR_PROJECT_PATH }} -c Release --no-restore
 
-      - name: Publish Blazor Project
+      - name: Publish
         run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
 
-      - name: Upload artifact
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: blazor-app
-          path: ./publish
+          path: ./publish/wwwroot
+
+  test-local:
+    name: Run E2E Tests (Local)
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: blazor-app
+          path: ./wwwroot
+
+      - name: Restore test dependencies
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build test project
+        run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
+
+      - name: Install Playwright browsers
+        run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Serve Blazor WASM app
+        run: |
+          cd ./wwwroot
+          dotnet tool install --global dotnet-serve
+          dotnet serve -p 7030 &
+
+      - name: Wait for app to start
+        uses: nev7n/wait_for_response@v1
+        with:
+          url: 'http://localhost:7030'
+          responseCode: 200
+          timeout: 60000
+          interval: 2000
+
+      - name: Run E2E Tests
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed"
+        env:
+          TEST_ENVIRONMENT: Local
+        timeout-minutes: 15
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-local
+          path: '**/TestResults/*.trx'
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-local
+          path: '**/test-results/**'
+          retention-days: 7
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: E2E Test Results (Local)
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: true
 
   deploy:
-    runs-on: windows-latest
-    needs: build
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [build, test-local]
     environment:
       name: 'Production'
       url: ${{ env.AZURE_WEBAPP_URL }}
     steps:
-      - name: Download artifact
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: blazor-app
@@ -62,47 +138,10 @@ jobs:
           package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
 
-      - name: Wait for deployment to stabilize
-        run: |
-          Write-Host "⏳ Waiting 30 seconds for deployment..."
-          Start-Sleep -Seconds 30
-
-          Write-Host "🔍 Testing site availability..."
-          $url = "${{ env.AZURE_WEBAPP_URL }}"
-          $maxAttempts = 20
-          $attempt = 0
-          $success = $false
-
-          do {
-            $attempt++
-            Write-Host "Attempt $attempt/$maxAttempts..."
-            try {
-              $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-              if ($response.StatusCode -eq 200) {
-                Write-Host "✅ Site is responding!"
-                $success = $true
-                break
-              }
-            } catch {
-              Write-Host "⏳ Not ready yet: $($_.Exception.Message)"
-              if ($attempt -lt $maxAttempts) {
-                Start-Sleep -Seconds 15
-              }
-            }
-          } while ($attempt -lt $maxAttempts)
-
-          if (-not $success) {
-            Write-Host "❌ Site failed to become available after $maxAttempts attempts"
-            exit 1
-          }
-        shell: pwsh
-
-  test:
-    runs-on: windows-latest
+  test-azure:
+    name: Run E2E Tests (Azure)
+    runs-on: ubuntu-latest
     needs: deploy
-    permissions:
-      contents: read
-      checks: write
     steps:
       - uses: actions/checkout@v4
 
@@ -111,87 +150,46 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore test project dependencies
+      - name: Restore test dependencies
         run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
       - name: Build test project
         run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
 
-      - name: Ensure Playwright is installed
-        run: |
-          pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
-        shell: pwsh
+      - name: Install Playwright browsers
+        run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
-      - name: Verify site is accessible before tests
+      - name: Run E2E Tests against Azure
         run: |
-          $url = "${{ env.AZURE_WEBAPP_URL }}"
-          Write-Host "🔍 Final check: Verifying $url is accessible..."
-
-          try {
-            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-            Write-Host "✅ Site returned status: $($response.StatusCode)"
-          } catch {
-            Write-Host "❌ Site is not accessible: $($_.Exception.Message)"
-            exit 1
-          }
-        shell: pwsh
-
-      - name: Run Playwright E2E Tests
-        run: |
-          dotnet test ${{ env.TEST_PROJECT_PATH }} `
-            --configuration Release `
-            --no-build `
-            --logger "trx;LogFileName=test-results.trx" `
-            --logger "console;verbosity=detailed" `
-            -- MSTest.Parallelize.Workers=1
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed"
         env:
           TEST_ENVIRONMENT: Azure
-          BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
-        shell: pwsh
-        continue-on-error: false
         timeout-minutes: 15
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-azure
           path: '**/TestResults/*.trx'
 
-      - name: Upload Playwright traces (on failure)
+      - name: Upload Playwright traces
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-traces
+          name: playwright-traces-azure
           path: '**/test-results/**'
           retention-days: 7
 
-      - name: Publish Test Results
+      - name: Publish test report
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: E2E Test Results
+          name: E2E Test Results (Azure)
           path: '**/TestResults/*.trx'
           reporter: dotnet-trx
           fail-on-error: true
-
-  notify:
-    runs-on: windows-latest
-    needs: [build, deploy, test]
-    if: always()
-    steps:
-      - name: Check workflow status
-        run: |
-          if ("${{ needs.test.result }}" -eq "failure") {
-            Write-Host "❌ E2E Tests Failed!"
-            exit 1
-          } elseif ("${{ needs.deploy.result }}" -eq "failure") {
-            Write-Host "❌ Deployment Failed!"
-            exit 1
-          } elseif ("${{ needs.build.result }}" -eq "failure") {
-            Write-Host "❌ Build Failed!"
-            exit 1
-          } else {
-            Write-Host "✅ All stages completed successfully!"
-          }
-        shell: pwsh
