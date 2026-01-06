@@ -69,9 +69,9 @@ jobs:
 
       - name: Serve Blazor WASM app
         run: |
-        cd ./wwwroot
-        dotnet tool install --global dotnet-serve
-        dotnet serve -p 7030 &
+          cd ./wwwroot
+          dotnet tool install --global dotnet-serve
+          dotnet serve -p 7030 &
 
       - name: Wait for app to start
         uses: nev7n/wait_for_response@v1
