@@ -60,6 +60,35 @@ jobs:
           package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
 
+      - name: Wait for deployment to stabilize
+      run: |
+        Write-Host "Waiting 60 seconds for Azure deployment to stabilize..."
+        Start-Sleep -Seconds 60
+
+        Write-Host "Testing site availability..."
+        $url = "https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net"
+        $maxAttempts = 10
+        $attempt = 0
+
+        do {
+          $attempt++
+          try {
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
+            if ($response.StatusCode -eq 200) {
+              Write-Host "✅ Site is responding (attempt $attempt)"
+              break
+            }
+          } catch {
+            Write-Host "⏳ Site not ready yet (attempt $attempt/$maxAttempts)"
+            Start-Sleep -Seconds 10
+          }
+        } while ($attempt -lt $maxAttempts)
+
+        if ($attempt -eq $maxAttempts) {
+          Write-Host "⚠️ Site may not be fully ready, but continuing..."
+        }
+      shell: pwsh
+
   test:
     runs-on: windows-latest
     needs: deploy
