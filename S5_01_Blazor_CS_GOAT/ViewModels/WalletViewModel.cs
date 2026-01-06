@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components;
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Wallet - Gère le portefeuille et les limites
+    /// ViewModel pour la page Wallet - Gère le portefeuille
     /// </summary>
     public class WalletViewModel : ViewModelBase
     {
@@ -110,7 +110,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 if (!string.IsNullOrEmpty(jwtToken))
                 {
                     TransactionsList = await _moneyTransactionRepository.GetByUserAsync(jwtToken);
-                    Limits = await _limitRepository.GetByUserAsync(jwtToken);
                 }
             }
             catch (Exception ex)
@@ -134,103 +133,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
 
             CurrentUser = _authService.CurrentUser;
-        }
-
-        /// <summary>
-        /// Sauvegarde une limite de budget
-        /// </summary>
-        public async Task SaveLimitAsync()
-        {
-            if (Limits == null)
-            {
-                Console.WriteLine("Aucune limite chargée.");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(Type))
-            {
-                Console.WriteLine("Sélectionne un type avant de sauvegarder.");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(Period))
-            {
-                Console.WriteLine("Sélectionne une période avant de sauvegarder.");
-                return;
-            }
-
-            var limitTypeName = $"{Type} {Period}";
-
-            var token = await _authService.GetTokenAsync();
-            if (string.IsNullOrEmpty(token))
-            {
-                Console.WriteLine("Utilisateur non authentifié.");
-                return;
-            }
-
-            _httpClient.DefaultRequestHeaders.Authorization = 
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var payload = new { LimitAmount = Amount, LimitTypeName = limitTypeName };
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"Limit/update")
-            {
-                Content = JsonContent.Create(payload)
-            };
-
-            var resp = await _httpClient.SendAsync(request);
-            if (resp.IsSuccessStatusCode)
-            {
-                var jwtToken = await _authService.GetTokenAsync();
-                Limits = await _limitRepository.GetByUserAsync(jwtToken);
-                SortLimit(Period, Type);
-            }
-            else
-            {
-                var err = await resp.Content.ReadAsStringAsync();
-                Console.WriteLine($"Erreur sauvegarde limite: {err}");
-            }
-        }
-
-        /// <summary>
-        /// Affiche les limites correspondantes a la selection
-        /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
-        public List<Limit> SortLimit(string? period, string? type)
-        {
-            SortedLimits = new List<Limit>();
-            Period = period;
-            Type = type;
-
-            foreach (var l in Limits)
-            {
-                bool containPeriod = l.LimitTypeName.Contains(period);
-                bool containType = l.LimitTypeName.Contains(type);
-
-                if (!string.IsNullOrEmpty(Period) && !string.IsNullOrEmpty(Type))
-                {
-                    if (containPeriod && containType)
-                        SortedLimits.Add(l);
-                    continue;
-                }
-
-                if (string.IsNullOrEmpty(Period) && !string.IsNullOrEmpty(Type))
-                {
-                    if (containType)
-                        SortedLimits.Add(l);
-                    continue;
-                }
-
-                if (!string.IsNullOrEmpty(Period) && string.IsNullOrEmpty(Type))
-                {
-                    if (containPeriod)
-                        SortedLimits.Add(l);
-                    continue;
-                }
-
-                SortedLimits.Add(l);
-            }
-            return SortedLimits;
         }
 
         public async Task AddFunds(double amount)

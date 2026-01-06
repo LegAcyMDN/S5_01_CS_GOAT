@@ -47,6 +47,7 @@ builder.Services.AddScoped<ConnectMenuViewModel>();
 builder.Services.AddScoped<LiveFeedViewModel>();
 builder.Services.AddScoped<AuthOverlayViewModel>();
 builder.Services.AddScoped<AdminViewModel>();
+builder.Services.AddScoped<LimitsViewModel>();
 
 // Enregistrement des ViewModels pour les composants
 builder.Services.AddTransient<CaseComponentViewModel>();
