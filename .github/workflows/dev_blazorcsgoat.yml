@@ -70,7 +70,7 @@ jobs:
       - name: Serve Blazor WASM app
         run: |
           dotnet tool install --global dotnet-serve
-          nohup dotnet serve -d ./wwwroot -p 7030 --open-browser false > serve.log 2>&1 &
+          nohup dotnet serve -d ./wwwroot -p 7030 > serve.log 2>&1 &
           sleep 3
 
       - name: Check if server started
