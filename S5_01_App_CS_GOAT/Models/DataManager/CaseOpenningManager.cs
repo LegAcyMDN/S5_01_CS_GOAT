@@ -6,9 +6,9 @@ using S5_01_App_CS_GOAT.Mapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
-namespace S5_01_App_CS_GOAT.Services
+namespace S5_01_App_CS_GOAT.Models.DataManager
 {
-    public class CaseOpenningService : ICaseOpenningService
+    public class CaseOpenningManager : ICaseOpenningRepository
     {
         protected readonly CSGOATDbContext _context;
         protected readonly IMapper _mapper;
@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Services
         protected readonly IDataRepository<RandomTransaction, int> _randomTransactionRepository;
         protected readonly IUserRepository _userRepository;
 
-        public CaseOpenningService(
+        public CaseOpenningManager(
             CSGOATDbContext context,
             IMapper mapper,
             IReadableRepository<Case, int> caseRepository,

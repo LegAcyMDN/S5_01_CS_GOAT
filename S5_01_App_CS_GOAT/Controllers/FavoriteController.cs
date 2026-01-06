@@ -24,6 +24,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create/{caseId}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Create(int caseId)
         {
             Case? targetCase = await caseRepository.GetByIdAsync(caseId);
@@ -33,6 +34,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
+
+            Favorite? existing = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
+            if (existing != null) return Conflict();
 
             Favorite favorite = new Favorite
             {

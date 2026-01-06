@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
-using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 
-namespace S5_01_App_CS_GOAT.Services
+namespace S5_01_App_CS_GOAT.Models.DataManager
 {
-    public class SellingService : ISellingService
+    public class SellingManager : ISellingRepository
     {
         protected readonly CSGOATDbContext _context;
         protected readonly IMapper _mapper;
@@ -16,7 +15,7 @@ namespace S5_01_App_CS_GOAT.Services
         protected readonly IDataRepository<InventoryItem, int> _inventoryItemRepository;
         protected readonly IDataRepository<ItemTransaction, int> _itemTransactionRepository;
 
-        public SellingService(
+        public SellingManager(
             CSGOATDbContext context,
             IMapper mapper,
             IPriceHistoryRepository priceHistoryManager,
@@ -36,7 +35,7 @@ namespace S5_01_App_CS_GOAT.Services
             InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsync(
                 invItemId, "User", "Wear.WearType.PriceHistories");
             if (invItem == null) return StatusCodes.Status404NotFound;
-            return await this.SellAsync(invItem);
+            return await SellAsync(invItem);
         }
 
         public async Task<int> SellAsync(InventoryItem invItem)

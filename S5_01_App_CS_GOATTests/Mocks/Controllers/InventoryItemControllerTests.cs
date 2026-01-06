@@ -26,7 +26,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     {
         private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<InventoryItem, int>>? inventoryItemRepositoryMock;
-        private Mock<ISellingService>? sellingServiceMock;
+        private Mock<ISellingRepository>? sellingServiceMock;
         private Mock<IConfiguration>? configurationMock;
         private InventoryItemController? controller;
 
@@ -43,7 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             mapperMock = new Mock<IMapper>();
             inventoryItemRepositoryMock = new Mock<IDataRepository<InventoryItem, int>>();
-            sellingServiceMock = new Mock<ISellingService>();
+            sellingServiceMock = new Mock<ISellingRepository>();
             configurationMock = new Mock<IConfiguration>();
 
             normalUser = UserFixture.GetNormalUser();

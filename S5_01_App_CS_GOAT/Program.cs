@@ -69,18 +69,17 @@ builder.Services.AddScoped<IDataRepository<UpgradeResult, (int,int)>, CrudReposi
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
 // Custom managers for complex entities
+builder.Services.AddScoped<ICaseOpenningRepository, CaseOpenningManager>();
 builder.Services.AddScoped<IFairRandomRepository, FairRandomManager>();
 builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryManager>();
 builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
+builder.Services.AddScoped<ISellingRepository, SellingManager>();
 
 // Timed services
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
 builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, PromoCode, int>>();
 
-// Overseer services
-builder.Services.AddScoped<ICaseOpenningService, CaseOpenningService>();
-builder.Services.AddScoped<ISellingService, SellingService>();
 
 string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
 if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");
