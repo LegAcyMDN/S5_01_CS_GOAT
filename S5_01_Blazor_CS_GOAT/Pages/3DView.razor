@@ -1,6 +1,8 @@
 @page "/viewModel/{InventoryItemId:int}"
 @using HomagGroup.Blazor3D.Viewers
 @using S5_01_Blazor_CS_GOAT.ViewModels
+@using Radzen
+@using Radzen.Blazor
 @implements IDisposable
 @inject ThreeDViewViewModel ViewModel
 
@@ -92,7 +94,30 @@
     }
 </div>
 <div class="price-history">
-    <p>Historique des prix - (À implémenter)</p>
+
+
+        <RadzenChart>
+
+            <RadzenLineSeries Smooth="true"
+                              Data="@ViewModel.PriceHistory"
+                              CategoryProperty="PriceDate"
+                              ValueProperty="PriceValue"
+                              Title="Price Evolution">
+
+                <RadzenMarkers MarkerType="MarkerType.Circle" />
+
+            </RadzenLineSeries>
+
+            <RadzenCategoryAxis Padding="20" />
+
+            <RadzenValueAxis>
+
+                <RadzenGridLines Visible="true" />
+
+            </RadzenValueAxis>
+
+        </RadzenChart>
+
 </div>
 
 <script src="js/cacheHelper.js"></script>
@@ -130,6 +155,7 @@
     private async Task OnJsModuleLoaded()
     {
         await ViewModel.LoadModelAsync(InventoryItemId, View3D1);
+        await ViewModel.DrawPriceHistoryGraph();
         StateHasChanged();
     }
     
@@ -138,4 +164,5 @@
         ViewModel.OnObjectLoaded(e);
         StateHasChanged();
     }
+
 }
