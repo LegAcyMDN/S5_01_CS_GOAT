@@ -10,6 +10,7 @@ env:
   DOTNET_VERSION: '8.x'
   BLAZOR_PROJECT_PATH: 'S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj'
   TEST_PROJECT_PATH: 'S5_01_Blazor_CS_GOATTests/S5_01_Blazor_CS_GOATTests.csproj'
+  AZURE_WEBAPP_NAME: 'blazorcsgoat'
 
 jobs:
   build:
@@ -31,20 +32,20 @@ jobs:
         run: dotnet build ${{ env.BLAZOR_PROJECT_PATH }} -c Release --no-restore
 
       - name: Publish Blazor Project
-        run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./release --no-build
+        run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: blazor-app
-          path: ./release/wwwroot
+          path: ./publish  # ✅ Upload entire published output
 
   deploy:
     runs-on: windows-latest
     needs: build
     environment:
       name: 'Production'
-      url: https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net
+      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -55,37 +56,43 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'blazorcsgoat'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          package: ./deploy
+          package: ./deploy  # ✅ Deploy complete app
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
 
       - name: Wait for deployment to stabilize
         run: |
-          Write-Host "Waiting 60 seconds for Azure deployment to stabilize..."
-          Start-Sleep -Seconds 60
+          Write-Host "⏳ Waiting 30 seconds for deployment..."
+          Start-Sleep -Seconds 30
 
-          Write-Host "Testing site availability..."
-          $url = "https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net"
-          $maxAttempts = 10
+          Write-Host "🔍 Testing site availability..."
+          $url = "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          $maxAttempts = 20
           $attempt = 0
+          $success = $false
 
           do {
             $attempt++
+            Write-Host "Attempt $attempt/$maxAttempts..."
             try {
-              $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10
+              $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
               if ($response.StatusCode -eq 200) {
-                Write-Host "✅ Site is responding (attempt $attempt)"
+                Write-Host "✅ Site is responding!"
+                $success = $true
                 break
               }
             } catch {
-              Write-Host "⏳ Site not ready yet (attempt $attempt/$maxAttempts)"
-              Start-Sleep -Seconds 10
+              Write-Host "⏳ Not ready yet: $($_.Exception.Message)"
+              if ($attempt -lt $maxAttempts) {
+                Start-Sleep -Seconds 15
+              }
             }
           } while ($attempt -lt $maxAttempts)
 
-          if ($attempt -eq $maxAttempts) {
-            Write-Host "⚠️ Site may not be fully ready, but continuing..."
+          if (-not $success) {
+            Write-Host "❌ Site failed to become available after $maxAttempts attempts"
+            exit 1
           }
         shell: pwsh
 
@@ -114,6 +121,20 @@ jobs:
           pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
         shell: pwsh
 
+      - name: Verify site is accessible before tests
+        run: |
+          $url = "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          Write-Host "🔍 Final check: Verifying $url is accessible..."
+
+          try {
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
+            Write-Host "✅ Site returned status: $($response.StatusCode)"
+          } catch {
+            Write-Host "❌ Site is not accessible: $($_.Exception.Message)"
+            exit 1
+          }
+        shell: pwsh
+
       - name: Run Playwright E2E Tests
         run: |
           dotnet test ${{ env.TEST_PROJECT_PATH }} `
@@ -126,7 +147,7 @@ jobs:
           TEST_ENVIRONMENT: Azure
         shell: pwsh
         continue-on-error: false
-        timeout-minutes: 10
+        timeout-minutes: 15
 
       - name: Upload test results
         if: always()
