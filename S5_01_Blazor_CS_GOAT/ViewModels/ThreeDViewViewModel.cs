@@ -143,7 +143,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 LoadingProgress = 15;
                 LoadingMessage = "Récupération des données du modèle...";
 
-                ThreeDModel weapon3DModelObject = await _threeDModelRepository.GetByIdAsync(inventoryItemId);
+                ThreeDModel weapon3DModelObject = await _threeDModelRepository.GetByIdAsync(ItemDetails.WearId);
                 string weaponName = weapon3DModelObject.ItemModel;
                 string pathModelOrLegacy = weapon3DModelObject.UvType == 1 ? "models/legacy/" : "models/model/";
 
@@ -160,9 +160,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 await _cacheService.FetchAndCacheImage(
 #if DEBUG
-                    "https://localhost:7009/api/wear/get3dmodel/" + inventoryItemId,
+                    "https://localhost:7009/api/wear/get3dmodel/" + ItemDetails.WearId,
 #else
-                    "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/" + inventoryItemId,
+                    "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/wear/get3dmodel/" + ItemDetails.WearId,
 #endif
                     "applied_texture.png"
                 );
