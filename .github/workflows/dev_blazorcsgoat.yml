@@ -11,6 +11,7 @@ env:
   BLAZOR_PROJECT_PATH: 'S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj'
   TEST_PROJECT_PATH: 'S5_01_Blazor_CS_GOATTests/S5_01_Blazor_CS_GOATTests.csproj'
   AZURE_WEBAPP_NAME: 'blazorcsgoat'
+  AZURE_WEBAPP_URL: 'https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net'
 
 jobs:
   build:
@@ -38,14 +39,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: blazor-app
-          path: ./publish  # ✅ Upload entire published output
+          path: ./publish
 
   deploy:
     runs-on: windows-latest
     needs: build
     environment:
       name: 'Production'
-      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+      url: ${{ env.AZURE_WEBAPP_URL }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -58,7 +59,7 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          package: ./deploy  # ✅ Deploy complete app
+          package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
 
       - name: Wait for deployment to stabilize
@@ -67,7 +68,7 @@ jobs:
           Start-Sleep -Seconds 30
 
           Write-Host "🔍 Testing site availability..."
-          $url = "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          $url = "${{ env.AZURE_WEBAPP_URL }}"
           $maxAttempts = 20
           $attempt = 0
           $success = $false
@@ -123,7 +124,7 @@ jobs:
 
       - name: Verify site is accessible before tests
         run: |
-          $url = "https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+          $url = "${{ env.AZURE_WEBAPP_URL }}"
           Write-Host "🔍 Final check: Verifying $url is accessible..."
 
           try {
@@ -145,6 +146,7 @@ jobs:
             -- MSTest.Parallelize.Workers=1
         env:
           TEST_ENVIRONMENT: Azure
+          BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
         shell: pwsh
         continue-on-error: false
         timeout-minutes: 15
