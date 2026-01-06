@@ -15,7 +15,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
@@ -35,6 +35,19 @@ jobs:
       - name: Publish Blazor Project
         run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
 
+      - name: Verify publish output
+        run: |
+          echo "📦 Published files:"
+          ls -la ./publish
+          echo ""
+          echo "🔍 Checking for web.config:"
+          if [ -f ./publish/web.config ]; then
+            echo "✅ web.config found"
+            cat ./publish/web.config
+          else
+            echo "⚠️ web.config NOT found"
+          fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -42,7 +55,7 @@ jobs:
           path: ./publish
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
@@ -64,41 +77,46 @@ jobs:
 
       - name: Wait for deployment to stabilize
         run: |
-          Write-Host "⏳ Waiting 30 seconds for deployment..."
-          Start-Sleep -Seconds 30
+          echo "⏳ Waiting 60 seconds for deployment and app warmup..."
+          sleep 60
 
-          Write-Host "🔍 Testing site availability..."
-          $url = "${{ env.AZURE_WEBAPP_URL }}"
-          $maxAttempts = 20
-          $attempt = 0
-          $success = $false
+          echo "🔍 Testing site availability..."
+          url="${{ env.AZURE_WEBAPP_URL }}"
+          max_attempts=20
+          attempt=0
+          success=false
 
-          do {
-            $attempt++
-            Write-Host "Attempt $attempt/$maxAttempts..."
-            try {
-              $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-              if ($response.StatusCode -eq 200) {
-                Write-Host "✅ Site is responding!"
-                $success = $true
-                break
-              }
-            } catch {
-              Write-Host "⏳ Not ready yet: $($_.Exception.Message)"
-              if ($attempt -lt $maxAttempts) {
-                Start-Sleep -Seconds 15
-              }
-            }
-          } while ($attempt -lt $maxAttempts)
+          while [ $attempt -lt $max_attempts ]; do
+            attempt=$((attempt + 1))
+            echo "Attempt $attempt/$max_attempts..."
 
-          if (-not $success) {
-            Write-Host "❌ Site failed to become available after $maxAttempts attempts"
+            status_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo "000")
+
+            if [ "$status_code" = "200" ]; then
+              echo "✅ Site is responding with status 200!"
+              success=true
+              break
+            else
+              echo "⏳ Not ready yet. Status code: $status_code"
+
+              if [ "$status_code" = "500" ]; then
+                echo "⚠️ App is deployed but returning 500 - may need more time to initialize"
+              fi
+
+              if [ $attempt -lt $max_attempts ]; then
+                sleep 15
+              fi
+            fi
+          done
+
+          if [ "$success" = false ]; then
+            echo "❌ Site failed to become available after $max_attempts attempts"
+            echo "💡 Check Azure App Service logs for detailed error information"
             exit 1
-          }
-        shell: pwsh
+          fi
 
   test:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: deploy
     permissions:
       contents: read
@@ -120,34 +138,32 @@ jobs:
       - name: Ensure Playwright is installed
         run: |
           pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
-        shell: pwsh
 
       - name: Verify site is accessible before tests
         run: |
-          $url = "${{ env.AZURE_WEBAPP_URL }}"
-          Write-Host "🔍 Final check: Verifying $url is accessible..."
+          url="${{ env.AZURE_WEBAPP_URL }}"
+          echo "🔍 Final check: Verifying $url is accessible..."
 
-          try {
-            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-            Write-Host "✅ Site returned status: $($response.StatusCode)"
-          } catch {
-            Write-Host "❌ Site is not accessible: $($_.Exception.Message)"
+          status_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo "000")
+
+          if [ "$status_code" = "200" ]; then
+            echo "✅ Site returned status: $status_code"
+          else
+            echo "❌ Site is not accessible. Status: $status_code"
             exit 1
-          }
-        shell: pwsh
+          fi
 
       - name: Run Playwright E2E Tests
         run: |
-          dotnet test ${{ env.TEST_PROJECT_PATH }} `
-            --configuration Release `
-            --no-build `
-            --logger "trx;LogFileName=test-results.trx" `
-            --logger "console;verbosity=detailed" `
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed" \
             -- MSTest.Parallelize.Workers=1
         env:
           TEST_ENVIRONMENT: Azure
           BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
-        shell: pwsh
         continue-on-error: false
         timeout-minutes: 15
 
@@ -176,22 +192,21 @@ jobs:
           fail-on-error: true
 
   notify:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: [build, deploy, test]
     if: always()
     steps:
       - name: Check workflow status
         run: |
-          if ("${{ needs.test.result }}" -eq "failure") {
-            Write-Host "❌ E2E Tests Failed!"
+          if [ "${{ needs.test.result }}" = "failure" ]; then
+            echo "❌ E2E Tests Failed!"
             exit 1
-          } elseif ("${{ needs.deploy.result }}" -eq "failure") {
-            Write-Host "❌ Deployment Failed!"
+          elif [ "${{ needs.deploy.result }}" = "failure" ]; then
+            echo "❌ Deployment Failed!"
             exit 1
-          } elseif ("${{ needs.build.result }}" -eq "failure") {
-            Write-Host "❌ Build Failed!"
+          elif [ "${{ needs.build.result }}" = "failure" ]; then
+            echo "❌ Build Failed!"
             exit 1
-          } else {
-            Write-Host "✅ All stages completed successfully!"
-          }
-        shell: pwsh
+          else
+            echo "✅ All stages completed successfully!"
+          fi
