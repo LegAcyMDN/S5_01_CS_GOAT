@@ -11,7 +11,23 @@
     <div class="view-case">
         <div class="case-to-open">
             <div class="case-title">
-                <h1>@ViewModel.ActiveCase.CaseName</h1>
+                <h1>
+                    @ViewModel.ActiveCase.CaseName
+                    @if (ViewModel.IsAuthenticated)
+                    {
+                        <button class="favorite-btn-title @(ViewModel.ActiveCase.IsFavorite ? "is-favorite" : "")" 
+                                @onclick="ViewModel.ToggleFavoriteAsync">
+                            @if (ViewModel.ActiveCase.IsFavorite)
+                            {
+                                <span>★</span>
+                            }
+                            else
+                            {
+                                <span>☆</span>
+                            }
+                        </button>
+                    }
+                </h1>
             </div>
             <div class="case-image">
                 <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />

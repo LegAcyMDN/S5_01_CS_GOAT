@@ -312,3 +312,43 @@ input:checked + .slider:after {
     outline: 2px solid #f99e1c;
     outline-offset: 2px;
 }
+
+.case-title {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.favorite-btn-title {
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.favorite-btn-title span {
+    font-size: 24px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.favorite-btn-title:hover {
+    background: rgba(249, 158, 28, 0.8);
+    transform: scale(1.1);
+}
+
+.favorite-btn-title.is-favorite span {
+    color: #f99e1c;
+}
+
+.favorite-btn-title.is-favorite:hover span {
+    color: #fff;
+}

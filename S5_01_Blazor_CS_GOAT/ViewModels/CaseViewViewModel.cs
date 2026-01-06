@@ -12,6 +12,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class CaseViewViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
+        private readonly FavoriteService _favoriteService;
         private readonly IService<SkinDTO> _skinRepository;
         private readonly IService<Case> _caseRepository;
         private static readonly Random _rng = new();
@@ -32,14 +33,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _totalAnimations = 0;
         
         private bool _isInvalidPromoCode = false;
+        private bool _isAuthenticated = false;
 
 
 
-        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService)
+        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
             _authService = authService;
+            _favoriteService = favoriteService;
         }
 
 
@@ -109,6 +112,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _justBoughtCase, value);
         }
 
+        public bool IsAuthenticated
+        {
+            get => _isAuthenticated;
+            set => SetProperty(ref _isAuthenticated, value);
+        }
+
         /// <summary>
         /// Charge les données de la caisse et ses skins
         /// </summary>
@@ -117,8 +126,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 IsLoading = true;
+                IsAuthenticated = await _authService.IsAuthenticatedAsync();
+                
+                // Récupérer le token JWT si l'utilisateur est connecté
+                var jwtToken = await _authService.GetTokenAsync();
+                
                 SkinsList = await _skinRepository.GetByCaseIdAsync(caseId);
-                ActiveCase = await _caseRepository.GetByIdAsync(caseId);
+                
+                // Charger la caisse avec le token pour obtenir l'état IsFavorite correct
+                ActiveCase = await _caseRepository.GetByIdAsync(caseId, jwtToken);
             }
             catch (Exception ex)
             {
@@ -256,7 +272,22 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             SelectedCount = count;
         }
         
-        
+        /// <summary>
+        /// Bascule le statut favori de la caisse active
+        /// </summary>
+        public async Task ToggleFavoriteAsync()
+        {
+            if (ActiveCase == null || !IsAuthenticated)
+                return;
+
+            bool success = await _favoriteService.ToggleFavoriteAsync(ActiveCase.CaseId, ActiveCase.IsFavorite);
+            
+            if (success)
+            {
+                ActiveCase.IsFavorite = !ActiveCase.IsFavorite;
+                OnPropertyChanged(nameof(ActiveCase));
+            }
+        }
         
         private async Task<MultipleCaseResultDTO?> CallCaseOpen(int numberOfCases)
         {

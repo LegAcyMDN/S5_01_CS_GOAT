@@ -27,6 +27,7 @@ builder.Services.AddScoped<CacheService>(sp =>
 });
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<StripeService>();
 
 // Enregistrement des ViewModels pour le pattern MVVM
