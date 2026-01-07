@@ -2,6 +2,7 @@
     padding: 2px;
     cursor: pointer;
     text-align: center;
+    position: relative;
 }
 
 .case-format img {
@@ -12,4 +13,40 @@
 .case-format:hover { 
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
+}
+
+.favorite-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.favorite-btn span {
+    font-size: 20px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.favorite-btn:hover {
+    background: rgba(249, 158, 28, 0.8);
+    transform: scale(1.1);
+}
+
+.favorite-btn.is-favorite span {
+    color: #f99e1c;
+}
+
+.favorite-btn.is-favorite:hover span {
+    color: #fff;
 }

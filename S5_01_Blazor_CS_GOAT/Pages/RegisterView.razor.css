@@ -3,19 +3,23 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 50vh;
+    padding: 20px;
 }
+
 .form-box {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    width: 700px;
+    width: 100%;
+    max-width: 700px;
     padding: 20px;
 }
 
 .form-box form {
     width: 100%;
-    min-width: 700px;
+    min-width: auto;
     margin: 0 0 15px 0;
 }
 
@@ -35,11 +39,46 @@ h3 {
     width: 100%;
 }
 
-.usr-remember {
+/* Styles pour le champ de mot de passe avec bouton toggle */
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-field {
+    position: relative;
     display: flex;
     align-items: center;
-    margin: 15px 0;
-    color: white;
+    width: 100%;
+}
+
+.password-field input {
+    flex: 1;
+    padding-right: 40px !important;
+}
+
+.toggle-password {
+    all: unset;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    color: black;
+    border: none;
+    outline: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    opacity: 1
+}
+
+
+.toggle-password svg {
+    transform: skewX(15deg);
+    stroke: #000000;
 }
 
 input[type="text"], input[type="password"], input[type="email"] {
@@ -255,9 +294,112 @@ path.two {
     width: 100%;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .other-links p {
     width: max-content;
     font-size: 0.9em;
+}
+
+/* Media Queries pour le responsive */
+@media screen and (max-width: 768px) {
+    .container-form {
+        min-height: auto;
+        padding: 15px;
+    }
+
+    .form-box {
+        width: 100%;
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .form-box form {
+        min-width: auto;
+    }
+
+    h3 {
+        font-size: 1.5em;
+    }
+
+    .cta {
+        font-size: 16px;
+        padding: 8px 18px 5px 18px;
+    }
+
+    .usr-submit.cta {
+        padding: 8px 18px;
+        font-size: 16px;
+    }
+
+    .usr-remember {
+        font-size: 0.9em;
+    }
+
+    .other-links {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .other-links p {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .container-form {
+        padding: 10px;
+    }
+
+    .form-box {
+        padding: 10px;
+    }
+
+    h3 {
+        font-size: 1.3em;
+    }
+
+    .cta {
+        font-size: 14px;
+        padding: 6px 15px 4px 15px;
+        box-shadow: 4px 4px 0 white;
+    }
+
+    .usr-submit.cta {
+        padding: 6px 15px;
+        font-size: 14px;
+    }
+
+    .cta:hover {
+        box-shadow: 3px 3px 0 #00428c;
+    }
+
+    .usr-remember {
+        font-size: 0.85em;
+    }
+
+    .usr-register, .usr-displayname, .usr-password, .usr-confirm-password, .usr-email, .usr-phone {
+        margin: 0 5px 15px 0;
+    }
+
+    .error-message {
+        font-size: 0.75em;
+        margin-left: 5px;
+    }
+
+    span:nth-child(2) {
+        width: 8px;
+        margin-left: 10px;
+    }
+
+    .cta:hover span:nth-child(2) {
+        margin-right: 15px;
+    }
+
+    .toggle-password {
+        right: 8px;
+    }
 }

@@ -1,0 +1,132 @@
+.fairrandom-page {
+    max-width: 95%;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 2rem;
+    color: #fff;
+}
+
+.fairrandom-page h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.loading-message,
+.empty-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #888;
+    padding: 3rem;
+}
+
+.error-message {
+    background-color: rgba(255, 59, 59, 0.1);
+    border: 2px solid #ff3b3b;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    text-align: center;
+}
+
+.error-message p {
+    color: #ff3b3b;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.fairrandom-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.fairrandom-info p {
+    margin: 0;
+    color: #ccc;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.fairrandom-table {
+    overflow-x: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    width: 100%;
+}
+
+.fairrandom-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1400px;
+    table-layout: auto;
+}
+
+.fairrandom-table thead {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.fairrandom-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #fff;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.fairrandom-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #ddd;
+    word-break: break-all;
+    max-width: 300px;
+}
+
+.fairrandom-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.fairrandom-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.fairrandom-table td[title] {
+    cursor: help;
+    position: relative;
+}
+
+.fairrandom-table td[title]:hover {
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .fairrandom-page {
+        padding: 1rem;
+    }
+
+    .fairrandom-page h1 {
+        font-size: 1.8rem;
+    }
+
+    .fairrandom-table {
+        padding: 0.5rem;
+    }
+
+    .fairrandom-table th,
+    .fairrandom-table td {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+}
