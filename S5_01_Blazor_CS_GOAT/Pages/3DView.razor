@@ -93,31 +93,22 @@
         </div>
     }
 </div>
+
 <div class="price-history">
-
-
-        <RadzenChart>
-
-            <RadzenLineSeries Smooth="true"
-                              Data="@ViewModel.PriceHistory"
-                              CategoryProperty="PriceDate"
-                              ValueProperty="PriceValue"
-                              Title="Price Evolution">
-
-                <RadzenMarkers MarkerType="MarkerType.Circle" />
-
-            </RadzenLineSeries>
-
-            <RadzenCategoryAxis Padding="20" />
-
-            <RadzenValueAxis>
-
-                <RadzenGridLines Visible="true" />
-
-            </RadzenValueAxis>
-
-        </RadzenChart>
-
+    <h2 class="price-history-title">Historique des Prix</h2>
+    <RadzenChart>
+        <RadzenLineSeries Smooth="true"
+                          Data="@ViewModel.PriceHistory"
+                          CategoryProperty="PriceDate"
+                          ValueProperty="PriceValue"
+                          Title="Price Evolution">
+            <RadzenMarkers MarkerType="MarkerType.Circle" />
+        </RadzenLineSeries>
+        <RadzenCategoryAxis Padding="20" />
+        <RadzenValueAxis>
+            <RadzenGridLines Visible="true" />
+        </RadzenValueAxis>
+    </RadzenChart>
 </div>
 
 <script src="js/cacheHelper.js"></script>
