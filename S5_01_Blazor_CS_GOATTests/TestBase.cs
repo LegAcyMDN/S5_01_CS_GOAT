@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Microsoft.Playwright;
 using Microsoft.Playwright.MSTest;
 
 namespace S5_01_Blazor_CS_GOATTests;
@@ -10,6 +11,10 @@ public class TestBase : PageTest
     [TestInitialize]
     public async Task TestSetup()
     {
+        // Set longer default timeout for Blazor WASM
+        Page.SetDefaultTimeout(60000); // 60 seconds
+        Page.SetDefaultNavigationTimeout(60000);
+        
         // Load configuration
         var environment = GetEnvironment();
         Console.WriteLine($"🌍 Environment: {environment}");
@@ -32,6 +37,16 @@ public class TestBase : PageTest
             Console.WriteLine("⏳ Waiting 30s for Azure deployment to stabilize...");
             await Task.Delay(30000);
         }
+    }
+
+    public override BrowserNewContextOptions ContextOptions()
+    {
+        return new BrowserNewContextOptions
+        {
+            IgnoreHTTPSErrors = true,
+            RecordVideoDir = "test-results/videos/",
+            RecordVideoSize = new RecordVideoSize { Width = 1280, Height = 720 }
+        };
     }
 
     private static string GetEnvironment()

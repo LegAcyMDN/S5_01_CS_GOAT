@@ -1,0 +1,84 @@
+@page "/stats"
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@using S5_01_Blazor_CS_GOAT.Layout
+@inject FairRandomViewModel ViewModel
+
+<PageTitle>CS:GOAT - Provably Fair</PageTitle>
+
+<div class="fairrandom-page">
+    <h1>Provably Fair - Historique des tirages</h1>
+    
+    @if (ViewModel.IsLoading)
+    {
+        <p class="loading-message">Chargement de l'historique...</p>
+    }
+    else if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+    {
+        <div class="error-message">
+            <p>@ViewModel.ErrorMessage</p>
+        </div>
+    }
+    else if (ViewModel.FairRandomHistory.Count == 0)
+    {
+        <div class="empty-message">
+            <p>Aucun historique de tirage disponible. Ouvrez des caisses pour générer votre historique!</p>
+        </div>
+    }
+    else
+    {
+        <div class="fairrandom-info">
+            <p>Vérifiez l'équité de tous vos tirages. Chaque tirage utilise un système provably fair pour garantir des résultats aléatoires et transparents.</p>
+        </div>
+        
+        <div class="fairrandom-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Graine Serveur</th>
+                        <th>Hash Serveur</th>
+                        <th>Graine Utilisateur</th>
+                        <th>Nonce Utilisateur</th>
+                        <th>Hash Combiné</th>
+                        <th>Fraction 1</th>
+                        <th>Fraction 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var fairRandom in ViewModel.FairRandomHistory)
+                    {
+                        <tr>
+                            <td>@fairRandom.ServerSeed</td>
+                            <td>@fairRandom.ServerHash</td>
+                            <td>@fairRandom.UserSeed</td>
+                            <td>@fairRandom.UserNonce</td>
+                            <td>@fairRandom.CombinedHash</td>
+                            <td>@fairRandom.Fraction1.ToString("F6")</td>
+                            <td>@fairRandom.Fraction2.ToString("F6")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    
+    <AuthOverlay />
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.InitializeAsync();
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    private string TruncateHash(string hash)
+    {
+        if (string.IsNullOrEmpty(hash))
+            return "-";
+        
+        if (hash.Length <= 16)
+            return hash;
+        
+        return $"{hash.Substring(0, 8)}...{hash.Substring(hash.Length - 8)}";
+    }
+}

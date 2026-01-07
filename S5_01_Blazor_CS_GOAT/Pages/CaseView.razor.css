@@ -146,7 +146,6 @@ span {
 }
 
 span:nth-child(2) {
-    width: 10px;
     margin-left: 15px;
     position: relative;
     top: 12%;
@@ -311,6 +310,208 @@ input:checked + .slider:after {
 .gambling-x.selected {
     outline: 2px solid #f99e1c;
     outline-offset: 2px;
+}
+
+.favorite-btn-title.is-favorite:hover span {
+    color: #fff;
+}
+
+/* Case Image Container */
+.case-image {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin: 30px auto 30px auto;
+    width: 100%;
+}
+
+.case-image > div:first-child {
+    position: relative;
+    display: inline-block;
+}
+
+.case-image img {
+    width: 300px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+    transition: transform 0.3s ease;
+}
+
+.case-image img:hover {
+    transform: scale(1.05);
+}
+
+.case-image .favorite-btn-title {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(249, 158, 28, 0.3);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.case-image .favorite-btn-title span {
+    font-size: 24px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.case-image .favorite-btn-title:hover {
+    background: rgba(249, 158, 28, 0.8);
+    transform: scale(1.1);
+}
+
+.case-image .favorite-btn-title.is-favorite span {
+    color: #f99e1c;
+}
+
+.case-image .favorite-btn-title.is-favorite:hover span {
+    color: #fff;
+}
+
+/* Provably Fair Info Card */
+.provably-fair-info {
+    width: 100%;
+    max-width: 700px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(41, 41, 55, 0.9) 0%, rgba(30, 30, 40, 0.9) 100%);
+    border-radius: 12px;
+    border: 2px solid rgba(249, 158, 28, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.provably-fair-info h3 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    color: #f99e1c;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: center;
+    font-weight: 700;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(249, 158, 28, 0.3);
+}
+
+/* Fair Info Item */
+.fair-info-item {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border-left: 4px solid #f99e1c;
+}
+
+.fair-info-item p {
+    font-size: 12px;
+}
+
+.fair-label {
+    display: block;
+    font-size: 11px;
+    color: #f99e1c;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.fair-value {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 6px;
+    word-wrap: break-word;
+    word-break: break-all;
+    line-height: 1.5;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Fair Link Button */
+.fair-link {
+    display: block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #f99e1c 0%, #e08a0f 100%);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(249, 158, 28, 0.3);
+}
+
+.fair-link:hover {
+    background: linear-gradient(135deg, #e08a0f 0%, #d17a0a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(249, 158, 28, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .case-image img {
+        width: 200px;
+    }
+
+    .provably-fair-info {
+        max-width: 100%;
+        padding: 15px;
+    }
+
+    .provably-fair-info h3 {
+        font-size: 16px;
+    }
+
+    .fair-info-item {
+        padding: 12px;
+    }
+
+    .fair-value {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    .fair-link {
+        padding: 10px 20px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .case-image img {
+        width: 150px;
+    }
+
+    .provably-fair-info {
+        padding: 12px;
+    }
+
+    .fair-info-item {
+        padding: 10px;
+    }
+
+    .fair-value {
+        font-size: 10px;
+    }
+}
 }
 
 .PromoCode {

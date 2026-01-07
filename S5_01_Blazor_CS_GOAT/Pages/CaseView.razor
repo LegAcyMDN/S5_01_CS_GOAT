@@ -11,10 +11,49 @@
     <div class="view-case">
         <div class="case-to-open">
             <div class="case-title">
-                <h1>@ViewModel.ActiveCase.CaseName</h1>
-            </div>
+                <h1>
+                    @ViewModel.ActiveCase.CaseName
+                </h1>
+            </div>                    
             <div class="case-image">
-                <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />
+                <div>
+                    <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />
+                    @if (ViewModel.IsAuthenticated)
+                    {
+                        <button class="favorite-btn-title @(ViewModel.ActiveCase.IsFavorite ? "is-favorite" : "")" 
+                                @onclick="ViewModel.ToggleFavoriteAsync">
+                            @if (ViewModel.ActiveCase.IsFavorite)
+                            {
+                                <p>★</p>
+                            }
+                            else
+                            {
+                                <p>☆</p>
+                            }
+                        </button>
+                    }
+                </div>
+                @if (ViewModel.IsAuthenticated && (ViewModel.ServerHash != null || ViewModel.UserNonce != null))
+                {
+                    <div class="provably-fair-info">
+                        <h3>Provably Fair</h3>
+                        @if (!string.IsNullOrEmpty(ViewModel.ServerHash))
+                        {
+                            <div class="fair-info-item">
+                                <p class="fair-label">Server Hash:</p>
+                                <p class="fair-value" title="@ViewModel.ServerHash">@ViewModel.ServerHash</p>
+                            </div>
+                        }
+                        @if (ViewModel.UserNonce != null)
+                        {
+                            <div class="fair-info-item">
+                                <p class="fair-label">User Nonce:</p>
+                                <p class="fair-value">@ViewModel.UserNonce</p>
+                            </div>
+                        }
+                        <a href="/stats" class="fair-link">Voir l'historique complet</a>
+                    </div>
+                }
             </div>
             <div class="letsgo-gambling">
                 <div class="gambling-x @(ViewModel.SelectedCount == 1 ? "selected" : "")"
@@ -149,6 +188,17 @@ else
     {
         await ViewModel.LoadCaseAsync(CaseId);
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    private string TruncateHash(string hash)
+    {
+        if (string.IsNullOrEmpty(hash))
+            return "-";
+        
+        if (hash.Length <= 16)
+            return hash;
+        
+        return $"{hash.Substring(0, 8)}...{hash.Substring(hash.Length - 8)}";
     }
 }
 

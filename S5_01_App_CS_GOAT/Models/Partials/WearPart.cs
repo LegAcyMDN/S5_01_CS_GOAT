@@ -6,8 +6,8 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     {
         public IEnumerable<PriceHistory> PriceHistories(bool allowGuess = false)
         {
-            IEnumerable<PriceHistory> histories = new List<PriceHistory>();
-            histories = this.WearType.PriceHistories.Where(p => p.SkinId == this.SkinId);
+            IEnumerable<PriceHistory>? histories = this.WearType?.PriceHistories?.Where(p => p.SkinId == this.SkinId);
+            if (histories == null) return Enumerable.Empty<PriceHistory>();
             if (!allowGuess) histories = histories.Where(p => p.GuessDate == null);
             return histories;
         }

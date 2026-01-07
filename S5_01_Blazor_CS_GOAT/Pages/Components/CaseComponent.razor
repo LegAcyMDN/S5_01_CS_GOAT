@@ -2,17 +2,40 @@
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject CaseComponentViewModel ViewModel
 
-<div class="case-format" @onclick="ViewModel.NavigateToCase">
-    <img src="cases/@ViewModel.CaseObject?.CaseImage"/>
-    <h3>@ViewModel.CaseObject?.CaseName | @ViewModel.CaseObject?.CasePrice€</h3>
+<div class="case-format">
+    <div class="case-content" @onclick="ViewModel.NavigateToCase">
+        <img src="cases/@ViewModel.CaseObject?.CaseImage"/>
+        <h3>@ViewModel.CaseObject?.CaseName | @ViewModel.CaseObject?.CasePrice€</h3>
+    </div>
+    @if (ViewModel.IsAuthenticated)
+    {
+        <button class="favorite-btn @(ViewModel.CaseObject?.IsFavorite == true ? "is-favorite" : "")" 
+                @onclick="ViewModel.ToggleFavoriteAsync" 
+                @onclick:stopPropagation="true">
+            @if (ViewModel.CaseObject?.IsFavorite == true)
+            {
+                <span>★</span>
+            }
+            else
+            {
+                <span>☆</span>
+            }
+        </button>
+    }
 </div>
 
 @code {
     [Parameter]
     public required Case CaseObject { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         ViewModel.CaseObject = CaseObject;
+        await ViewModel.InitializeAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
     }
 }
