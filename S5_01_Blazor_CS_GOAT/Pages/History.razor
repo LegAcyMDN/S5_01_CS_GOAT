@@ -12,8 +12,39 @@
         }
         else
         {
-            <p>Consultez l'historique de toutes vos transactions et ouvertures de caisses.</p>
-            <!-- Votre contenu de page ici -->
+            <p>Consultez l'historique de toutes vos transactions et ouvertures de caisses.</p> <br/>
+            if (ViewModel.RandomsTransactionsDetail == null)
+            {
+                <div>Transactions non chargées</div>
+            }
+            else if (!ViewModel.RandomsTransactionsDetail.Any())
+            {
+                <div>Aucune transactions</div>
+            }
+            else
+            {
+                <ul>
+
+                    @foreach (var rt in ViewModel.RandomsTransactionsDetail)
+                    {
+                        <li @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">
+                            Date d'ouverture : @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
+                            Montant de la transaction : @(rt.WalletValue.ToString() ?? "Montant Inconnu") € <br/>
+                        
+
+                        @if (ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
+                        {
+                            <div>
+                                Caisse : @(rt.Case != null ? rt.Case.CaseName ?? "Nom de caisse Inconnu" : "Caisse Inconnue")<br/>
+                                Item : @(rt.ItemName ?? "Item Inconnu") <br/>
+                                Skin : <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
+                                Qualité : @(rt.WearName ?? "Qualité Inconnue") <br/>
+                            </div>
+                        }
+                        </li>
+                    }
+                </ul>
+            }
         }
     </div>
     

@@ -1,10 +1,18 @@
-.page-viewermodel, .price-history {
+.page-viewermodel {
     display: flex;
     justify-content: center;
     align-items: flex-start;
     gap: 2rem;
     padding: 2rem;
-    height: 100%;
+    position: relative;
+}
+
+.price-history {
+    display: block;
+    width: 100%;
+    max-width: 1200px;
+    margin: 3rem auto 4rem;
+    padding: 2rem;
 }
 
 .model-viewer {
