@@ -120,7 +120,7 @@ jobs:
       - name: Verify Blazor files
         run: |
           echo "=== Contents of wwwroot ==="
-          find wwwroot -type f | ls
+          find wwwroot -type f | head -3000
 
       - name: Run E2E Tests
         run: |
