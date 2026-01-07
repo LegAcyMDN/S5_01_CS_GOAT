@@ -134,56 +134,56 @@ jobs:
           echo "=== Process info ==="
           ps aux | grep "dotnet serve"
 
-#      - name: Run E2E Tests
-#        run: |
-#          dotnet test ${{ env.TEST_PROJECT_PATH }} \
-#            --configuration Release \
-#            --no-build \
-#            --logger "trx;LogFileName=test-results.trx" \
-#            --logger "console;verbosity=detailed"
-#        env:
-#          TEST_ENVIRONMENT: Local
-#          NODE_TLS_REJECT_UNAUTHORIZED: 0
-#        timeout-minutes: 15
-#
-#      - name: Stop server
-#        if: always()
-#        run: |
-#          if [ -f server.pid ]; then
-#            kill $(cat server.pid) 2>/dev/null || true
-#          fi
-#
-#      - name: Upload test results
-#        if: always()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: test-results-local
-#          path: '**/TestResults/*.trx'
-#
-#      - name: Upload Playwright videos
-#        if: failure()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: playwright-videos
-#          path: 'test-results/videos/**/*.webm'
-#          retention-days: 7
-#
-#      - name: Upload Playwright traces
-#        if: failure()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: playwright-traces-local
-#          path: '**/test-results/**'
-#          retention-days: 7
-#
-#      - name: Publish test report
-#        if: always()
-#        uses: dorny/test-reporter@v1
-#        with:
-#          name: E2E Test Results (Local)
-#          path: '**/TestResults/*.trx'
-#          reporter: dotnet-trx
-#          fail-on-error: true
+      - name: Run E2E Tests
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed"
+        env:
+          TEST_ENVIRONMENT: Local
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+        timeout-minutes: 15
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-local
+          path: '**/TestResults/*.trx'
+
+      - name: Upload Playwright videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-videos
+          path: 'test-results/videos/**/*.webm'
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-local
+          path: '**/test-results/**'
+          retention-days: 7
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: E2E Test Results (Local)
+          path: '**/TestResults/*.trx'
+          reporter: dotnet-trx
+          fail-on-error: true
 
   deploy:
     name: Deploy to Azure
