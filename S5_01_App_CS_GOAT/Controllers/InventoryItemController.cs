@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             InventoryItem? item = await manager.GetByIdAsync(inventoryItemId,
-                "Wear.WearType.PriceHistories",
+                // PRX "Wear.WearType.PriceHistories",
                 "Wear.Skin.Rarity", 
                 "Wear.Skin.Item.ItemType"
             );

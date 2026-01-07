@@ -28,11 +28,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             this.Fraction2 = intValue2 / (double)uint.MaxValue;
         }
 
-        private static bool IsHexChar(char c)
-        {
-            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-        }
-
         public int? DependantUserId { get => this.UserId ?? this.GetRandomTransaction()?.DependantUserId; }
     }
 }

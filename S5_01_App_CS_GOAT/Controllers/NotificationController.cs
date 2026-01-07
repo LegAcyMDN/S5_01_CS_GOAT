@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("relevant")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetRelevant([FromQuery] FilterOptions? filters = null, [FromQuery] SortOptions? sorts = null)
+        public async Task<IActionResult> GetRelevant()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)

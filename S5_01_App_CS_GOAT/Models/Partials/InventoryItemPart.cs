@@ -15,5 +15,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         {
             return this.Wear.LastPrice(allowGuess);
         }
+
+        public double? LastPriceValue(bool allowGuess = false, double? def = 0.0)
+        {
+            return this.LastPrice(allowGuess)?.PriceValue ?? def;
+        }
     }
 }

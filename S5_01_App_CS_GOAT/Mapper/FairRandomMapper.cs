@@ -17,8 +17,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.Fraction1, opt => opt.MapFrom(src => src.Fraction1))
                 .ForMember(dest => dest.Fraction2, opt => opt.MapFrom(src => src.Fraction2))
                 .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src =>
-                    src.RandomTransaction != null ? src.RandomTransaction.TransactionId :
-                    src.UpgradeResult != null ? src.UpgradeResult.TransactionId : (int?)null));
+                    src.GetRandomTransaction() != null ? src.GetRandomTransaction()!.TransactionId : (int?)null));
         }
     }
 }
