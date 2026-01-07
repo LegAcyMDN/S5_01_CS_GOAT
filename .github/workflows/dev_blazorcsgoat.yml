@@ -52,11 +52,8 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: blazor-app
-          path: ./wwwroot
+      - name: Restore Blazor project
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
 
       - name: Restore test dependencies
         run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
@@ -67,16 +64,44 @@ jobs:
       - name: Install Playwright browsers
         run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
-      - name: Serve Blazor WASM app
-        run: npx serve ./wwwroot -l 7030 &
-
-      - name: Wait for app to start
-        uses: nev7n/wait_for_response@v1
+      - name: Download build artifact for serving
+        uses: actions/download-artifact@v4
         with:
-          url: 'http://localhost:7030'
-          responseCode: 200
-          timeout: 60000
-          interval: 2000
+          name: blazor-app
+          path: ./wwwroot
+
+      - name: Serve Blazor WASM with HTTP
+        run: |
+          cd wwwroot
+          python3 -m http.server 7030 &
+          echo $! > ../server.pid
+          cd ..
+
+      - name: Wait for server and show logs
+        run: |
+          echo "Waiting for server to start..."
+          sleep 3
+
+          if ! kill -0 $(cat server.pid) 2>/dev/null; then
+            echo "❌ Server process died"
+            exit 1
+          fi
+
+          echo "✅ Server process is running"
+
+          # Test with plain curl
+          for i in {1..20}; do
+            if curl -s -f http://localhost:7030 > /dev/null 2>&1; then
+              echo "✅ Server is responding!"
+              curl -I http://localhost:7030
+              exit 0
+            fi
+            echo "⏳ Attempt $i/20..."
+            sleep 2
+          done
+
+          echo "❌ Server not responding"
+          exit 1
 
       - name: Run E2E Tests
         run: |
