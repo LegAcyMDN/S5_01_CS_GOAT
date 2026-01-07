@@ -52,13 +52,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: blazor-app
-          path: ./wwwroot
-
-      - name: Restore Blazor project for running
+      - name: Restore Blazor project
         run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
 
       - name: Restore test dependencies
@@ -70,16 +64,35 @@ jobs:
       - name: Install Playwright browsers
         run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
-      - name: Serve Blazor WASM app
-        run: npx serve ./wwwroot -l 7030 &
+      - name: Trust dev certificate
+        run: dotnet dev-certs https --trust
 
-      - name: Wait for app to start
-        uses: nev7n/wait_for_response@v1
-        with:
-          url: 'http://localhost:7030'
-          responseCode: 200
-          timeout: 60000
-          interval: 2000
+      - name: Run Blazor app
+        run: |
+          cd S5_01_Blazor_CS_GOAT
+          dotnet run --no-build --configuration Release &
+          echo $! > ../server.pid
+          cd ..
+
+      - name: Verify server is running
+        run: |
+          if ! kill -0 $(cat server.pid) 2>/dev/null; then
+            echo "Server failed to start"
+            exit 1
+          fi
+          echo "Server is running with PID $(cat server.pid)"
+
+          # Test if it's responding (with --insecure for dev cert)
+          for i in {1..30}; do
+            if curl -k -s https://localhost:7030 > /dev/null; then
+              echo "Server is responding on HTTPS!"
+              exit 0
+            fi
+            echo "Attempt $i: Server not ready yet..."
+            sleep 2
+          done
+          echo "Server failed to respond after 60 seconds"
+          exit 1
 
       - name: Run E2E Tests
         run: |
