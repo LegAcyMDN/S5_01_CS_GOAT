@@ -117,6 +117,11 @@ jobs:
           echo "=== Server process status ==="
           ps aux | grep "dotnet serve" || echo "No server process found"
 
+      - name: Verify Blazor files
+        run: |
+          echo "=== Contents of wwwroot ==="
+          find wwwroot -type f | head -30
+
       - name: Run E2E Tests
         run: |
           dotnet test ${{ env.TEST_PROJECT_PATH }} \
