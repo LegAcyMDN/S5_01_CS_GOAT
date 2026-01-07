@@ -58,6 +58,9 @@ jobs:
           name: blazor-app
           path: ./wwwroot
 
+      - name: Restore Blazor project for running
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
+
       - name: Restore test dependencies
         run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
