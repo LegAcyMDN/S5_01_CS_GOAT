@@ -1,8 +1,9 @@
-using System.Net.Http.Json;
-using System.Net.Http.Headers;
 using Shared.DTO.Helpers;
 using Shared.Enum;
 using Shared.Exceptions.CaseExceptions;
+using System.Collections.ObjectModel;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -131,5 +132,9 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{inventoryItemId}");
+    }
+    public async Task<ObservableCollection<TEntity>?> GetByWear(int wearId)
+    {
+       return  await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
     }
 }

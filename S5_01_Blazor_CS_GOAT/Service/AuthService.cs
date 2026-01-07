@@ -66,8 +66,9 @@ public async Task<LoginResult> LoginAsync(string identifier, string password, in
             }
         }
 
-        var errorContent = await response.Content.ReadAsStringAsync();
-        return new LoginResult { Success = false, ErrorMessage = $"Login failed: {errorContent}" };
+        string errorContent = await response.Content.ReadAsStringAsync();
+
+        return new LoginResult { Success = false, ErrorMessage = $"Erreur : Identifiant ou mot de passe incorrect" };
     }
     catch (Exception ex)
     {

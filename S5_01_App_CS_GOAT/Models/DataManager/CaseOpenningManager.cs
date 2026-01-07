@@ -59,9 +59,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             Case? targetCase = await _caseRepository.GetByIdAsync(
                 caseOpenningDTO.CaseId,
                 "CaseContents.Skin.Rarity",
-                "CaseContents.Skin.PriceHistories.WearType",
+                // PRX "CaseContents.Skin.PriceHistories.WearType",
                 "CaseContents.Skin.Wears.WearType",
-                "CaseContents.Skin.Item"
+                "CaseContents.Skin.Item.ItemType"
             );
             if (targetCase == null) throw new Exception("Case not found.");
 

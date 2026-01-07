@@ -105,13 +105,31 @@
                         <h3>Tu as obtenu :</h3>
 
                         <div class="popup-skins">
+                            <ul>
                             @foreach (var skin in ViewModel.WonSkins)
                             {
-                                var img = string.IsNullOrEmpty(skin.AnyUuid)
+                                    <li>
+                                        @{
+                                            SkinDTO translatedSkin = new SkinDTO()
+                                            {
+                                                AnyUuid = skin.Uuid,
+                                                BestPrice = 1, //EEE
+                                                ItemName = skin.ItemName,
+                                                RarityName = skin.RarityName,
+                                                RarityColor = skin.RarityColor,
+                                                SkinName = skin.SkinName,
+                                                WorstPrice = 1 //EEE
+                                            };
+
+                                    var img = string.IsNullOrEmpty(skin.Uuid)
                                     ? string.Empty
-                                    : $"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png";
-                                <WeaponDisplayComponent WeaponSkin="@skin" ImageLink="@img" />
+                                    : $"https://screenshots.cs.money/csmoney2/{skin.Uuid}_icon.png";
+                                            <WeaponDisplayComponent WeaponSkin="@translatedSkin" ImageLink="@img" />
+                                        }
+                                        @(skin.WearName.ToString() ?? "null")
+                                </li>
                             }
+                            </ul>
                         </div>
                         <button class="popup-close" @onclick="ViewModel.ClosePopup">OK</button>
                     </div>

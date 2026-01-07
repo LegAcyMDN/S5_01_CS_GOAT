@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.JSInterop;
+using Radzen;
 using S5_01_Blazor_CS_GOAT;
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
@@ -19,6 +20,7 @@ builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDMod
 builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
 builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
 builder.Services.AddScoped<IService<FairRandomDTO>>(sp => new WebService<FairRandomDTO>("fairrandom"));
+builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => new WebService<PriceHistoryDTO>("pricehistory"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -47,6 +49,7 @@ builder.Services.AddScoped<LiveFeedViewModel>();
 builder.Services.AddScoped<AuthOverlayViewModel>();
 builder.Services.AddScoped<AdminViewModel>();
 builder.Services.AddScoped<FairRandomViewModel>();
+builder.Services.AddScoped<LimitsViewModel>();
 
 // Enregistrement des ViewModels pour les composants
 builder.Services.AddTransient<CaseComponentViewModel>();
@@ -59,6 +62,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 #else
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/") });
 #endif
+builder.Services.AddRadzenComponents();
 
 var host = builder.Build();
 

@@ -42,58 +42,6 @@
     {
         <div>Chargement...</div>
     }
-
-    <div class="WalletLimit">
-        <h2>Budget</h2>
-        <label>
-            Limite :
-            <select @bind="ViewModel.Type" class="inputLimit" name="type">
-                <option value="Dépôt">Dépôt</option>
-                <option value="Dépenses">Dépenses</option>
-                <option value="Ouvertures">Ouvertures</option>
-                <option value="Améliorations">Améliorations</option>
-            </select>
-        </label>
-        <br />
-        <label>
-            Période :
-            <select @bind="ViewModel.Period" class="inputLimit" name="period">
-                <option value="Horaire">Horaire</option>
-                <option value="Quotidien">Quotidien</option>
-                <option value="Hebdomadaire">Hebdomadaire</option>
-                <option value="Mensuel">Mensuel</option>
-            </select>
-        </label>
-        <br />
-        <label>
-            Montant Max :
-            <input type="number" @bind="ViewModel.Amount" min="0" step="any" class="inputLimit" name="amount" />
-            <br />
-            <button class="inputLimit" @onclick="async () => await ViewModel.SaveLimitAsync()">Sauver</button>
-        </label>
-
-        <h3>Limites chargées</h3>
-        @if (ViewModel.Limits == null)
-        {
-            <div>Aucune limite chargée</div>
-        }
-        else if (!ViewModel.Limits.Any())
-        {
-            <div>Liste vide</div>
-        }
-        else
-        {
-            <ul>
-                @foreach (var l in ViewModel.Limits)
-                {
-                    <li>
-                        <strong>@(l.LimitTypeName ?? "(sans type)")</strong>
-                        — Montant : @(l.LimitAmount.ToString() ?? "null")
-                    </li>
-                }
-            </ul>
-        }
-    </div>
 }
 else
 {

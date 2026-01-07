@@ -19,7 +19,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
         private List<SkinDTO> _skinsList = new();
         private Case? _activeCase;
-        private List<SkinDTO> _wonSkins = new();
+        private List<InventoryItemDetailDTO> _wonSkins = new();
         private bool _isEsthetic;
         private bool _showPopup;
         private int _selectedCount = 1;
@@ -28,6 +28,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private List<Skin> _caseOpenList = new();
         private bool _justBoughtCase  = false;
         private List<List<SkinDTO>> _boughtCasesListWithSkins = new();
+        private List<InventoryItemDetailDTO> _listWonSkinItemDetail = new();
         
         private int _completedAnimations = 0;
         private int _totalAnimations = 0;
@@ -79,7 +80,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _activeCase, value);
         }
 
-        public List<SkinDTO> WonSkins
+        public List<InventoryItemDetailDTO> WonSkins
         {
             get => _wonSkins;
             set => SetProperty(ref _wonSkins, value);
@@ -113,6 +114,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _justBoughtCase;
             set => SetProperty(ref _justBoughtCase, value);
+        }
+
+        public List<InventoryItemDetailDTO> ListWonSkinItemDetail
+        {
+            get => _listWonSkinItemDetail;
+            set => SetProperty(ref _listWonSkinItemDetail, value);
         }
 
         public bool IsAuthenticated
@@ -210,7 +217,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine(SelectedCount);
                 try
                 {
-                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(await CallCaseOpen(SelectedCount));
+                    MultipleCaseResultDTO casesObj = await CallCaseOpen(SelectedCount);
+                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(casesObj);
+
+                    foreach (var c in casesObj.Results)
+                    {
+                        ListWonSkinItemDetail.Add(c.Reward);
+                    }
 
                     _totalAnimations = BoughtCasesListWithSkins.Count;
                     _completedAnimations = 0;
@@ -241,15 +254,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 foreach (var oneCase in results.Results)
                 {
                     var wonSkin = oneCase.Reward;
-                    WonSkins.Add(new SkinDTO
+                    WonSkins.Add(new InventoryItemDetailDTO
                     {
-                        AnyUuid = wonSkin.Uuid,
+                        Uuid = wonSkin.Uuid,
                         ItemName = wonSkin.ItemName,
                         RarityColor = wonSkin.RarityColor,
                         RarityName = wonSkin.RarityName,
                         SkinName = wonSkin.SkinName,
-                        BestPrice = 1,
-                        WorstPrice = 1
+                        LastPrice = 1 //TODO make it good
                     });
                 }
         
@@ -287,18 +299,21 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private void ShowResultsPopup()
         {
             Console.WriteLine("All animations complete! Showing results...");
-    
+
             // Extract won skins from the roller results
-            foreach (var caseList in BoughtCasesListWithSkins)
+            //foreach (var caseList in BoughtCasesListWithSkins)
+            //{
+            //    // The won skin is at position 72 (middle of the 82 items)
+            //    if (caseList.Count > 72)
+            //    {
+            //        WonSkins.Add(caseList);
+            //    }
+            //}
+
+            foreach (var reward in ListWonSkinItemDetail)
             {
-                // The won skin is at position 72 (middle of the 82 items)
-                if (caseList.Count > 72)
-                {
-                    WonSkins.Add(caseList[72]);
-                }
+                WonSkins.Add(reward);
             }
-            
-            
             
             ShowPopup = true;
             JustBoughtCase = false; // Hide the rollers
@@ -411,6 +426,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             Console.WriteLine("cases with skins : " + casesWithSkins[0].Count);
             return casesWithSkins;
         }
+
+
+
         
     }
 }

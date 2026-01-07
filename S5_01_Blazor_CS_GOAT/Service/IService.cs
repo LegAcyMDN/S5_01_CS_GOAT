@@ -1,4 +1,5 @@
 using Shared.DTO.Helpers;
+using System.Collections.ObjectModel;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -18,4 +19,5 @@ public interface IService<TEntity>
     Task<List<TEntity>?> GetByUserAsync(string jwtToken);
     Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken);
     Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken);
+    Task<ObservableCollection<TEntity>?> GetByWear(int wearId);
 }

@@ -8,6 +8,8 @@ using HomagGroup.Blazor3D.Viewers;
 using Microsoft.JSInterop;
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
+using Shared.DTO;
+using System.Collections.ObjectModel;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -18,6 +20,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     {
         private readonly IThreeDModelService<ThreeDModel> _threeDModelRepository;
         private readonly IService<InventoryItemDetail> _inventoryItemService;
+        private readonly IService<PriceHistoryDTO> _priceHistoryService;
         private readonly AuthService _authService;
         private readonly CacheService _cacheService;
         private readonly IJSRuntime _jsRuntime;
@@ -29,16 +32,20 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _loadingProgress = 0;
         private Guid _loadedObjectGuid = Guid.NewGuid();
         private Scene _scene = new Scene();
+        private ObservableCollection<PriceHistoryDTO>? _priceHistory = new ObservableCollection<PriceHistoryDTO>();
+        private bool _isLoadingPriceHistory;
 
         public ThreeDViewViewModel(
             IThreeDModelService<ThreeDModel> threeDModelRepository,
             IService<InventoryItemDetail> inventoryItemService,
+            IService<PriceHistoryDTO> priceHistoryService,
             AuthService authService,
             CacheService cacheService,
             IJSRuntime jsRuntime)
         {
             _threeDModelRepository = threeDModelRepository;
             _inventoryItemService = inventoryItemService;
+            _priceHistoryService = priceHistoryService;
             _authService = authService;
             _cacheService = cacheService;
             _jsRuntime = jsRuntime;
@@ -84,6 +91,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _loadedObjectGuid;
             set => SetProperty(ref _loadedObjectGuid, value);
+        }
+
+        public ObservableCollection<PriceHistoryDTO>? PriceHistory
+        {
+            get => _priceHistory;
+            set => SetProperty(ref _priceHistory, value);
+        }
+
+        public bool IsLoadingPriceHistory
+        {
+            get => _isLoadingPriceHistory;
+            set => SetProperty(ref _isLoadingPriceHistory, value);
         }
 
         /// <summary>
@@ -225,7 +244,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     Format = Import3DFormats.Gltf,
                     FileURL = ModelUrl,
                 };
-                
+
                 LoadedObjectGuid = await viewer.Import3DModelAsync(settings);
                 await viewer.SetCameraPositionAsync(new Vector3(45, 30, 0), new Vector3(0, 0, 0));
 
@@ -252,7 +271,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 {
                     LoadingProgress = 100;
                     LoadingMessage = "Chargement terminé !";
-                    
+
                     await Task.Delay(500);
                     IsLoading = false;
                     break;
@@ -294,5 +313,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
             }
         }
+
+        public async Task DrawPriceHistoryGraph()
+        {
+            PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+#if false
+            try
+            {
+                IsLoadingPriceHistory = true;
+                PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur: {ex.Message}");
+                PriceHistory = null;
+            }
+            finally
+            {
+                IsLoadingPriceHistory = false;
+            }
+#endif
+        }
     }
-}
+    }

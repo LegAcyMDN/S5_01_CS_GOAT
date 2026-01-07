@@ -15,7 +15,13 @@ hr {
 }
 
 .content-wrapper {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.page-content {
+    flex: 1;
 }
 
 .container-page {
