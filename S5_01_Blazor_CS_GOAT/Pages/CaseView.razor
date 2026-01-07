@@ -55,7 +55,7 @@
                         </span> 
                     </a>
                 </div>
-                <input type="text" @bind="ViewModel.PromoCode"/>
+                <input type="text" class="PromoCode" placeholder="CODE PROMO" @bind="ViewModel.PromoCode"/>
                 @if (ViewModel.IsInvalidPromoCode)
                 {
                     <p>Code promo invalide !</p>
@@ -68,7 +68,7 @@
                         <h3>Tu as obtenu :</h3>
 
                         <div class="popup-skins">
-                            <ul>
+                            <ul list-style-type: none;>
                             @foreach (var skin in ViewModel.WonSkins)
                             {
                                     <li>
@@ -89,6 +89,8 @@
                                     : $"https://screenshots.cs.money/csmoney2/{skin.Uuid}_icon.png";
                                             <WeaponDisplayComponent WeaponSkin="@translatedSkin" ImageLink="@img" />
                                         }
+                                        @(skin.ItemName.ToString() ?? "null")
+                                        @(skin.SkinName.ToString() ?? "null")
                                         @(skin.WearName.ToString() ?? "null")
                                 </li>
                             }

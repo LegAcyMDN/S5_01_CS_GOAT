@@ -312,3 +312,13 @@ input:checked + .slider:after {
     outline: 2px solid #f99e1c;
     outline-offset: 2px;
 }
+
+.PromoCode {
+    background-color: #2a2836;
+    width: 150px;
+    height: 30px;
+    margin-left: 20px;
+    align-self: anchor-center;
+    color: white;
+    text-align-last: center;
+}

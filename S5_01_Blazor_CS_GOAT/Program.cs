@@ -20,6 +20,7 @@ builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDMod
 builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
 builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
 builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => new WebService<PriceHistoryDTO>("pricehistory"));
+builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => new WebService<RandomTransactionDetailDTO>("randomtransaction"));
 
 
 builder.Services.AddScoped<CacheService>(sp => 
