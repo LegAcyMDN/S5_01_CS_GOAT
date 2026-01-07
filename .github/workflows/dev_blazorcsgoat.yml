@@ -75,8 +75,10 @@ jobs:
 
       - name: Generate dev certificate (Linux compatible)
         run: |
+          mkdir -p $HOME/.aspnet/https
           dotnet dev-certs https --clean
           dotnet dev-certs https --export-path $HOME/.aspnet/https/aspnetapp.pfx --password "TestPassword123"
+          dotnet dev-certs https --trust
           dotnet dev-certs https --check
 
       - name: Serve Blazor WASM with HTTPS
