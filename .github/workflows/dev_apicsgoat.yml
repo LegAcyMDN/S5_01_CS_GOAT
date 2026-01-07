@@ -25,8 +25,28 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj
 
+      - name: Create web.config for Azure
+        run: |
+          cat > S5_01_App_CS_GOAT/web.config << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <location path="." inheritInChildApplications="false">
+              <system.webServer>
+                <handlers>
+                  <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+                </handlers>
+                <aspNetCore processPath="dotnet"
+                           arguments=".\S5_01_App_CS_GOAT.dll"
+                           stdoutLogEnabled="true"
+                           stdoutLogFile=".\logs\stdout"
+                           hostingModel="inprocess" />
+              </system.webServer>
+            </location>
+          </configuration>
+          EOF
+
       - name: Publish
-        run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --output ./publish --self-contained true --runtime linux-x64
+        run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --output ./publish
 
       - name: Verify publish output
         run: |
