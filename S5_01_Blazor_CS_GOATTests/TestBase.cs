@@ -11,6 +11,10 @@ public class TestBase : PageTest
     [TestInitialize]
     public async Task TestSetup()
     {
+        // Set longer default timeout for Blazor WASM
+        Page.SetDefaultTimeout(60000); // 60 seconds
+        Page.SetDefaultNavigationTimeout(60000);
+        
         // Load configuration
         var environment = GetEnvironment();
         Console.WriteLine($"🌍 Environment: {environment}");
