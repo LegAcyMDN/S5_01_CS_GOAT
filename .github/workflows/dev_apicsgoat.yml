@@ -23,13 +23,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --no-restore
+        run: dotnet restore S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj
 
       - name: Publish
-        run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --no-build --output ./publish
+        run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --output ./publish --self-contained true --runtime linux-x64
 
       - name: Verify publish output
         run: |
