@@ -12,6 +12,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class CaseViewViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
+        private readonly FavoriteService _favoriteService;
         private readonly IService<SkinDTO> _skinRepository;
         private readonly IService<Case> _caseRepository;
         private static readonly Random _rng = new();
@@ -33,14 +34,19 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _totalAnimations = 0;
         
         private bool _isInvalidPromoCode = false;
+        private bool _isAuthenticated = false;
+        private string? _serverHash;
+        private int? _userNonce;
+        private readonly IService<FairRandomDTO> _fairRandomService;
 
 
-
-        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService)
+        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService, IService<FairRandomDTO> fairRandomService)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
             _authService = authService;
+            _favoriteService = favoriteService;
+            _fairRandomService = fairRandomService;
         }
 
 
@@ -116,6 +122,24 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _listWonSkinItemDetail, value);
         }
 
+        public bool IsAuthenticated
+        {
+            get => _isAuthenticated;
+            set => SetProperty(ref _isAuthenticated, value);
+        }
+
+        public string? ServerHash
+        {
+            get => _serverHash;
+            set => SetProperty(ref _serverHash, value);
+        }
+
+        public int? UserNonce
+        {
+            get => _userNonce;
+            set => SetProperty(ref _userNonce, value);
+        }
+
         /// <summary>
         /// Charge les données de la caisse et ses skins
         /// </summary>
@@ -124,8 +148,21 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 IsLoading = true;
+                IsAuthenticated = await _authService.IsAuthenticatedAsync();
+                
+                // Récupérer le token JWT si l'utilisateur est connecté
+                var jwtToken = await _authService.GetTokenAsync();
+                
                 SkinsList = await _skinRepository.GetByCaseIdAsync(caseId);
-                ActiveCase = await _caseRepository.GetByIdAsync(caseId);
+                
+                // Charger la caisse avec le token pour obtenir l'état IsFavorite correct
+                ActiveCase = await _caseRepository.GetByIdAsync(caseId, jwtToken);
+                
+                // Charger les informations de provably fair si l'utilisateur est connecté
+                if (IsAuthenticated)
+                {
+                    await LoadFairRandomInfoAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -134,6 +171,34 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Charge les informations de provably fair (ServerHash et UserNonce) pour l'utilisateur actuel
+        /// </summary>
+        private async Task LoadFairRandomInfoAsync()
+        {
+            try
+            {
+                var jwtToken = await _authService.GetTokenAsync();
+                var fairRandomList = await _fairRandomService.GetByUserAsync(jwtToken);
+                
+                if (fairRandomList != null && fairRandomList.Count > 0)
+                {
+                    // Récupérer le dernier enregistrement (le plus récent)
+                    var latestFairRandom = fairRandomList.OrderByDescending(f => f.TransactionId).FirstOrDefault();
+                    
+                    if (latestFairRandom != null)
+                    {
+                        ServerHash = latestFairRandom.ServerHash;
+                        UserNonce = latestFairRandom.UserNonce;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement des informations provably fair: {ex.Message}");
             }
         }
 
@@ -271,7 +336,22 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             SelectedCount = count;
         }
         
-        
+        /// <summary>
+        /// Bascule le statut favori de la caisse active
+        /// </summary>
+        public async Task ToggleFavoriteAsync()
+        {
+            if (ActiveCase == null || !IsAuthenticated)
+                return;
+
+            bool success = await _favoriteService.ToggleFavoriteAsync(ActiveCase.CaseId, ActiveCase.IsFavorite);
+            
+            if (success)
+            {
+                ActiveCase.IsFavorite = !ActiveCase.IsFavorite;
+                OnPropertyChanged(nameof(ActiveCase));
+            }
+        }
         
         private async Task<MultipleCaseResultDTO?> CallCaseOpen(int numberOfCases)
         {

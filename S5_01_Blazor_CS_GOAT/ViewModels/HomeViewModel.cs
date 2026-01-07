@@ -9,15 +9,17 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class HomeViewModel : ViewModelBase
     {
         private readonly IService<Case> _caseRepository;
+        private readonly AuthService _authService;
 
         private List<Case> _cases = new();
         private List<Case> _filteredCases = new();
         private string _searchTerm = string.Empty;
         private bool _isLoading = true;
 
-        public HomeViewModel(IService<Case> caseRepository)
+        public HomeViewModel(IService<Case> caseRepository, AuthService authService)
         {
             _caseRepository = caseRepository;
+            _authService = authService;
         }
 
         /// <summary>
@@ -94,7 +96,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 IsLoading = true;
-                Cases = await _caseRepository.GetAllAsync();
+                
+                // Récupérer le token JWT si l'utilisateur est connecté
+                var jwtToken = await _authService.GetTokenAsync();
+                
+                // Charger les caisses avec le token pour obtenir l'état IsFavorite correct
+                Cases = await _caseRepository.GetAllAsync(jwtToken) ?? new List<Case>();
             }
             catch (Exception ex)
             {

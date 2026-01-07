@@ -40,8 +40,26 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
     }
 
+    public async Task<List<TEntity>?> GetAllAsync(string? jwtToken)
+    {
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        }
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
+    }
+
     public async Task<TEntity?> GetByIdAsync(int id)
     {
+        return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{id}");
+    }
+
+    public async Task<TEntity?> GetByIdAsync(int id, string? jwtToken)
+    {
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        }
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{id}");
     }
 
