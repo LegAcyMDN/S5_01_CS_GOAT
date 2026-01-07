@@ -13,24 +13,26 @@
             <div class="case-title">
                 <h1>
                     @ViewModel.ActiveCase.CaseName
+                </h1>
+            </div>                    
+            <div class="case-image">
+                <div>
+                    <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />
                     @if (ViewModel.IsAuthenticated)
                     {
                         <button class="favorite-btn-title @(ViewModel.ActiveCase.IsFavorite ? "is-favorite" : "")" 
                                 @onclick="ViewModel.ToggleFavoriteAsync">
                             @if (ViewModel.ActiveCase.IsFavorite)
                             {
-                                <span>★</span>
+                                <p>★</p>
                             }
                             else
                             {
-                                <span>☆</span>
+                                <p>☆</p>
                             }
                         </button>
                     }
-                </h1>
-            </div>
-            <div class="case-image">
-                <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />
+                </div>
                 @if (ViewModel.IsAuthenticated && (ViewModel.ServerHash != null || ViewModel.UserNonce != null))
                 {
                     <div class="provably-fair-info">
@@ -38,15 +40,15 @@
                         @if (!string.IsNullOrEmpty(ViewModel.ServerHash))
                         {
                             <div class="fair-info-item">
-                                <span class="fair-label">Server Hash:</span>
-                                <span class="fair-value" title="@ViewModel.ServerHash">@TruncateHash(ViewModel.ServerHash)</span>
+                                <p class="fair-label">Server Hash:</p>
+                                <p class="fair-value" title="@ViewModel.ServerHash">@ViewModel.ServerHash</p>
                             </div>
                         }
                         @if (ViewModel.UserNonce != null)
                         {
                             <div class="fair-info-item">
-                                <span class="fair-label">User Nonce:</span>
-                                <span class="fair-value">@ViewModel.UserNonce</span>
+                                <p class="fair-label">User Nonce:</p>
+                                <p class="fair-value">@ViewModel.UserNonce</p>
                             </div>
                         }
                         <a href="/stats" class="fair-link">Voir l'historique complet</a>
