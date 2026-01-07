@@ -34,15 +34,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         
         private bool _isInvalidPromoCode = false;
         private bool _isAuthenticated = false;
+        private string? _serverHash;
+        private int? _userNonce;
+        private readonly IService<FairRandomDTO> _fairRandomService;
 
 
-
-        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService)
+        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService, IService<FairRandomDTO> fairRandomService)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
             _authService = authService;
             _favoriteService = favoriteService;
+            _fairRandomService = fairRandomService;
         }
 
 
@@ -118,6 +121,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _isAuthenticated, value);
         }
 
+        public string? ServerHash
+        {
+            get => _serverHash;
+            set => SetProperty(ref _serverHash, value);
+        }
+
+        public int? UserNonce
+        {
+            get => _userNonce;
+            set => SetProperty(ref _userNonce, value);
+        }
+
         /// <summary>
         /// Charge les données de la caisse et ses skins
         /// </summary>
@@ -135,6 +150,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 
                 // Charger la caisse avec le token pour obtenir l'état IsFavorite correct
                 ActiveCase = await _caseRepository.GetByIdAsync(caseId, jwtToken);
+                
+                // Charger les informations de provably fair si l'utilisateur est connecté
+                if (IsAuthenticated)
+                {
+                    await LoadFairRandomInfoAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -143,6 +164,34 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        /// <summary>
+        /// Charge les informations de provably fair (ServerHash et UserNonce) pour l'utilisateur actuel
+        /// </summary>
+        private async Task LoadFairRandomInfoAsync()
+        {
+            try
+            {
+                var jwtToken = await _authService.GetTokenAsync();
+                var fairRandomList = await _fairRandomService.GetByUserAsync(jwtToken);
+                
+                if (fairRandomList != null && fairRandomList.Count > 0)
+                {
+                    // Récupérer le dernier enregistrement (le plus récent)
+                    var latestFairRandom = fairRandomList.OrderByDescending(f => f.TransactionId).FirstOrDefault();
+                    
+                    if (latestFairRandom != null)
+                    {
+                        ServerHash = latestFairRandom.ServerHash;
+                        UserNonce = latestFairRandom.UserNonce;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement des informations provably fair: {ex.Message}");
             }
         }
 

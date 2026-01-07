@@ -18,7 +18,7 @@ builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<I
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
 builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
 builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
-
+builder.Services.AddScoped<IService<FairRandomDTO>>(sp => new WebService<FairRandomDTO>("fairrandom"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -46,6 +46,7 @@ builder.Services.AddScoped<ConnectMenuViewModel>();
 builder.Services.AddScoped<LiveFeedViewModel>();
 builder.Services.AddScoped<AuthOverlayViewModel>();
 builder.Services.AddScoped<AdminViewModel>();
+builder.Services.AddScoped<FairRandomViewModel>();
 
 // Enregistrement des ViewModels pour les composants
 builder.Services.AddTransient<CaseComponentViewModel>();

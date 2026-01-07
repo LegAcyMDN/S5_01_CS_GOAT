@@ -31,6 +31,27 @@
             </div>
             <div class="case-image">
                 <img src="cases/@ViewModel.ActiveCase.CaseImage" alt="@ViewModel.ActiveCase.CaseName" />
+                @if (ViewModel.IsAuthenticated && (ViewModel.ServerHash != null || ViewModel.UserNonce != null))
+                {
+                    <div class="provably-fair-info">
+                        <h3>Provably Fair</h3>
+                        @if (!string.IsNullOrEmpty(ViewModel.ServerHash))
+                        {
+                            <div class="fair-info-item">
+                                <span class="fair-label">Server Hash:</span>
+                                <span class="fair-value" title="@ViewModel.ServerHash">@TruncateHash(ViewModel.ServerHash)</span>
+                            </div>
+                        }
+                        @if (ViewModel.UserNonce != null)
+                        {
+                            <div class="fair-info-item">
+                                <span class="fair-label">User Nonce:</span>
+                                <span class="fair-value">@ViewModel.UserNonce</span>
+                            </div>
+                        }
+                        <a href="/stats" class="fair-link">Voir l'historique complet</a>
+                    </div>
+                }
             </div>
             <div class="letsgo-gambling">
                 <div class="gambling-x @(ViewModel.SelectedCount == 1 ? "selected" : "")"
@@ -145,6 +166,17 @@ else
     {
         await ViewModel.LoadCaseAsync(CaseId);
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    private string TruncateHash(string hash)
+    {
+        if (string.IsNullOrEmpty(hash))
+            return "-";
+        
+        if (hash.Length <= 16)
+            return hash;
+        
+        return $"{hash.Substring(0, 8)}...{hash.Substring(hash.Length - 8)}";
     }
 }
 
