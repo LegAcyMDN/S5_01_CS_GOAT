@@ -64,34 +64,43 @@ jobs:
       - name: Install Playwright browsers
         run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
-      - name: Trust dev certificate
-        run: dotnet dev-certs https --trust
+      - name: Download build artifact for serving
+        uses: actions/download-artifact@v4
+        with:
+          name: blazor-app
+          path: ./wwwroot
 
-      - name: Run Blazor app
+      - name: Serve Blazor WASM with HTTP
         run: |
-          cd S5_01_Blazor_CS_GOAT
-          dotnet run --no-build --configuration Release &
+          cd wwwroot
+          python3 -m http.server 7030 &
           echo $! > ../server.pid
           cd ..
 
-      - name: Verify server is running
+      - name: Wait for server and show logs
         run: |
+          echo "Waiting for server to start..."
+          sleep 3
+
           if ! kill -0 $(cat server.pid) 2>/dev/null; then
-            echo "Server failed to start"
+            echo "❌ Server process died"
             exit 1
           fi
-          echo "Server is running with PID $(cat server.pid)"
 
-          # Test if it's responding (with --insecure for dev cert)
-          for i in {1..30}; do
-            if curl -k -s https://localhost:7030 > /dev/null; then
-              echo "Server is responding on HTTPS!"
+          echo "✅ Server process is running"
+
+          # Test with plain curl
+          for i in {1..20}; do
+            if curl -s -f http://localhost:7030 > /dev/null 2>&1; then
+              echo "✅ Server is responding!"
+              curl -I http://localhost:7030
               exit 0
             fi
-            echo "Attempt $i: Server not ready yet..."
+            echo "⏳ Attempt $i/20..."
             sleep 2
           done
-          echo "Server failed to respond after 60 seconds"
+
+          echo "❌ Server not responding"
           exit 1
 
       - name: Run E2E Tests
