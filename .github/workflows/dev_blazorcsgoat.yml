@@ -70,37 +70,58 @@ jobs:
           name: blazor-app
           path: ./wwwroot
 
-      - name: Serve Blazor WASM with HTTP
+      - name: Install dotnet-serve
+        run: dotnet tool install --global dotnet-serve
+
+      - name: Generate and trust dev certificate
+        run: |
+          dotnet dev-certs https --clean
+          dotnet dev-certs https --trust
+          dotnet dev-certs https --check --trust
+
+      - name: Serve Blazor WASM with HTTPS
         run: |
           cd wwwroot
-          python3 -m http.server 7030 &
+          dotnet serve -S -p 7030 > ../serve.log 2>&1 &
           echo $! > ../server.pid
           cd ..
+          sleep 5
 
-      - name: Wait for server and show logs
+      - name: Debug server startup
         run: |
-          echo "Waiting for server to start..."
-          sleep 3
+          echo "=== Server Logs ==="
+          cat serve.log || echo "No logs yet"
+          echo ""
+          echo "=== Process Check ==="
+          ps aux | grep dotnet-serve || echo "No dotnet-serve process"
+          echo ""
+          echo "=== Port Check ==="
+          netstat -tuln | grep 7030 || echo "Port 7030 not listening"
 
-          if ! kill -0 $(cat server.pid) 2>/dev/null; then
-            echo "❌ Server process died"
-            exit 1
-          fi
+      - name: Wait for server
+        run: |
+          echo "Waiting for HTTPS server..."
 
-          echo "✅ Server process is running"
-
-          # Test with plain curl
-          for i in {1..20}; do
-            if curl -s -f http://localhost:7030 > /dev/null 2>&1; then
-              echo "✅ Server is responding!"
-              curl -I http://localhost:7030
+          for i in {1..30}; do
+            if curl -k -s -f https://localhost:7030 > /dev/null 2>&1; then
+              echo "✅ Server is responding on HTTPS!"
+              curl -k -I https://localhost:7030
               exit 0
             fi
-            echo "⏳ Attempt $i/20..."
+            echo "⏳ Attempt $i/30..."
+
+            # Show logs on every 5th attempt
+            if [ $((i % 5)) -eq 0 ]; then
+              echo "--- Recent logs ---"
+              tail -n 10 serve.log 2>/dev/null || echo "No logs"
+            fi
+
             sleep 2
           done
 
-          echo "❌ Server not responding"
+          echo "❌ Server failed to respond"
+          echo "=== Final logs ==="
+          cat serve.log || echo "No logs"
           exit 1
 
       - name: Run E2E Tests
