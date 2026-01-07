@@ -48,6 +48,7 @@ builder.Services.AddScoped<ConnectMenuViewModel>();
 builder.Services.AddScoped<LiveFeedViewModel>();
 builder.Services.AddScoped<AuthOverlayViewModel>();
 builder.Services.AddScoped<AdminViewModel>();
+builder.Services.AddScoped<PromoCodeViewModel>();
 builder.Services.AddScoped<FairRandomViewModel>();
 builder.Services.AddScoped<LimitsViewModel>();
 
