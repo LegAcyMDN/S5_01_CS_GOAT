@@ -81,6 +81,44 @@
     transition: all 0.3s ease;
 }
 
+/* Styles pour le champ de mot de passe avec bouton toggle pour Profile */
+.password-field-profile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-field-profile input {
+    flex: 1;
+    padding-right: 45px !important;
+}
+
+.toggle-password-profile {
+    all: unset;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    color: #000000;
+    border: none;
+    outline: none;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    opacity: 1;
+}
+
+
+
+.toggle-password-profile svg {
+    stroke: white;
+}
+
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
@@ -377,6 +415,10 @@
     .quick-link {
         padding: 12px 15px;
     }
+
+    .toggle-password-profile {
+        right: 8px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -397,5 +439,15 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 10px 12px;
+        font-size: 0.95em;
+    }
+
+    .password-field-profile input {
+        padding-right: 40px !important;
     }
 }
