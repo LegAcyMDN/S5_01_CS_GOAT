@@ -82,7 +82,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             
             List<FairRandom> mixedFairRandomList = FairRandomFixture.GetFairRandoms();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.UserId == null))
+            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"))
                                     .ReturnsAsync(mixedFairRandomList);
             
             mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(mixedFairRandomList))
@@ -93,7 +93,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.UserId == null), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"), Times.Once);
         }
 
         [TestMethod]
@@ -102,7 +102,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             List<FairRandom> emptyList = new List<FairRandom>();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.UserId == null))
+            fairRandomRepositoryMock.Setup(r => r.GetAllAsync(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"))
                                     .ReturnsAsync(emptyList);
             
             mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(emptyList))
@@ -113,7 +113,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.UserId == null), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"), Times.Once);
         }
 
         #endregion

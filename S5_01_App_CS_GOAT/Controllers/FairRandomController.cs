@@ -29,7 +29,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false, fr => fr.UserId == null);
+            IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false, fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction");
 
             IEnumerable<FairRandomDTO> userFairRandomsDTO = mapper.Map<IEnumerable<FairRandomDTO>>(fairRandoms);
             return Ok(userFairRandomsDTO);

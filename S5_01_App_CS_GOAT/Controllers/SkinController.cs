@@ -26,7 +26,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Case? _case = await caseManager.GetByIdAsync(caseid,
                 "CaseContents.Skin.Rarity",
-                "CaseContents.Skin.PriceHistories.WearType",
+                // PRX "CaseContents.Skin.PriceHistories",
                 "CaseContents.Skin.Wears.WearType",
                 "CaseContents.Skin.Item"
             );
