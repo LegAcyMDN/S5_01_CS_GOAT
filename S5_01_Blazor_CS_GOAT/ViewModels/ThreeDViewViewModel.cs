@@ -317,22 +317,22 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public async Task DrawPriceHistoryGraph()
         {
             PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
-            Console.WriteLine(PriceHistory.Count);
-
-            //try
-            //{
-            //    IsLoadingPriceHistory = true;
-            //    PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine($"Erreur: {ex.Message}");
-            //    PriceHistory = null;
-            //}
-            //finally
-            //{
-            //    IsLoadingPriceHistory = false;
-            //}
+#if false
+            try
+            {
+                IsLoadingPriceHistory = true;
+                PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur: {ex.Message}");
+                PriceHistory = null;
+            }
+            finally
+            {
+                IsLoadingPriceHistory = false;
+            }
+#endif
         }
     }
     }
