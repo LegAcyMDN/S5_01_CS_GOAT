@@ -4,6 +4,32 @@ namespace S5_01_Blazor_CS_GOATTests;
 [TestClass]
 public class UserTests : TestBase
 {
+    
+    [TestMethod]
+    public async Task DebugServerConnection()
+    {
+        Console.WriteLine($"🧪 Attempting to navigate to: {BaseUrl}");
+    
+        try
+        {
+            var response = await Page.GotoAsync(BaseUrl, new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.DOMContentLoaded,
+                Timeout = 10000
+            });
+        
+            Console.WriteLine($"✅ Navigation successful! Status: {response.Status}");
+            Console.WriteLine($"📄 URL: {Page.Url}");
+            Console.WriteLine($"📄 Title: {await Page.TitleAsync()}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Navigation failed: {ex.Message}");
+            throw;
+        }
+    }
+    
+    
     [TestMethod]
     public async Task UserCanConnect()
     {

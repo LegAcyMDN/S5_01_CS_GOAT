@@ -11,14 +11,19 @@ public class TestBase : PageTest
     public override BrowserNewContextOptions ContextOptions()
     {
         var options = base.ContextOptions();
-        
+    
+        Console.WriteLine("🔧 Configuring browser context options...");
+    
         // For local testing, ignore HTTPS certificate errors
         var environment = GetEnvironment();
         if (environment == "Local")
         {
+            Console.WriteLine("🔓 Setting IgnoreHTTPSErrors = true for local testing");
             options.IgnoreHTTPSErrors = true;
         }
-        
+    
+        Console.WriteLine($"📋 Context options: IgnoreHTTPSErrors={options.IgnoreHTTPSErrors}");
+    
         return options;
     }
     
