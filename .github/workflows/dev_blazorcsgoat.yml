@@ -73,11 +73,11 @@ jobs:
       - name: Install dotnet-serve
         run: dotnet tool install --global dotnet-serve
 
-      - name: Generate and trust dev certificate
+      - name: Generate dev certificate (Linux compatible)
         run: |
           dotnet dev-certs https --clean
-          dotnet dev-certs https --trust
-          dotnet dev-certs https --check --trust
+          dotnet dev-certs https --export-path $HOME/.aspnet/https/aspnetapp.pfx --password "TestPassword123"
+          dotnet dev-certs https --check
 
       - name: Serve Blazor WASM with HTTPS
         run: |
@@ -133,6 +133,7 @@ jobs:
             --logger "console;verbosity=detailed"
         env:
           TEST_ENVIRONMENT: Local
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
         timeout-minutes: 15
 
       - name: Stop server
