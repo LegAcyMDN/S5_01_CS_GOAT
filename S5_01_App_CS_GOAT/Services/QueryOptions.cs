@@ -1,174 +1,251 @@
-﻿namespace S5_01_App_CS_GOAT.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq.Expressions;
+using System.Runtime.ExceptionServices;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-public interface IQueryableEntity
+namespace S5_01_App_CS_GOAT.Services;
+
+public class QueryOption<TEntity> where TEntity : class
 {
-    public int? Id { get; set; }
+    private readonly Expression<Func<TEntity, bool>>? Where;
+    private readonly Expression<Func<TEntity, object?>>? Include;
+    private readonly string? Path;
 
-    public string? Key { get; set; }
-
-    public double? Value { get; set; }
-
-    public string? Category { get; set; }
-
-    public DateTime? Date { get; set; }
-}
-
-public interface IQueryOption
-{
-    public IEnumerable<T> Apply<T>(IEnumerable<T> collection)
-        where T : IQueryableEntity;
-}
-
-public class QueryOptions : IQueryOption
-{
-    public SortOptions SortOptions { get; set; } = new SortOptions();
-
-    public FilterOptions FilterOptions { get; set; } = new FilterOptions();
-
-    public PageOptions PageOptions { get; set; } = new PageOptions();
-
-    public IEnumerable<T> Apply<T>(IEnumerable<T> collection)
-        where T : IQueryableEntity
+    public QueryOption(Expression<Func<TEntity, bool>>? where, Expression<Func<TEntity, object?>>? include, string? includePath)
     {
-        collection = SortOptions.Apply(collection);
-        collection = FilterOptions.Apply(collection);
-        collection = PageOptions.Apply(collection);
+        Where = where;
+        Include = include;
+        Path = includePath;
+    }
+
+    public QueryOption(Expression<Func<TEntity, bool>> where)
+        : this(where, null, null) { }
+
+    public QueryOption(Expression<Func<TEntity, object?>> include)
+        : this(null, include, null) { }
+
+    public QueryOption(string include)
+        : this(null, null, include) { }
+
+    public IQueryable<TEntity> ApplyOption(IQueryable<TEntity> query)
+    {
+        if (Include != null)
+        {
+            query = query.Include(Include);
+        }
+        if (Path != null)
+        {
+            query = query.Include(Path);
+        }
+        if (Where != null)
+        {
+            query = query.Where(Where);
+        }
+        return query;
+    }
+
+    public async Task<IEnumerable<TEntity>> ApplyOption(IEnumerable<TEntity> collection, DbContext context)
+    {
+        if (Include != null && collection.Any())
+        {
+            List<string> path = GetNavigation(Include);
+            await LoadNavigation(collection, context, path);
+        }
+        if (Path != null && collection.Any())
+        {
+            string[] segments = Path.Split('.');
+            List<string> path = segments.ToList();
+            await LoadNavigation(collection, context, path);
+        }
+        if (Where != null)
+        {
+            collection = collection.AsQueryable().Where(Where);
+        }
         return collection;
+    }
+
+    public async Task<TEntity> ApplyOption(TEntity entity, DbContext context)
+    {
+        if (Include != null)
+        {
+            List<string> path = GetNavigation(Include);
+            await LoadNavigation(entity, context, path);
+        }
+        if (Path != null)
+        {
+            string[] segments = Path.Split('.');
+            List<string> path = segments.ToList();
+            await LoadNavigation(entity, context, path);
+        }
+        return entity;
+    }
+
+    private static List<string> GetNavigation(Expression<Func<TEntity, object?>> include)
+    {
+        List<string> path = new();
+        Expression current = include.Body;
+
+        // Convert unary ("x.y") expressions to member expressions
+        if (current is UnaryExpression unaryExpr &&
+            unaryExpr.NodeType == ExpressionType.Convert)
+        {
+            current = unaryExpr.Operand;
+        }
+
+        while (current is MemberExpression memberExpr)
+        {
+            path.Insert(0, memberExpr.Member.Name);
+            current = memberExpr.Expression;
+        }
+
+        if (path.Count == 0)
+            throw new ArgumentException($"{include} is invalid. Must be a member access expression.", nameof(include));
+
+        return path;
+    }
+
+    private async Task LoadNavigation<T>(IEnumerable<T> collection, DbContext context, List<string> path)
+    {
+        foreach (T entity in collection)
+        {
+            await LoadNavigation(entity, context, path);
+        }
+    }
+
+    private async Task LoadNavigation<T>(T? entity, DbContext context, List<string> path)
+    {
+        if (entity == null) return;
+        string propertyName = path[0];
+        List<string> remainingPath = path.Skip(1).ToList();
+
+        EntityEntry entry = context.Entry(entity);
+        NavigationEntry navigation = entry.Navigation(propertyName);
+        if (navigation.IsLoaded == false)
+            await navigation.LoadAsync();
+
+        if (remainingPath.Count == 0) return;
+
+        if (navigation.Metadata.IsCollection)
+        {
+            IEnumerable<object?>? relatedEntities = navigation.CurrentValue as IEnumerable<object?>;
+            if (relatedEntities == null) return;
+            foreach (object? relatedEntity in relatedEntities)
+            {
+                if (relatedEntity == null) continue;
+                await LoadNavigation(relatedEntity, context, remainingPath);
+            }
+        }
+        else
+        {
+            object? relatedEntity = navigation.CurrentValue;
+            if (relatedEntity == null) return;
+            await LoadNavigation(relatedEntity, context, remainingPath);
+        }
     }
 }
 
-public enum SortDirection
+public class QueryOptions<TEntity> where TEntity : class
 {
-    None,
-    Ascending,
-    Descending
-}
+    private List<QueryOption<TEntity>> BeforeOptions = new();
+    private List<QueryOption<TEntity>> AfterOptions = new();
 
-public class SortOptions : IQueryOption
-{
-    public SortDirection SortById { get; set; } = SortDirection.Ascending;
+    public QueryOptions() { }
 
-    public SortDirection SortByKey { get; set; } = SortDirection.None;
-
-    public SortDirection SortByValue { get; set; } = SortDirection.None;
-
-    public SortDirection SortByCategory { get; set; } = SortDirection.None;
-
-    public SortDirection SortByDate { get; set; } = SortDirection.None;
-
-    public IEnumerable<T> Apply<T>(IEnumerable<T> collection)
-        where T : IQueryableEntity
+    public QueryOptions<TEntity> Before(params QueryOption<TEntity>[] options)
     {
-        if (SortById != SortDirection.None)
-        {
-            collection = SortById == SortDirection.Ascending
-                ? collection.OrderBy(e => e.Id)
-                : collection.OrderByDescending(e => e.Id);
-        }
+        BeforeOptions.AddRange(options);
+        return this;
+    }
 
-        if (SortByKey != SortDirection.None)
+    public QueryOptions<TEntity> Before(params Expression<Func<TEntity, bool>>[] wheres)
+    {
+        foreach (var where in wheres)
         {
-            collection = SortByKey == SortDirection.Ascending
-                ? collection.OrderBy(e => e.Key)
-                : collection.OrderByDescending(e => e.Key);
+            BeforeOptions.Add(new QueryOption<TEntity>(where));
         }
+        return this;
+    }
 
-        if (SortByValue != SortDirection.None)
+    public QueryOptions<TEntity> Before(params Expression<Func<TEntity, object?>>[] includes)
+    {
+        foreach (var include in includes)
         {
-            collection = SortByValue == SortDirection.Ascending
-                ? collection.OrderBy(e => e.Value)
-                : collection.OrderByDescending(e => e.Value);
+            BeforeOptions.Add(new QueryOption<TEntity>(include));
         }
+        return this;
+    }
 
-        if (SortByCategory != SortDirection.None)
+    public QueryOptions<TEntity> Before(params string[] paths)
+    {
+        foreach (string path in paths)
         {
-            collection = SortByCategory == SortDirection.Ascending
-                ? collection.OrderBy(e => e.Category)
-                : collection.OrderByDescending(e => e.Category);
+            BeforeOptions.Add(new QueryOption<TEntity>(path));
         }
+        return this;
+    }
 
-        if (SortByDate != SortDirection.None)
+    public QueryOptions<TEntity> After(params QueryOption<TEntity>[] options)
+    {
+        AfterOptions.AddRange(options);
+        return this;
+    }
+
+    public QueryOptions<TEntity> After(params Expression<Func<TEntity, bool>>[] wheres)
+    {
+        foreach (var where in wheres)
         {
-            collection = SortByDate == SortDirection.Ascending
-                ? collection.OrderBy(e => e.Date)
-                : collection.OrderByDescending(e => e.Date);
+            AfterOptions.Add(new QueryOption<TEntity>(where));
         }
+        return this;
+    }
 
+    public QueryOptions<TEntity> After(params Expression<Func<TEntity, object?>>[] includes)
+    {
+        foreach (var include in includes)
+        {
+            AfterOptions.Add(new QueryOption<TEntity>(include));
+        }
+        return this;
+    }
+
+    public QueryOptions<TEntity> After(params string[] paths)
+    {
+        foreach (string path in paths)
+        {
+            AfterOptions.Add(new QueryOption<TEntity>(path));
+        }
+        return this;
+    }
+
+    public IQueryable<TEntity> ApplyBefore(IQueryable<TEntity> query)
+    {
+        foreach (QueryOption<TEntity> option in BeforeOptions)
+        {
+            query = option.ApplyOption(query);
+        }
+        return query;
+    }
+
+    public async Task<IEnumerable<TEntity>> ApplyAfter(IEnumerable<TEntity> collection, DbContext context)
+    {
+        foreach (QueryOption<TEntity> option in AfterOptions)
+        {
+            collection = await option.ApplyOption(collection, context);
+        }
         return collection;
     }
-}
 
-public class FilterOptions : IQueryOption
-{
-    public string? KeyFilter { get; set; }
-
-    public int MaxDistanceFromKey { get; set; } = 5;
-
-    public bool SortByKeyDistance { get; set; } = true;
-
-    public double? MinPriceFilter { get; set; }
-
-    public double? MaxPriceFilter { get; set; }
-
-    public string[] CategoryFilters { get; set; } = Array.Empty<string>();
-
-    public DateTime? MinDateFilter { get; set; }
-
-    public DateTime? MaxDateFilter { get; set; }
-
-    public IEnumerable<T> Apply<T>(IEnumerable<T> collection)
-        where T : IQueryableEntity
+    public async Task<TEntity> ApplyAfter(TEntity entity, DbContext context)
     {
-        if (!string.IsNullOrEmpty(KeyFilter))
+        foreach (QueryOption<TEntity> option in AfterOptions)
         {
-            throw new NotImplementedException("Key-based filtering is not implemented yet.");
+            entity = await option.ApplyOption(entity, context);
         }
-
-        if (MinPriceFilter.HasValue)
-        {
-            collection = collection
-                .Where(e => e.Value.HasValue && e.Value.Value >= MinPriceFilter.Value);
-        }
-
-        if (MaxPriceFilter.HasValue)
-        {
-            collection = collection
-                .Where(e => e.Value.HasValue && e.Value.Value <= MaxPriceFilter.Value);
-        }
-
-        if (CategoryFilters.Length > 0)
-        {
-            collection = collection
-                .Where(e => e.Category != null && CategoryFilters.Contains(e.Category));
-        }
-
-        if (MinDateFilter.HasValue)
-        {
-            collection = collection
-                .Where(e => e.Date.HasValue && e.Date.Value >= MinDateFilter.Value);
-        }
-
-        if (MaxDateFilter.HasValue)
-        {
-            collection = collection
-                .Where(e => e.Date.HasValue && e.Date.Value <= MaxDateFilter.Value);
-        }
-
-        return collection;
-    }
-}
-
-public class PageOptions : IQueryOption
-{
-    public int Page { get; set; } = 1;
-    
-    public int PageSize { get; set; } = int.MaxValue;
-
-    public IEnumerable<T> Apply<T>(IEnumerable<T> collection)
-        where T : IQueryableEntity
-    {
-        return collection
-            .Skip((Page - 1) * PageSize)
-            .Take(PageSize);
+        return entity;
     }
 }

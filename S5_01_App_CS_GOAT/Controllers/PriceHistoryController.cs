@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -24,7 +25,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByWear(int wearId)
         {
-            Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
+            QueryOptions<Wear> options =
+                new QueryOptions<Wear>()
+                .After(ph => ph.WearType.PriceHistories);
+            Wear? wear = await wearManager.GetByIdAsync(LUL: false, id: wearId, options: options);
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory> result = wear.PriceHistories();
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
@@ -43,7 +47,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetAiPrediction(int wearId)
         {
-            Wear? wear = await wearManager.GetByIdAsync(wearId, "WearType.PriceHistories");
+            QueryOptions<Wear> options =
+                new QueryOptions<Wear>()
+                .After(w => w.WearType.PriceHistories);
+            Wear? wear = await wearManager.GetByIdAsync(LUL: false, id: wearId, options: options);
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory>? result = await manager.PredictWithAI(wear);
             if (result == null) return StatusCode(StatusCodes.Status503ServiceUnavailable);

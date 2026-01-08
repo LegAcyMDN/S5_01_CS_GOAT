@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
@@ -32,8 +33,13 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 
         public async Task<int> SellAsync(int invItemId)
         {
+            QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
+                .Before(i => i.User)
+                .After(i => i.Wear.WearType.PriceHistories);
             InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsync(
-                invItemId, "User", "Wear.WearType.PriceHistories");
+                invItemId,
+                options
+            );
             if (invItem == null) return StatusCodes.Status404NotFound;
             return await SellAsync(invItem);
         }

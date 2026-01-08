@@ -48,7 +48,7 @@ namespace S5_01_App_CS_GOAT.Services
                 bool adminOverride,
                 Expression<Func<T1, bool>>? where = null,
                 params string[] includes)
-                where T1 : IUserDependant
+                where T1 : class, IUserDependant
         {
             IEnumerable<T1> allObjects = await manager.GetAllAsync(where, includes);
             AuthResult self = this;

@@ -50,11 +50,12 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? item = await manager.GetByIdAsync(inventoryItemId,
-                // PRX "Wear.WearType.PriceHistories",
-                "Wear.Skin.Rarity", 
-                "Wear.Skin.Item.ItemType"
-            );
+            QueryOptions<InventoryItem> options =
+                new QueryOptions<InventoryItem>()
+                .Before(i => i.Wear.Skin.Rarity,
+                    i => i.Wear.Skin.Item.ItemType)
+                .After(i => i.Wear.WearType.PriceHistories);
+            InventoryItem? item = await manager.GetByIdAsync(inventoryItemId, options);
             if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
 
             InventoryItemDetailDTO? inventory = mapper.Map<InventoryItemDetailDTO>(item);
