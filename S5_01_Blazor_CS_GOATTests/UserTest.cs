@@ -34,7 +34,7 @@ public class UserTests : TestBase
     public async Task UserCanConnect()
     {
         // Navigate to wallet page with longer timeout
-await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SANS LE / DONC CA MARCHE PAS
+await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         { 
             WaitUntil = WaitUntilState.DOMContentLoaded,
             Timeout = 60000 // 60 seconds for Blazor WASM to load
@@ -67,10 +67,21 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
-        
-        await Page.WaitForTimeoutAsync(2000);
 
-        Console.WriteLine("page actuelle : " + Page.Url);
+
+        for (int i = 0; i < 10; i++)
+        {
+            await Page.WaitForTimeoutAsync(2000);
+
+            Console.WriteLine("page actuelle : " + Page.Url);
+        }
+
+        Console.WriteLine("page : " + await Page.ContentAsync());
+
+        
+        
+        
+        
         
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
         { 
