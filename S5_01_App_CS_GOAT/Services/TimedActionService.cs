@@ -26,7 +26,7 @@ namespace S5_01_App_CS_GOAT.Services
 
     public class TimedActionService<TRepository, TEntity, TIdentifier> : BackgroundService
         where TRepository : IReadableRepository<TEntity, TIdentifier>
-        where TEntity : ITimedAction
+        where TEntity : class, ITimedAction
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<TimedActionService<TRepository, TEntity, TIdentifier>> _logger;

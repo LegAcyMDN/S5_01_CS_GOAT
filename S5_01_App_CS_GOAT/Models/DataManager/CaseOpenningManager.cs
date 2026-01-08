@@ -5,6 +5,7 @@ using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Mapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
@@ -56,12 +57,15 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             if (caseOpenningDTO.Quantity <= 0) throw new Exception("Quantity must be greater than zero.");
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
+
+            QueryOptions<Case> options = new QueryOptions<Case>()
+                .Before("CaseContents.Skin.Rarity",
+                        "CaseContents.Skin.Item.ItemType",
+                        "CaseContents.Skin.Wears.WearType")
+                .After("CaseContents.Skin.PriceHistories");
             Case? targetCase = await _caseRepository.GetByIdAsync(
                 caseOpenningDTO.CaseId,
-                "CaseContents.Skin.Rarity",
-                // PRX "CaseContents.Skin.PriceHistories.WearType",
-                "CaseContents.Skin.Wears.WearType",
-                "CaseContents.Skin.Item.ItemType"
+                options
             );
             if (targetCase == null) throw new Exception("Case not found.");
 

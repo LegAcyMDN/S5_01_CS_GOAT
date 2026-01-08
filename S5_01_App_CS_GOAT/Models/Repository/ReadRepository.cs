@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using System.Linq;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.Repository
 {
@@ -29,8 +30,26 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             return await query.ToListAsync();
         }
 
-        public async Task<TEntity?> GetByIdAsync(TIdentifier id)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(QueryOptions<TEntity>? options)
         {
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+            if (options != null) query = options.ApplyBefore(query);
+            IEnumerable<TEntity> list = await query.ToListAsync();
+            if (options != null) await options.ApplyAfter(list, _context);
+            return list;
+        }
+
+        public async Task<TEntity?> GetByIdAsync(TIdentifier id, QueryOptions<TEntity>? options = null)
+        {
+            DbSet<TEntity> dbSet = _context.Set<TEntity>(); // Use DbSet for FindAsync
+            IQueryable<TEntity> query = dbSet.AsQueryable(); // Ensure query is IQueryable
+
+            if (options != null)
+            {
+                query = options.ApplyBefore(query);
+            }
+            TEntity? entity;
+
             if (typeof(TIdentifier).Name.StartsWith("ValueTuple"))
             {
                 var fields = typeof(TIdentifier).GetFields();
@@ -39,10 +58,32 @@ namespace S5_01_App_CS_GOAT.Models.Repository
                 {
                     values[i] = fields[i].GetValue(id)!;
                 }
-                return await _context.Set<TEntity>().FindAsync(values);
+                entity = await query.FirstOrDefaultAsync(e => EF.Property<object>(e, fields[0].Name).Equals(values[0]));
+            }
+            else
+            {
+                string? keyName = _context.Model
+                    .FindEntityType(typeof(TEntity))?
+                    .FindPrimaryKey()?
+                    .Properties
+                    .Select(x => x.Name)
+                    .FirstOrDefault();
+                if (keyName == null) throw new InvalidOperationException(
+                    $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
+                entity = await query.FirstOrDefaultAsync(e => EF.Property<TIdentifier>(e, keyName).Equals(id));
             }
 
-            return await _context.Set<TEntity>().FindAsync(id);
+            if (entity != null && options != null)
+            {
+                entity = await options.ApplyAfter(entity, _context);
+            }
+
+            return entity;
+        }
+
+        public async Task<TEntity?> GetByIdAsync(bool LUL, TIdentifier id, QueryOptions<TEntity>? options = null)
+        {
+            return await GetByIdAsync(id, options);
         }
 
         public async Task<TEntity?> GetByIdAsync(int id, params string[] includes)

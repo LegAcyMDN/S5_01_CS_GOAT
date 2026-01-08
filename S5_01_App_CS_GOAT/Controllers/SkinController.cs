@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -24,12 +25,12 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByCase(int caseid)
         {
-            Case? _case = await caseManager.GetByIdAsync(caseid,
-                "CaseContents.Skin.Rarity",
-                // PRX "CaseContents.Skin.PriceHistories",
-                "CaseContents.Skin.Wears.WearType",
-                "CaseContents.Skin.Item"
-            );
+            QueryOptions<Case> options = new QueryOptions<Case>()
+                .Before("CaseContents.Skin.Wears.WearType",
+                        "CaseContents.Skin.Rarity",
+                        "CaseContents.Skin.Item")
+                .After("CaseContents.Skin.PriceHistories");
+            Case? _case = await caseManager.GetByIdAsync(caseid, options);
             if (_case == null) return NotFound();
 
             IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 
