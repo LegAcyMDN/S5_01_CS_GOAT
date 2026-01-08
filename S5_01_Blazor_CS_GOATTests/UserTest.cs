@@ -40,15 +40,23 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
             Timeout = 60000 // 60 seconds for Blazor WASM to load
         });
 
+
+        Console.WriteLine("page chargé");
+
         // Wait for Blazor to initialize - look for a specific element that appears when app is ready
         await Page.WaitForSelectorAsync("text=connexion", new PageWaitForSelectorOptions 
         { 
             Timeout = 60000 
         });
 
+        Console.WriteLine("a detecté le bouton connexion");
+
         // Click on connexion button
         await Page.GetByText("connexion").First.ClickAsync();
+        Console.WriteLine("a cliqué sur le bouton connexion");
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        Console.WriteLine("la page de login s'est affiché");
         
         // Fill connexion informations
         await Page.FillAsync("[id='identifier']", "testuser123");
@@ -56,6 +64,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         
         // Submit
         await Page.ClickAsync("button[type='submit']");
+        Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
