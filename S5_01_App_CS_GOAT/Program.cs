@@ -20,7 +20,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp", policy =>
     {
-        policy.WithOrigins("https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net","https://localhost:7030")
+        policy.WithOrigins(
+                "https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net",
+                "https://localhost:7030",
+                "http://localhost:7030",
+                "https://127.0.0.1:7030",
+                "http://127.0.0.1:7030"  
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
