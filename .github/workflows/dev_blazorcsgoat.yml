@@ -34,12 +34,23 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
 
-      - name: Verify Release build configuration
+      - name: Verify Release build uses production API
         run: |
-          echo "🔍 Checking compiled DLLs for DEBUG symbols..."
-          # This will show if DEBUG was defined during compilation
-          strings ./publish/wwwroot/_framework/*.dll | grep -i "localhost:7009" || echo "✅ No localhost:7009 references found"
-          strings ./publish/wwwroot/_framework/*.dll | grep -i "apicsgoat" && echo "✅ Production API URL found" || echo "⚠️ Production API URL not found"
+          echo "🔍 Checking Blazor WebAssembly files for API URLs..."
+          cd ./publish/wwwroot/_framework
+          for file in *.dll.br *.dll.gz *.dll; do
+            if [ -f "$file" ]; then
+              # Try to find localhost reference
+              if strings "$file" 2>/dev/null | grep -q "localhost:7009"; then
+                echo "⚠️ Found localhost:7009 in $file"
+              fi
+              # Try to find production URL
+              if strings "$file" 2>/dev/null | grep -q "apicsgoat"; then
+                echo "✅ Found production API URL in $file"
+              fi
+            fi
+          done
+          cd ../../..
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
