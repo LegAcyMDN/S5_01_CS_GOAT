@@ -67,7 +67,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
-        await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}", new PageWaitForURLOptions  // SANS LE / APRÈS BaseUrl
         { 
             Timeout = 30000 
         });
@@ -107,7 +107,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         await Page.ClickAsync("button[type='submit']");
         
         // Wait to get redirected to the home page
-        await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}", new PageWaitForURLOptions 
         { 
             Timeout = 30000 
         });
