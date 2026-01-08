@@ -8,7 +8,6 @@ namespace S5_01_Blazor_CS_GOAT.Service
     {
         private readonly HttpClient _httpClient;
         private readonly IJSRuntime _jsRuntime;
-        private readonly string _apiUrl;
 
         private User? _currentUser;
         public User? CurrentUser => _currentUser;
@@ -19,13 +18,6 @@ namespace S5_01_Blazor_CS_GOAT.Service
         {
             _httpClient = httpClient;
             _jsRuntime = jsRuntime;
-            
-#if DEBUG
-            _apiUrl = "https://localhost:7009/api/";
-#else
-            _apiUrl = "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/";
-#endif
-            _httpClient.BaseAddress = new Uri(_apiUrl);
         }
 
 public async Task<LoginResult> LoginAsync(string identifier, string password, int rememberDays)
