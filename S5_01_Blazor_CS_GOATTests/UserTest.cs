@@ -67,22 +67,6 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
-
-
-        for (int i = 0; i < 10; i++)
-        {
-            await Page.WaitForTimeoutAsync(2000);
-
-            Console.WriteLine("page actuelle : " + Page.Url);
-        }
-
-        Console.WriteLine("page : " + await Page.ContentAsync());
-
-        
-        
-        
-        
-        
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
         { 
             Timeout = 30000 
