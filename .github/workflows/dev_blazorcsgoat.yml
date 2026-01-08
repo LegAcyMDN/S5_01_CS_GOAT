@@ -91,10 +91,11 @@ jobs:
       - name: Install dotnet-serve
         run: dotnet tool install --global dotnet-serve
 
-      - name: Generate dev certificate (Linux compatible)
+      - name: Generate dev certificate
         run: |
+          mkdir -p $HOME/.aspnet/https
           dotnet dev-certs https --clean
-          dotnet dev-certs https --export-path $HOME/.aspnet/https/aspnetapp.pfx --password "TestPassword123"
+          dotnet dev-certs https -ep $HOME/.aspnet/https/aspnetapp.pfx -p "DevPassword123"
           dotnet dev-certs https --check
 
       - name: Serve Blazor WASM with HTTPS
