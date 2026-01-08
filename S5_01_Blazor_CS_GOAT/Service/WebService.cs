@@ -12,15 +12,14 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     private readonly HttpClient _httpClient;
     private string _endpoint;
 
-    public WebService(string endpoint)
+    public WebService(IConfiguration configuration, string endpoint)
     {
+        var apiBaseUrl = configuration["ApiBaseUrl"] 
+                         ?? throw new InvalidOperationException("API Base URL not configured in appsettings");
+            
         _httpClient = new HttpClient
         {
-#if DEBUG
-            BaseAddress = new Uri("https://localhost:7009/api/")
-#else
-            BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/")
-#endif
+            BaseAddress = new Uri(apiBaseUrl)
         };
         this._endpoint = endpoint;
     }
