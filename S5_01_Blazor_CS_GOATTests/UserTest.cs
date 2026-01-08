@@ -71,6 +71,8 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         { 
             Timeout = 30000 
         });
+        Console.WriteLine("attendre d'être redirect à la page principale et de voir le username");
+        
         
         // See if the username is at the top right
         await Expect(Page.GetByText("testuser123")).ToBeVisibleAsync();
