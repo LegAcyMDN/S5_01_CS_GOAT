@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - apicsgoat
+name: Build and deploy ASP.Net Core API to Azure
 
 on:
   push:
@@ -9,47 +6,108 @@ on:
       - dev
   workflow_dispatch:
 
+env:
+  DOTNET_VERSION: '8.x'
+  AZURE_WEBAPP_NAME: 'apicsgoat'
+
 jobs:
   build:
-    runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
+    name: Build API
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore dependencies
+        run: dotnet restore S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Create web.config for Azure
+        run: |
+          cat > S5_01_App_CS_GOAT/web.config << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <location path="." inheritInChildApplications="false">
+              <system.webServer>
+                <handlers>
+                  <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+                </handlers>
+                <aspNetCore processPath="dotnet"
+                           arguments=".\S5_01_App_CS_GOAT.dll"
+                           stdoutLogEnabled="true"
+                           stdoutLogFile=".\logs\stdout"
+                           hostingModel="inprocess" />
+              </system.webServer>
+            </location>
+          </configuration>
+          EOF
 
-      - name: Upload artifact for deployment job
+      - name: Publish
+        run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --output ./publish
+
+      - name: Verify publish output
+        run: |
+          echo "📦 Published files:"
+          ls -la ./publish
+          echo ""
+          echo "🔍 Looking for DLL files:"
+          find ./publish -name "*.dll" -type f
+          echo ""
+          echo "🔍 Total file count:"
+          find ./publish -type f | wc -l
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: api-app
+          path: ./publish
 
   deploy:
-    runs-on: windows-latest
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
     needs: build
-    
+    environment:
+      name: 'Production'
+      url: https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net
+
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: api-app
+          path: ./deploy
+
+      - name: Verify deployment package
+        run: |
+          echo "📦 Deployment package contents:"
+          ls -la ./deploy
+          echo ""
+          echo "🔍 DLL files:"
+          find ./deploy -name "*.dll"
+
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'apicsgoat'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          package: .
+          package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0F174ECCD58449D69FC6568F12FE72C6 }}
+
+      - name: Wait for deployment to complete
+        run: sleep 30
+
+      - name: Check if app is responding
+        run: |
+          echo "🔍 Testing API health..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net || echo "000")
+          echo "Status code: $STATUS"
+
+          if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
+            echo "✅ App is running (even if endpoint returns 404, the app started)"
+          else
+            echo "⚠️ App may not have started properly. Status: $STATUS"
+            echo "Check Azure Portal logs for details"
+          fi

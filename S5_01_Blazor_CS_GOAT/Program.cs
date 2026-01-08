@@ -21,6 +21,7 @@ builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<Mone
 builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
 builder.Services.AddScoped<IService<FairRandomDTO>>(sp => new WebService<FairRandomDTO>("fairrandom"));
 builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => new WebService<PriceHistoryDTO>("pricehistory"));
+builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => new WebService<RandomTransactionDetailDTO>("randomtransaction"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -48,6 +49,7 @@ builder.Services.AddScoped<ConnectMenuViewModel>();
 builder.Services.AddScoped<LiveFeedViewModel>();
 builder.Services.AddScoped<AuthOverlayViewModel>();
 builder.Services.AddScoped<AdminViewModel>();
+builder.Services.AddScoped<PromoCodeViewModel>();
 builder.Services.AddScoped<FairRandomViewModel>();
 builder.Services.AddScoped<LimitsViewModel>();
 

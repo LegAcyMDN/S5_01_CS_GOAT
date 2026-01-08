@@ -1,6 +1,7 @@
 @page "/admin"
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject AdminViewModel ViewModel
+@inject PromoCodeViewModel PromoCodeViewModel
 @implements IDisposable
 
 <PageTitle>Administration - CS GOAT</PageTitle>
@@ -81,6 +82,16 @@
             <div class="alert alert-success">@ViewModel.SuccessMessage</div>
         }
 
+        @if (!string.IsNullOrEmpty(PromoCodeViewModel.ErrorMessage))
+        {
+            <div class="alert alert-error">@PromoCodeViewModel.ErrorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(PromoCodeViewModel.SuccessMessage))
+        {
+            <div class="alert alert-success">@PromoCodeViewModel.SuccessMessage</div>
+        }
+
         <!-- Statistiques -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -104,135 +115,357 @@
             </div>
         </div>
 
-        <!-- Gestion des utilisateurs -->
-        <div class="users-section">
-            <div class="section-header">
-                <h2>Gestion des Utilisateurs</h2>
-                <div class="search-box">
-                    <input type="text" 
-                           class="search-input" 
-                           @bind="ViewModel.SearchQuery" 
-                           @bind:event="oninput"
-                           placeholder="Rechercher un utilisateur..." />
-                </div>
-            </div>
+        <!-- Onglets de navigation -->
+        <div class="admin-tabs">
+            <button class="tab-button @(activeTab == "users" ? "active" : "")" 
+                    @onclick="@(() => SetActiveTab("users"))">
+                👥 Utilisateurs
+            </button>
+            <button class="tab-button @(activeTab == "promocodes" ? "active" : "")" 
+                    @onclick="@(() => SetActiveTab("promocodes"))">
+                🎫 Codes Promo
+            </button>
+        </div>
 
-            <div class="users-table-container">
-                <table class="users-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Login</th>
-                            <th>Nom d'affichage</th>
-                            <th>Email</th>
-                            <th>Téléphone</th>
-                            <th>Portefeuille</th>
-                            <th>2FA</th>
-                            <th>Admin</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (ViewModel.FilteredUsers != null && ViewModel.FilteredUsers.Any())
-                        {
-                            @foreach (var user in ViewModel.FilteredUsers)
+        @if (activeTab == "users")
+        {
+            <!-- Gestion des utilisateurs -->
+            <div class="users-section">
+                <div class="section-header">
+                    <h2>Gestion des Utilisateurs</h2>
+                    <div class="search-box">
+                        <input type="text" 
+                               class="search-input" 
+                               @bind="ViewModel.SearchQuery" 
+                               @bind:event="oninput"
+                               placeholder="Rechercher un utilisateur..." />
+                    </div>
+                </div>
+
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Login</th>
+                                <th>Nom d'affichage</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Portefeuille</th>
+                                <th>2FA</th>
+                                <th>Admin</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewModel.FilteredUsers != null && ViewModel.FilteredUsers.Any())
                             {
-                                <tr class="@(user.UserId == ViewModel.CurrentUser?.UserId ? "current-user" : "")">
-                                    <td>@user.UserId</td>
-                                    <td>@user.Login</td>
-                                    <td>@user.DisplayName</td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(user.Email))
-                                        {
-                                            <span>@user.Email</span>
-                                            @if (user.EmailIsVerified)
+                                @foreach (var user in ViewModel.FilteredUsers)
+                                {
+                                    <tr class="@(user.UserId == ViewModel.CurrentUser?.UserId ? "current-user" : "")">
+                                        <td>@user.UserId</td>
+                                        <td>@user.Login</td>
+                                        <td>@user.DisplayName</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(user.Email))
                                             {
-                                                <span class="verified-badge">✓</span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(user.Phone))
-                                        {
-                                            <span>@user.Phone</span>
-                                            @if (user.PhoneIsVerified)
-                                            {
-                                                <span class="verified-badge">✓</span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
-                                    <td>@($"{user.Wallet:F2}€")</td>
-                                    <td>
-                                        @if (user.TwoFA == 0)
-                                        {
-                                            <span class="badge badge-grey">Désactivé</span>
-                                        }
-                                        else if (user.TwoFA == 1)
-                                        {
-                                            <span class="badge badge-blue">SMS</span>
-                                        }
-                                        else if (user.TwoFA == 2)
-                                        {
-                                            <span class="badge badge-green">Email</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (user.IsAdmin)
-                                        {
-                                            <span class="badge badge-admin">Admin</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge badge-user">User</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            @if (user.UserId != ViewModel.CurrentUser?.UserId)
-                                            {
-                                                <button class="btn-action btn-admin" 
-                                                        @onclick="async () => await ViewModel.ToggleAdminRoleAsync(user.UserId)"
-                                                        title="@(user.IsAdmin ? "Retirer admin" : "Promouvoir admin")">
-                                                    @(user.IsAdmin ? "👤" : "🛡️")
-                                                </button>
-                                                <button class="btn-action btn-ban" 
-                                                        @onclick="async () => await ViewModel.ToggleBanUserAsync(user.UserId)"
-                                                        title="Bannir/Débannir">
-                                                    🚫
-                                                </button>
-                                                <button class="btn-action btn-delete" 
-                                                        @onclick="async () => await ConfirmDeleteUser(user.UserId, user.DisplayName)"
-                                                        title="Supprimer">
-                                                    🗑️
-                                                </button>
+                                                <span>@user.Email</span>
+                                                @if (user.EmailIsVerified)
+                                                {
+                                                    <span class="verified-badge">✓</span>
+                                                }
                                             }
                                             else
                                             {
-                                                <span class="text-muted">C'est vous</span>
+                                                <span class="text-muted">-</span>
                                             }
-                                        </div>
-                                    </td>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(user.Phone))
+                                            {
+                                                <span>@user.Phone</span>
+                                                @if (user.PhoneIsVerified)
+                                                {
+                                                    <span class="verified-badge">✓</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>@($"{user.Wallet:F2}€")</td>
+                                        <td>
+                                            @if (user.TwoFA == 0)
+                                            {
+                                                <span class="badge badge-grey">Désactivé</span>
+                                            }
+                                            else if (user.TwoFA == 1)
+                                            {
+                                                <span class="badge badge-blue">SMS</span>
+                                            }
+                                            else if (user.TwoFA == 2)
+                                            {
+                                                <span class="badge badge-green">Email</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (user.IsAdmin)
+                                            {
+                                                <span class="badge badge-admin">Admin</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-user">User</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                @if (user.UserId != ViewModel.CurrentUser?.UserId)
+                                                {
+                                                    <button class="btn-action btn-admin" 
+                                                            @onclick="async () => await ViewModel.ToggleAdminRoleAsync(user.UserId)"
+                                                            title="@(user.IsAdmin ? "Retirer admin" : "Promouvoir admin")">
+                                                        @(user.IsAdmin ? "👤" : "🛡️")
+                                                    </button>
+                                                    <button class="btn-action btn-ban" 
+                                                            @onclick="async () => await ViewModel.ToggleBanUserAsync(user.UserId)"
+                                                            title="Bannir/Débannir">
+                                                        🚫
+                                                    </button>
+                                                    <button class="btn-action btn-delete" 
+                                                            @onclick="async () => await ConfirmDeleteUser(user.UserId, user.DisplayName)"
+                                                            title="Supprimer">
+                                                        🗑️
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">C'est vous</span>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="no-data">Aucun utilisateur trouvé</td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="9" class="no-data">Aucun utilisateur trouvé</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        }
+        else if (activeTab == "promocodes")
+        {
+            <!-- Gestion des codes promos -->
+            <div class="promocodes-section">
+                <div class="section-header">
+                    <h2>Gestion des Codes Promo</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" @onclick="() => PromoCodeViewModel.OpenCreateModal()">
+                            ➕ Nouveau Code Promo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filtres et recherche -->
+                <div class="filters-container">
+                    <div class="search-box">
+                        <input type="text" 
+                               class="search-input" 
+                               @bind="PromoCodeViewModel.SearchQuery" 
+                               @bind:event="oninput"
+                               placeholder="Rechercher un code..." />
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select @bind="PromoCodeViewModel.FilterType" class="filter-select">
+                            <option value="all">Tous</option>
+                            <option value="global">Global</option>
+                            <option value="user">Utilisateur spécifique</option>
+                            <option value="case">Case spécifique</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Trier par:</label>
+                        <select @bind="PromoCodeViewModel.SortBy" class="filter-select">
+                            <option value="code">Code</option>
+                            <option value="validityStart">Date de début</option>
+                            <option value="expiryDate">Date d'expiration</option>
+                            <option value="discountPercentage">% Réduction</option>
+                            <option value="discountAmount">Montant</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Du:</label>
+                        <input type="date" 
+                               @bind="PromoCodeViewModel.FilterDateFrom" 
+                               class="filter-input" />
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Au:</label>
+                        <input type="date" 
+                               @bind="PromoCodeViewModel.FilterDateTo" 
+                               class="filter-input" />
+                    </div>
+
+                    <button class="btn btn-secondary" @onclick="() => PromoCodeViewModel.ResetFilters()">
+                        🔄 Réinitialiser
+                    </button>
+                </div>
+
+                @if (PromoCodeViewModel.IsLoading)
+                {
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Chargement des codes promos...</p>
+                    </div>
+                }
+                else
+                {
+                    <!-- Tableau des codes promos -->
+                    <div class="promocodes-table-container">
+                        <table class="promocodes-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Code</th>
+                                    <th>Utilisations</th>
+                                    <th>% Réduction</th>
+                                    <th>Montant</th>
+                                    <th>Début</th>
+                                    <th>Expiration</th>
+                                    <th>Utilisateur</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (PromoCodeViewModel.FilteredAndSortedPromoCodes != null && PromoCodeViewModel.FilteredAndSortedPromoCodes.Any())
+                                {
+                                    @foreach (var promo in PromoCodeViewModel.FilteredAndSortedPromoCodes)
+                                    {
+                                        var isExpired = promo.ExpiryDate.HasValue && promo.ExpiryDate.Value < DateTime.Now;
+                                        var isNotStarted = promo.ValidityStart > DateTime.Now;
+                                        var isActive = !isExpired && !isNotStarted && (promo.RemainingUses == null || promo.RemainingUses > 0);
+
+                                        <tr class="@(isActive ? "promo-active" : isExpired ? "promo-expired" : "")">
+                                            <td>@promo.PromoCodeId</td>
+                                            <td>
+                                                <strong>@promo.Code</strong>
+                                            </td>
+                                            <td>
+                                                @if (promo.RemainingUses.HasValue)
+                                                {
+                                                    <span class="@(promo.RemainingUses == 0 ? "text-danger" : "")">
+                                                        @promo.RemainingUses
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-success">♾️ Illimité</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (promo.DiscountPercentage.HasValue)
+                                                {
+                                                    <span class="discount-badge">@promo.DiscountPercentage%</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (promo.DiscountAmount.HasValue)
+                                                {
+                                                    <span class="discount-badge">@($"{promo.DiscountAmount:F2}€")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>@promo.ValidityStart.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                @if (promo.ExpiryDate.HasValue)
+                                                {
+                                                    <span>@promo.ExpiryDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-success">Permanent</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (promo.UserId.HasValue)
+                                                {
+                                                    <span class="badge badge-user">👤 User #@promo.UserId</span>
+                                                }
+                                                else if (promo.CaseId.HasValue)
+                                                {
+                                                    <span class="badge badge-case">📦 Case #@promo.CaseId</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-global">🌍 Global</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (isNotStarted)
+                                                {
+                                                    <span class="status-badge status-pending">⏳ En attente</span>
+                                                }
+                                                else if (isExpired)
+                                                {
+                                                    <span class="status-badge status-expired">❌ Expiré</span>
+                                                }
+                                                else if (promo.RemainingUses == 0)
+                                                {
+                                                    <span class="status-badge status-depleted">🚫 Épuisé</span>
+                                                }
+                                                else if (isActive)
+                                                {
+                                                    <span class="status-badge status-active">✅ Actif</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-action btn-edit" 
+                                                            @onclick="() => PromoCodeViewModel.OpenEditModal(promo)"
+                                                            title="Modifier">
+                                                        ✏️
+                                                    </button>
+                                                    <button class="btn-action btn-delete" 
+                                                            @onclick="async () => await ConfirmDeletePromoCode(promo.PromoCodeId, promo.Code)"
+                                                            title="Supprimer">
+                                                        🗑️
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="10" class="no-data">Aucun code promo trouvé</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
 
         <!-- Bouton retour -->
         <div class="admin-footer">
@@ -243,19 +476,242 @@
     }
 </div>
 
+<!-- Modal de création de code promo -->
+@if (PromoCodeViewModel.ShowCreateModal)
+{
+    <div class="modal-overlay" @onclick="() => PromoCodeViewModel.CloseModals()">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>➕ Créer un Code Promo</h2>
+                <button class="modal-close" @onclick="() => PromoCodeViewModel.CloseModals()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Code *</label>
+                    <input type="text" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.Code" 
+                           placeholder="Ex: WELCOME2024" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pourcentage de réduction (%)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountPercentage" 
+                               min="0" 
+                               max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label>Montant de réduction (€)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountAmount" 
+                               min="0" 
+                               step="0.01" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Utilisations restantes (vide = illimité)</label>
+                    <input type="number" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.RemainingUses" 
+                           min="0" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de début *</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ValidityStart" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'expiration</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ExpiryDate" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ID Utilisateur (vide = tous)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.UserId" 
+                               min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>ID Case (vide = toutes)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.CaseId" 
+                               min="0" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(PromoCodeViewModel.ErrorMessage))
+                {
+                    <div class="alert alert-error">@PromoCodeViewModel.ErrorMessage</div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="() => PromoCodeViewModel.CloseModals()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary" 
+                        @onclick="async () => await PromoCodeViewModel.CreatePromoCodeAsync()"
+                        disabled="@PromoCodeViewModel.IsProcessing">
+                    @if (PromoCodeViewModel.IsProcessing)
+                    {
+                        <span>Création...</span>
+                    }
+                    else
+                    {
+                        <span>Créer</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal d'édition de code promo -->
+@if (PromoCodeViewModel.ShowEditModal)
+{
+    <div class="modal-overlay" @onclick="() => PromoCodeViewModel.CloseModals()">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>✏️ Modifier le Code Promo</h2>
+                <button class="modal-close" @onclick="() => PromoCodeViewModel.CloseModals()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Code *</label>
+                    <input type="text" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.Code" 
+                           placeholder="Ex: WELCOME2024" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pourcentage de réduction (%)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountPercentage" 
+                               min="0" 
+                               max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label>Montant de réduction (€)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountAmount" 
+                               min="0" 
+                               step="0.01" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Utilisations restantes (vide = illimité)</label>
+                    <input type="number" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.RemainingUses" 
+                               min="0" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de début *</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ValidityStart" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'expiration</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ExpiryDate" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ID Utilisateur (vide = tous)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.UserId" 
+                               min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>ID Case (vide = toutes)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.CaseId" 
+                               min="0" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(PromoCodeViewModel.ErrorMessage))
+                {
+                    <div class="alert alert-error">@PromoCodeViewModel.ErrorMessage</div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="() => PromoCodeViewModel.CloseModals()">
+                    Annuler
+                </button>
+                <button class="btn btn-primary" 
+                        @onclick="async () => await PromoCodeViewModel.UpdatePromoCodeAsync()"
+                        disabled="@PromoCodeViewModel.IsProcessing">
+                    @if (PromoCodeViewModel.IsProcessing)
+                    {
+                        <span>Mise à jour...</span>
+                    }
+                    else
+                    {
+                        <span>Mettre à jour</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
+    private string activeTab = "users";
+
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync();
+        await PromoCodeViewModel.InitializeAsync();
+        
         ViewModel.PropertyChanged += (s, e) => InvokeAsync(StateHasChanged);
+        PromoCodeViewModel.PropertyChanged += (s, e) => InvokeAsync(StateHasChanged);
+    }
+
+    private void SetActiveTab(string tab)
+    {
+        activeTab = tab;
     }
 
     private async Task ConfirmDeleteUser(int userId, string displayName)
     {
-        // Simple confirmation - dans une vraie app, utiliser un modal
         if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer l'utilisateur '{displayName}' ? Cette action est irréversible."))
         {
             await ViewModel.DeleteUserAsync(userId);
+        }
+    }
+
+    private async Task ConfirmDeletePromoCode(int promoCodeId, string code)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le code promo '{code}' ? Cette action est irréversible."))
+        {
+            await PromoCodeViewModel.DeletePromoCodeAsync(promoCodeId);
         }
     }
 
@@ -264,6 +720,10 @@
         if (ViewModel != null)
         {
             ViewModel.PropertyChanged -= (s, e) => InvokeAsync(StateHasChanged);
+        }
+        if (PromoCodeViewModel != null)
+        {
+            PromoCodeViewModel.PropertyChanged -= (s, e) => InvokeAsync(StateHasChanged);
         }
     }
 
