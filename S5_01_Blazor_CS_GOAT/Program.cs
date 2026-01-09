@@ -12,16 +12,27 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped<IService<Case>>(sp => new WebService<Case>("case"));
-builder.Services.AddScoped<IService<SkinDTO>>(sp => new WebService<SkinDTO>("skin"));
-builder.Services.AddScoped<IService<User>>(sp => new WebService<User>("user"));
-builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => new WebService<InventoryItemDetail>("inventoryitem"));
-builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
-builder.Services.AddScoped<IService<MoneyTransaction>>(sp => new WebService<MoneyTransaction>("moneytransaction"));
-builder.Services.AddScoped<IService<Limit>>(sp => new WebService<Limit>("limit"));
-builder.Services.AddScoped<IService<FairRandomDTO>>(sp => new WebService<FairRandomDTO>("fairrandom"));
-builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => new WebService<PriceHistoryDTO>("pricehistory"));
-builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => new WebService<RandomTransactionDetailDTO>("randomtransaction"));
+// Register services with configuration
+builder.Services.AddScoped<IService<Case>>(sp => 
+    new WebService<Case>(sp.GetRequiredService<IConfiguration>(), "case"));
+builder.Services.AddScoped<IService<SkinDTO>>(sp => 
+    new WebService<SkinDTO>(sp.GetRequiredService<IConfiguration>(), "skin"));
+builder.Services.AddScoped<IService<User>>(sp => 
+    new WebService<User>(sp.GetRequiredService<IConfiguration>(), "user"));
+builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => 
+    new WebService<InventoryItemDetail>(sp.GetRequiredService<IConfiguration>(), "inventoryitem"));
+builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => 
+    new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
+builder.Services.AddScoped<IService<MoneyTransaction>>(sp => 
+    new WebService<MoneyTransaction>(sp.GetRequiredService<IConfiguration>(), "moneytransaction"));
+builder.Services.AddScoped<IService<Limit>>(sp => 
+    new WebService<Limit>(sp.GetRequiredService<IConfiguration>(), "limit"));
+builder.Services.AddScoped<IService<FairRandomDTO>>(sp => 
+    new WebService<FairRandomDTO>(sp.GetRequiredService<IConfiguration>(), "fairrandom"));
+builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => 
+    new WebService<PriceHistoryDTO>(sp.GetRequiredService<IConfiguration>(), "pricehistory"));
+builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => 
+    new WebService<RandomTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -33,7 +44,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<StripeService>();
 
-// Enregistrement des ViewModels pour le pattern MVVM
+// ViewModels
 builder.Services.AddScoped<HomeViewModel>();
 builder.Services.AddScoped<InventoryViewModel>();
 builder.Services.AddScoped<ProfileViewModel>();
@@ -53,17 +64,15 @@ builder.Services.AddScoped<PromoCodeViewModel>();
 builder.Services.AddScoped<FairRandomViewModel>();
 builder.Services.AddScoped<LimitsViewModel>();
 
-// Enregistrement des ViewModels pour les composants
 builder.Services.AddTransient<CaseComponentViewModel>();
 builder.Services.AddTransient<CaseRollComponentViewModel>();
 builder.Services.AddTransient<WeaponDisplayComponentViewModel>();
 
-// Configuration du HttpClient avec la bonne BaseAddress de l'API
-#if DEBUG
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7009/api/") });
-#else
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/") });
-#endif
+// HttpClient for other services (AuthService, StripeService, etc.)
+var apiBaseUrl = builder.Configuration["ApiBaseUrl"] 
+    ?? throw new InvalidOperationException("API Base URL not configured");
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
+
 builder.Services.AddRadzenComponents();
 
 var host = builder.Build();

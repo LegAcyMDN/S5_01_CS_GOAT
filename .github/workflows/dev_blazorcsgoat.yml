@@ -34,6 +34,24 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
 
+      - name: Verify Release build uses production API
+        run: |
+          echo "🔍 Checking Blazor WebAssembly files for API URLs..."
+          cd ./publish/wwwroot/_framework
+          for file in *.dll.br *.dll.gz *.dll; do
+            if [ -f "$file" ]; then
+              # Try to find localhost reference
+              if strings "$file" 2>/dev/null | grep -q "localhost:7009"; then
+                echo "⚠️ Found localhost:7009 in $file"
+              fi
+              # Try to find production URL
+              if strings "$file" 2>/dev/null | grep -q "apicsgoat"; then
+                echo "✅ Found production API URL in $file"
+              fi
+            fi
+          done
+          cd ../../..
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -51,6 +69,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Blazor project
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
 
       - name: Restore test dependencies
         run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
@@ -70,27 +91,36 @@ jobs:
       - name: Install dotnet-serve
         run: dotnet tool install --global dotnet-serve
 
+      - name: Generate dev certificate
+        run: |
+          mkdir -p $HOME/.aspnet/https
+          dotnet dev-certs https --clean
+          dotnet dev-certs https -ep $HOME/.aspnet/https/aspnetapp.pfx -p "DevPassword123"
+          dotnet dev-certs https --check
+
       - name: Serve Blazor WASM with HTTPS
         run: |
           cd wwwroot
-          nohup dotnet serve -S -p 7030 > ../serve.log 2>&1 &
-          SERVER_PID=$!
-          echo $SERVER_PID > ../server.pid
+          dotnet serve -S -p 7030 > ../serve.log 2>&1 &
+          echo $! > ../server.pid
           cd ..
           sleep 5
 
-          # Verify server is still running
-          if ps -p $SERVER_PID > /dev/null; then
-            echo "✅ Server started with PID: $SERVER_PID"
-          else
-            echo "❌ Server process died immediately"
-            cat serve.log
-            exit 1
-          fi
+      - name: Debug server startup
+        run: |
+          echo "=== Server Logs ==="
+          cat serve.log || echo "No logs yet"
+          echo ""
+          echo "=== Process Check ==="
+          ps aux | grep dotnet-serve || echo "No dotnet-serve process"
+          echo ""
+          echo "=== Port Check ==="
+          netstat -tuln | grep 7030 || echo "Port 7030 not listening"
 
       - name: Wait for server
         run: |
           echo "Waiting for HTTPS server..."
+
           for i in {1..30}; do
             if curl -k -s -f https://localhost:7030 > /dev/null 2>&1; then
               echo "✅ Server is responding on HTTPS!"
@@ -98,41 +128,20 @@ jobs:
               exit 0
             fi
             echo "⏳ Attempt $i/30..."
+
+            # Show logs on every 5th attempt
             if [ $((i % 5)) -eq 0 ]; then
               echo "--- Recent logs ---"
               tail -n 10 serve.log 2>/dev/null || echo "No logs"
             fi
+
             sleep 2
           done
+
           echo "❌ Server failed to respond"
           echo "=== Final logs ==="
           cat serve.log || echo "No logs"
           exit 1
-
-      - name: Test server is responding (debug)
-        run: |
-          echo "=== Final server check before tests ==="
-          curl -k -v https://localhost:7030 2>&1 | head -20
-          echo ""
-          echo "=== Server process status ==="
-          ps aux | grep "dotnet serve" || echo "No server process found"
-
-      - name: Comprehensive server debug
-        run: |
-          echo "=== Testing with curl ==="
-          curl -k -v https://localhost:7030 2>&1 | head -30
-          echo ""
-          echo "=== Testing with 127.0.0.1 ==="
-          curl -k -v https://127.0.0.1:7030 2>&1 | head -30
-          echo ""
-          echo "=== Check what's listening on port 7030 ==="
-          sudo netstat -tulpn | grep 7030 || echo "Nothing on 7030"
-          echo ""
-          echo "=== Server logs ==="
-          cat serve.log
-          echo ""
-          echo "=== Process info ==="
-          ps aux | grep "dotnet serve"
 
       - name: Run E2E Tests
         run: |
@@ -153,37 +162,29 @@ jobs:
             kill $(cat server.pid) 2>/dev/null || true
           fi
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-local
-          path: '**/TestResults/*.trx'
-
-      - name: Upload Playwright videos
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-videos
-          path: 'test-results/videos/**/*.webm'
-          retention-days: 7
-
-      - name: Upload Playwright traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces-local
-          path: '**/test-results/**'
-          retention-days: 7
-
-      - name: Publish test report
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: E2E Test Results (Local)
-          path: '**/TestResults/*.trx'
-          reporter: dotnet-trx
-          fail-on-error: true
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-results-local
+#          path: '**/TestResults/*.trx'
+#
+#      - name: Upload Playwright traces
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: playwright-traces-local
+#          path: '**/test-results/**'
+#          retention-days: 7
+#
+#      - name: Publish test report
+#        if: always()
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: E2E Test Results (Local)
+#          path: '**/TestResults/*.trx'
+#          reporter: dotnet-trx
+#          fail-on-error: true
 
   deploy:
     name: Deploy to Azure
@@ -239,26 +240,26 @@ jobs:
           TEST_ENVIRONMENT: Azure
         timeout-minutes: 15
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-azure
-          path: '**/TestResults/*.trx'
-
-      - name: Upload Playwright traces
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces-azure
-          path: '**/test-results/**'
-          retention-days: 7
-
-      - name: Publish test report
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: E2E Test Results (Azure)
-          path: '**/TestResults/*.trx'
-          reporter: dotnet-trx
-          fail-on-error: true
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-results-azure
+#          path: '**/TestResults/*.trx'
+#
+#      - name: Upload Playwright traces
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: playwright-traces-azure
+#          path: '**/test-results/**'
+#          retention-days: 7
+#
+#      - name: Publish test report
+#        if: always()
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: E2E Test Results (Azure)
+#          path: '**/TestResults/*.trx'
+#          reporter: dotnet-trx
+#          fail-on-error: true

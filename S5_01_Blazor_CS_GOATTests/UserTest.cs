@@ -34,11 +34,14 @@ public class UserTests : TestBase
     public async Task UserCanConnect()
     {
         // Navigate to wallet page with longer timeout
-await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SANS LE / DONC CA MARCHE PAS
+await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         { 
             WaitUntil = WaitUntilState.DOMContentLoaded,
             Timeout = 60000 // 60 seconds for Blazor WASM to load
         });
+
+
+        Console.WriteLine("page chargé");
 
         // Wait for Blazor to initialize - look for a specific element that appears when app is ready
         await Page.WaitForSelectorAsync("text=connexion", new PageWaitForSelectorOptions 
@@ -46,9 +49,14 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
             Timeout = 60000 
         });
 
+        Console.WriteLine("a detecté le bouton connexion");
+
         // Click on connexion button
         await Page.GetByText("connexion").First.ClickAsync();
+        Console.WriteLine("a cliqué sur le bouton connexion");
         await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+        Console.WriteLine("la page de login s'est affiché");
         
         // Fill connexion informations
         await Page.FillAsync("[id='identifier']", "testuser123");
@@ -56,12 +64,15 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions  // LA PIPELINE TEST SAN
         
         // Submit
         await Page.ClickAsync("button[type='submit']");
+        Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
         { 
             Timeout = 30000 
         });
+        Console.WriteLine("attendre d'être redirect à la page principale et de voir le username");
+        
         
         // See if the username is at the top right
         await Expect(Page.GetByText("testuser123")).ToBeVisibleAsync();
