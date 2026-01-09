@@ -4,20 +4,23 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Wear
     {
-        public IEnumerable<PriceHistory> PriceHistories(bool allowGuess = false)
+        public IEnumerable<PriceHistory> priceHistories => this.WearClass.PriceHistories;
+
+        public IEnumerable<PriceHistory> PriceHistories(bool allowGuess)
         {
-            IEnumerable<PriceHistory>? histories = this.WearType?.PriceHistories?.Where(p => p.SkinId == this.SkinId);
-            if (histories == null) return Enumerable.Empty<PriceHistory>();
-            if (!allowGuess) histories = histories.Where(p => p.GuessDate == null);
-            return histories;
+            return allowGuess
+                ? this.priceHistories
+                : this.priceHistories.Where(p => p.GuessDate == null);
         }
 
-        public PriceHistory? LastPrice(bool allowGuess = false)
+        public PriceHistory? LastPrice(bool allowGuess)
         {
             return this.PriceHistories(allowGuess)
                        .OrderByDescending(p => p.PriceDate)
                        .FirstOrDefault();
         }
+
+        public double? CurrentPrice => this.LastPrice(false)?.PriceValue;
 
         public async Task<byte[]?[]> GetTexture()
         {

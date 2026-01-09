@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
-    [Table("t_j_ban_ban")]
+    [Table("t_e_ban_ban")]
     [Index(nameof(BanDate))]
     public partial class Ban
     {

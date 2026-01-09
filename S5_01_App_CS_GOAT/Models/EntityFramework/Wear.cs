@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_wear_wer")]
+    [Index(nameof(WearFloat))]
     [Index(nameof(Uuid))]
     public partial class Wear
     {
@@ -12,6 +13,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("wer_id")]
         public int WearId { get; set; }
+
+        [Required]
+        [Column("skn_id")]
+        public int SkinId { get; set; }
 
         [Required]
         [Column("wrt_id")]
@@ -27,17 +32,17 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("wer_uuid")]
         public string Uuid { get; set; } = null!;
 
-        [Required]
-        [Column("skn_id")]
-        public int SkinId { get; set; }
-
-        [ForeignKey(nameof(WearTypeId))]
-        [InverseProperty(nameof(WearType.Wears))]
-        public virtual WearType WearType { get; set; } = null!;
+        [ForeignKey($"{nameof(SkinId)}, {nameof(WearTypeId)}")]
+        [InverseProperty(nameof(WearClass.Wears))]
+        public virtual WearClass WearClass { get; set; } = null!;
 
         [ForeignKey(nameof(SkinId))]
         [InverseProperty(nameof(Skin.Wears))]
         public virtual Skin Skin { get; set; } = null!;
+
+        [ForeignKey(nameof(WearTypeId))]
+        [InverseProperty(nameof(WearType.Wears))]
+        public virtual WearType WearType { get; set; } = null!;
 
         [InverseProperty(nameof(InventoryItem.Wear))]
         public virtual ICollection<InventoryItem> InventoryItems { get; set; } = null!;

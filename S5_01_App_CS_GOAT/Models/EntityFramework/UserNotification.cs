@@ -1,9 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_usernotification_unf")]
+    [Index(nameof(IsRead))]
     public partial class UserNotification : Notification
     {
         [Required]

@@ -54,7 +54,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 new QueryOptions<InventoryItem>()
                 .Before(i => i.Wear.Skin.Rarity,
                     i => i.Wear.Skin.Item.ItemType)
-                .After(i => i.Wear.WearType.PriceHistories);
+                .After(i => i.Wear.WearClass.PriceHistories);
             InventoryItem? item = await manager.GetByIdAsyncNew(inventoryItemId, options);
             if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
 

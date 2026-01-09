@@ -23,12 +23,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [Column("prc_remaininguses")]
         public int? RemainingUses { get; set; }
 
-        [Required]
         [Column("prc_discountpercentage")]
         [Range(1, 100)]
         public int? DiscountPercentage { get; set; }
 
-        [Required]
         [Column("prc_discountamount")]
         [Range(0.0, double.MaxValue)]
         public double? DiscountAmount { get; set; }  
