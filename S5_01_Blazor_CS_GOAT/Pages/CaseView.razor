@@ -107,7 +107,7 @@
                         <h3>Tu as obtenu :</h3>
 
                         <div class="popup-skins">
-                            <ul style="list-style-type: none;">
+                            <ul class="popup-skins" style="list-style-type: none;">
                                 @foreach (var skin in ViewModel.WonSkins)
                                 {
                                     <li>
@@ -135,7 +135,7 @@
                         </div>
                         @if (ViewModel.CaseOpenResult.PromoCode != null)
                         {
-                            <div>Vous avez utilisé le code promo "@ViewModel.CaseOpenResult.PromoCode.Code"</div>
+                            <div class="result-promocode">Vous avez utilisé le code promo "@ViewModel.CaseOpenResult.PromoCode.Code" pour @(ViewModel.CaseOpenResult.PromoCode.DiscountPercentage)% de réduction @(ViewModel.CaseOpenResult.PromoCode.DiscountAmount == 0 ? "" : "et " + ViewModel.CaseOpenResult.PromoCode.DiscountAmount + "€ de réduction")</div>
                         }
                         <button class="popup-close" @onclick="ViewModel.ClosePopup">OK</button>
                     </div>
