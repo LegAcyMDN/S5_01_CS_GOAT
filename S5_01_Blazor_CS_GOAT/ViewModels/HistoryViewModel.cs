@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
 using Shared.DTO;
@@ -30,13 +31,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
         }
-        public List<RandomTransactionDetailDTO>? RandomsTransactionsDetail 
-        { 
+        public List<RandomTransactionDetailDTO>? RandomsTransactionsDetail
+        {
             get => _randomsTransactionsDetail;
             set => SetProperty(ref _randomsTransactionsDetail, value);
         }
-        public User? CurrentUser 
-        { 
+        public User? CurrentUser
+        {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
         }
@@ -99,7 +100,34 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     }
 
                     if (!OpenTransactionIds.Contains(id))
+                    {
                         OpenTransactionIds.Add(id);
+                        Console.WriteLine($"Ajout {id} ");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement du detail: {ex.Message}");
+            }
+        }
+
+        public async Task UnloadTransactionDetailsAsync(int id)
+        {
+            try
+            {
+                string jwtToken = await _authService.GetTokenAsync();
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    RandomTransactionDetailDTO detailsListe = await _randomTransactionRepository.GetDetailsAsync(id, jwtToken);
+
+                    int index = RandomsTransactionsDetail.FindIndex(x => x.TransactionId == id);
+
+                    if (detailsListe.TransactionId == id)
+                    {
+                        OpenTransactionIds.Remove(id);
+                        Console.WriteLine($"Retrait {id} ");
+                    }
                 }
             }
             catch (Exception ex)

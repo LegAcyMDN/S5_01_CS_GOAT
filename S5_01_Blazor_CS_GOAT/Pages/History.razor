@@ -27,10 +27,14 @@
 
                     @foreach (var rt in ViewModel.RandomsTransactionsDetail)
                     {
-                        <li @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">
+                        <li>
                             Date d'ouverture : @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
                             Montant de la transaction : @(rt.WalletValue.ToString() ?? "Montant Inconnu") € <br/>
-                        
+
+                        @if (!ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
+                        {
+                            <button class="CloseHistory" @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">Deplier</button>
+                        }
 
                         @if (ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
                         {
@@ -39,6 +43,7 @@
                                 Item : @(rt.ItemName ?? "Item Inconnu") <br/>
                                 Skin : <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
                                 Qualité : @(rt.WearName ?? "Qualité Inconnue") <br/>
+                                <button class="CloseHistory" @onclick="async () => await ViewModel.UnloadTransactionDetailsAsync(rt.TransactionId)">Replier</button>
                             </div>
                         }
                         </li>
