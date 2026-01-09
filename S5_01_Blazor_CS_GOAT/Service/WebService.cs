@@ -136,4 +136,9 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     {
        return  await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
     }
+
+    public async Task<List<TEntity>?> GetLiveFeedAsync(int count = 20)
+    {
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/livefeed?count={count}");
+    }
 }

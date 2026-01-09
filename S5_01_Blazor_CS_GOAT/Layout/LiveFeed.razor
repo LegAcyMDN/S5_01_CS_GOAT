@@ -12,9 +12,9 @@
     </div>
     @foreach (var item in ViewModel.FeedItems)
     {
-        <div class="armes">
-            <p>@item.ItemName</p>
-            <p>Prix : @item.Price.ToString("F2")€</p>
+        <div>
+            <img src="@item.ImageUrl" alt="@item.DisplayName" class="armes" />
+            <p>@item.WearTypeAbbreviation - @item.DisplayName</p>
         </div>
     }
 </div>

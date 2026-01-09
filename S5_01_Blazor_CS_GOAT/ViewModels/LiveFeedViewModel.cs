@@ -1,3 +1,6 @@
+using Shared.DTO;
+using S5_01_Blazor_CS_GOAT.Service;
+
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
@@ -5,8 +8,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class LiveFeedViewModel : ViewModelBase
     {
+        private readonly IService<RandomTransactionLiveFeedDTO> _randomTransactionService;
         private bool _showBestOnly = false;
         private List<LiveFeedItem> _feedItems = new();
+
+        public LiveFeedViewModel(IService<RandomTransactionLiveFeedDTO> randomTransactionService)
+        {
+            _randomTransactionService = randomTransactionService;
+        }
 
         public bool ShowBestOnly
         {
@@ -36,17 +45,27 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// </summary>
         private async Task LoadFeedItemsAsync()
         {
-            // TODO: Implémenter le chargement depuis l'API
-            // Pour l'instant, données de démonstration
-            FeedItems = Enumerable.Range(0, 23)
-                .Select(i => new LiveFeedItem
+            try
+            {
+                var transactions = await _randomTransactionService.GetLiveFeedAsync(50);
+                
+                if (transactions != null)
                 {
-                    ItemName = "AK47 | Asimov",
-                    Price = 256.64m
-                })
-                .ToList();
-
-            await Task.CompletedTask;
+                    FeedItems = transactions.Select(t => new LiveFeedItem
+                    {
+                        ItemName = t.ItemName,
+                        SkinName = t.SkinName,
+                        RarityColor = t.RarityColor,
+                        WearTypeAbbreviation = t.WearTypeAbbreviation,
+                        Uuid = t.Uuid,
+                        TransactionDate = t.TransactionDate
+                    }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement du live feed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -55,6 +74,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private void FilterFeedItems()
         {
             // TODO: Implémenter le filtrage des meilleurs drops
+            // Pour l'instant, on recharge tout
+            _ = LoadFeedItemsAsync();
         }
 
         /// <summary>
@@ -63,7 +84,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public class LiveFeedItem
         {
             public string ItemName { get; set; } = string.Empty;
-            public decimal Price { get; set; }
+            public string SkinName { get; set; } = string.Empty;
+            public string RarityColor { get; set; } = string.Empty;
+            public string WearTypeAbbreviation { get; set; } = string.Empty;
+            public string Uuid { get; set; } = string.Empty;
+            public DateTime TransactionDate { get; set; }
+
+            public string DisplayName => $"{ItemName} | {SkinName}";
+            
+            public string ImageUrl => $"https://screenshots.cs.money/csmoney2/{Uuid}_icon.png";
         }
     }
 }
