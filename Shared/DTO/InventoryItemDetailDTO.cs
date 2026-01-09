@@ -26,5 +26,5 @@ public class InventoryItemDetailDTO
 
     public string RarityName { get; set;} = null!; // name of the rarity return by the rarity color
 
-    public double? CuurentPrice { get; set; }
+    public double? CurrentPrice { get; set; }
 }

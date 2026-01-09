@@ -115,12 +115,10 @@
                                             SkinDTO translatedSkin = new SkinDTO()
                                             {
                                                 AnyUuid = skin.Uuid,
-                                                BestPrice = 1, //EEE
                                                 ItemName = skin.ItemName,
                                                 RarityName = skin.RarityName,
                                                 RarityColor = skin.RarityColor,
-                                                SkinName = skin.SkinName,
-                                                WorstPrice = 1 //EEE
+                                                SkinName = skin.SkinName
                                             };
 
                                     var img = string.IsNullOrEmpty(skin.Uuid)

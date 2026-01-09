@@ -261,7 +261,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                         RarityColor = wonSkin.RarityColor,
                         RarityName = wonSkin.RarityName,
                         SkinName = wonSkin.SkinName,
-                        LastPrice = 1 //TODO make it good
+                        CurrentPrice = 1 //TODO make it good
                     });
                 }
         
@@ -402,8 +402,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     RarityColor = wonSkinDetail.RarityColor,
                     RarityName = wonSkinDetail.RarityName,
                     SkinName =  wonSkinDetail.SkinName,
-                    BestPrice = 1, // dummy numbers because we dont use them here
-                    WorstPrice = 1 // dummy numbers because we dont use them here
                 } );
                 Console.WriteLine(oneCase.Roller.Length);
                 Console.WriteLine("item found UUID : "  + wonSkinDetail.Uuid);

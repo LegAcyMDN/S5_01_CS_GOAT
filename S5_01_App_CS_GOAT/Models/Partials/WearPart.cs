@@ -4,13 +4,12 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Wear
     {
-        public IEnumerable<PriceHistory> priceHistories => this.WearClass.PriceHistories;
 
         public IEnumerable<PriceHistory> PriceHistories(bool allowGuess)
         {
             return allowGuess
-                ? this.priceHistories
-                : this.priceHistories.Where(p => p.GuessDate == null);
+                ? this.WearClass.PriceHistories
+                : this.WearClass.PriceHistories.Where(p => p.GuessDate == null);
         }
 
         public PriceHistory? LastPrice(bool allowGuess)

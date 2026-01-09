@@ -22,6 +22,6 @@ public class InventoryItemDetailMapper : Profile
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Wear.Skin.Rarity.RarityName))
             .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemName))
             .ForMember(dest => dest.ItemTypeName, opt => opt.MapFrom(src => src.Wear.Skin.Item.ItemType.ItemTypeName))
-            .ForMember(dest => dest.CuurentPrice, opt => opt.MapFrom(src => src.Wear.CurrentPrice));
+            .ForMember(dest => dest.CurrentPrice, opt => opt.MapFrom(src => src.Wear.CurrentPrice));
     }
 }

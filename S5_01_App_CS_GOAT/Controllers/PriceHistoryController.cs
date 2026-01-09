@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory> result = wear.PriceHistories(false);
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
-            return Ok(result);
+            return Ok(dto);
         }
 
 
