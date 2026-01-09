@@ -260,6 +260,12 @@
     color: #6478ff;
 }
 
+.badge-steam {
+    background: rgba(102, 192, 244, 0.2);
+    color: #66c0f4;
+    border: 1px solid rgba(102, 192, 244, 0.3);
+}
+
 /* Action Buttons */
 .action-buttons {
     display: flex;
@@ -284,12 +290,35 @@
     background: rgba(255, 152, 0, 0.2);
 }
 
+.btn-anonymize {
+    background: rgba(156, 39, 176, 0.2);
+}
+
+.btn-anonymize:hover {
+    background: rgba(156, 39, 176, 0.3);
+}
+
 .btn-ban:hover {
     background: rgba(244, 67, 54, 0.2);
 }
 
 .btn-delete:hover {
     background: rgba(244, 67, 54, 0.3);
+}
+
+/* Steam Link */
+.steam-link {
+    color: #66c0f4;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.steam-link:hover {
+    color: #8ed4ff;
+    text-decoration: underline;
 }
 
 /* Buttons */

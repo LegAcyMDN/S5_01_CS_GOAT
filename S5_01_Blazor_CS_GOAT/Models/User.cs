@@ -11,6 +11,7 @@ namespace S5_01_Blazor_CS_GOAT.Models
         public bool EmailIsVerified { get; set; }
         public int TwoFA { get; set; }
         public DateTime CreationDate { get; set; }
+        public DateTime LastLogin { get; set; }
         public string Seed { get; set; } = string.Empty;
         public double Wallet { get; set; }
         public bool IsSteamLogin { get; set; }
