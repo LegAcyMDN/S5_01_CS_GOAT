@@ -63,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_Unauthenticated_ReturnsUnauthorized()
         {
             // Given
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
 
             // When
@@ -79,7 +79,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteRepositoryMock.Setup(r => r.AddAsync(favorite))
                                   .ReturnsAsync(favorite);
@@ -115,10 +115,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, favorite.CaseId);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
                                   .ReturnsAsync(favorite);
             // When
             IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
@@ -142,7 +142,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
             favoriteKey = FavoriteFixture.GetFavoriteKey(2, caseId);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Never);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Never);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 
@@ -154,7 +154,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
                                   .ReturnsAsync(favorite);
             favoriteRepositoryMock.Setup(r => r.DeleteAsync(favorite))
                                   .Returns(Task.CompletedTask);
@@ -164,7 +164,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Once);
         }
 
@@ -176,7 +176,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 999;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
                                   .ReturnsAsync((Favorite?)null);
 
             // When
@@ -184,7 +184,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 

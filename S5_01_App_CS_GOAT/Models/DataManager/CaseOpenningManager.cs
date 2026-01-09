@@ -45,7 +45,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             CaseOpenningDTO caseOpenningDTO,
             int userId)
         {
-            User? user = await _userRepository.GetByIdAsync(userId, "FairRandom");
+            User? user = await _userRepository.GetByIdAsyncOld(userId, "FairRandom");
             if (user == null) throw new Exception("User not found.");
             return await OpenCaseAsync(caseOpenningDTO, user);
         }
@@ -63,7 +63,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                         "CaseContents.Skin.Item.ItemType",
                         "CaseContents.Skin.Wears.WearType")
                 .After("CaseContents.Skin.PriceHistories");
-            Case? targetCase = await _caseRepository.GetByIdAsync(
+            Case? targetCase = await _caseRepository.GetByIdAsyncNew(
                 caseOpenningDTO.CaseId,
                 options
             );

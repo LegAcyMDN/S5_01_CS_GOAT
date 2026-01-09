@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Get3dModelByWear_ValidWearId_ReturnsOk()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(1, "Skin.Item"))
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(1, "Skin.Item"))
                                .ReturnsAsync(wear);
             mapperMock.Setup(m => m.Map<ModelDTO>(wear))
                        .Returns(modelDTO);
@@ -59,13 +59,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             OkObjectResult okResult = (OkObjectResult)result;
             Assert.IsNotNull(okResult.Value);
-            wearRepositoryMock.Verify(r => r.GetByIdAsync(1, "Skin.Item"), Times.Once);
+            wearRepositoryMock.Verify(r => r.GetByIdAsyncOld(1, "Skin.Item"), Times.Once);
         }
 
         [TestMethod]
         public void Get3dModelByWear_InvalidWearId_ReturnsNotFound()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(999, "Skin.Item"))
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(999, "Skin.Item"))
                                .ReturnsAsync((Wear?)null);
 
             // When
@@ -73,7 +73,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            wearRepositoryMock.Verify(r => r.GetByIdAsync(999, "Skin.Item"), Times.Once);
+            wearRepositoryMock.Verify(r => r.GetByIdAsyncOld(999, "Skin.Item"), Times.Once);
         }
 
         #endregion

@@ -33,7 +33,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<User> users = await manager.GetAllAsync();
+            IEnumerable<User> users = await manager.GetAllAsyncOld();
             IEnumerable<UserDTO> dtos = mapper.Map<IEnumerable<UserDTO>>(users);
             return Ok(dtos);
         }
@@ -54,7 +54,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!auth.IsAdmin && auth.AuthUserId != id)
                 return Forbid();
 
-            User? user = await manager.GetByIdAsync(id);
+            User? user = await manager.GetByIdAsyncNew(id);
             if (user == null)
                 return NotFound();
 
@@ -106,7 +106,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User? existing = await manager.GetByIdAsync((int)auth.AuthUserId);
+            User? existing = await manager.GetByIdAsyncNew((int)auth.AuthUserId);
             if (existing == null)
                 return NotFound();
 
@@ -222,7 +222,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!auth.IsAdmin && auth.AuthUserId != id)
                 return Forbid();
 
-            User? user = await manager.GetByIdAsync(id);
+            User? user = await manager.GetByIdAsyncNew(id);
             if (user == null) return NotFound();
 
             throw new NotImplementedException();

@@ -30,7 +30,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.InventoryItemId == inventoryItemId);
+            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsyncOld(ur => ur.InventoryItemId == inventoryItemId);
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults);
             return Ok(upgradeResultsDTO);
         }
@@ -49,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsync(ur => ur.TransactionId == transactionId);
+            IEnumerable<UpgradeResult> upgradeResults = await manager.GetAllAsyncOld(ur => ur.TransactionId == transactionId);
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults);
             return Ok(upgradeResultsDTO);
         }

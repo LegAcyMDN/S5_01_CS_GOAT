@@ -80,7 +80,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsyncOld(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
         }
 
         [TestMethod]
@@ -98,7 +98,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 DiscountAmount = 10.00
             };
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsyncOld(
                 It.IsAny<Expression<Func<PromoCode, bool>>>(),
                 It.IsAny<string[]>()))
                 .ReturnsAsync(new List<PromoCode> { promoCode });
@@ -139,7 +139,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 CaseId = caseId
             };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId))
                 .ReturnsAsync(testCase);
 
             promoCodeRepositoryMock.Setup(r => r.Check(
@@ -172,7 +172,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "NONEXISTENT";
             var emptyList = new List<PromoCode>();
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsyncOld(
                 It.IsAny<Expression<Func<PromoCode, bool>>>(),
                 It.IsAny<string[]>()))
                 .ReturnsAsync(emptyList);
@@ -192,7 +192,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "EXPIRED2023";
             var promoCodeList = new List<PromoCode> { expiredPromoCode };
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsyncOld(
                 It.IsAny<Expression<Func<PromoCode, bool>>>(),
                 It.IsAny<string[]>()))
                 .ReturnsAsync(promoCodeList);
@@ -212,7 +212,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "SUMMER2024";
             int invalidCaseId = 999;
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(invalidCaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(invalidCaseId))
                 .ReturnsAsync((Case?)null);
 
             // When
@@ -220,7 +220,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsyncOld(It.IsAny<Expression<Func<PromoCode, bool>>>(), It.IsAny<string[]>()), Times.Never);
         }
 
         [TestMethod]
@@ -234,10 +234,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             var promoCodeList = new List<PromoCode> { promoCode };
             var differentCase = new Case { CaseId = requestedCaseId, CaseName = "Different Case", CasePrice = 5.00 };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(requestedCaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(requestedCaseId))
                 .ReturnsAsync(differentCase);
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsyncOld(
                 It.IsAny<Expression<Func<PromoCode, bool>>>(),
                 It.IsAny<string[]>()))
                 .ReturnsAsync(promoCodeList);
@@ -265,7 +265,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 DiscountAmount = 5.00
             };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId))
                 .ReturnsAsync(testCase);
 
             promoCodeRepositoryMock.Setup(r => r.Check(
@@ -296,7 +296,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -310,7 +310,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -318,7 +318,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(null))
+            promoCodeRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                    .ReturnsAsync(promoCodes);
 
             // When
@@ -326,7 +326,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            promoCodeRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            promoCodeRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion
@@ -404,7 +404,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Never);
         }
 
         [TestMethod]
@@ -419,7 +419,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Never);
         }
 
         [TestMethod]
@@ -428,7 +428,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 999;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId))
+            promoCodeRepositoryMock.Setup(r => r.GetByIdAsyncNew(promoCodeId))
                                    .ReturnsAsync((PromoCode?)null);
 
             // When
@@ -436,7 +436,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Once);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Once);
             promoCodeRepositoryMock.Verify(r => r.UpdateAsync(promoCode, updatedPromoCode), Times.Never);
         }
 
@@ -446,7 +446,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 1;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId))
+            promoCodeRepositoryMock.Setup(r => r.GetByIdAsyncNew(promoCodeId))
                                    .ReturnsAsync(promoCode);
             promoCodeRepositoryMock.Setup(r => r.UpdateAsync(promoCode, updatedPromoCode))
                                    .Returns(Task.CompletedTask);
@@ -456,7 +456,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Once);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Once);
             promoCodeRepositoryMock.Verify(r => r.UpdateAsync(promoCode, updatedPromoCode), Times.Once);
         }
 
@@ -473,7 +473,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Never);
         }
 
         #endregion
@@ -491,7 +491,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Never);
         }
 
         [TestMethod]
@@ -506,7 +506,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Never);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Never);
         }
 
         [TestMethod]
@@ -515,7 +515,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 999;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId))
+            promoCodeRepositoryMock.Setup(r => r.GetByIdAsyncNew(promoCodeId))
                                    .ReturnsAsync((PromoCode?)null);
 
             // When
@@ -523,7 +523,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Once);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Once);
             promoCodeRepositoryMock.Verify(r => r.DeleteAsync(promoCode), Times.Never);
         }
 
@@ -533,7 +533,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 1;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId))
+            promoCodeRepositoryMock.Setup(r => r.GetByIdAsyncNew(promoCodeId))
                                    .ReturnsAsync(promoCode);
             promoCodeRepositoryMock.Setup(r => r.DeleteAsync(promoCode))
                                    .Returns(Task.CompletedTask);
@@ -543,7 +543,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            promoCodeRepositoryMock.Verify(r => r.GetByIdAsync(promoCodeId), Times.Once);
+            promoCodeRepositoryMock.Verify(r => r.GetByIdAsyncNew(promoCodeId), Times.Once);
             promoCodeRepositoryMock.Verify(r => r.DeleteAsync(promoCode), Times.Once);
         }
 
