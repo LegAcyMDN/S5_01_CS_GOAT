@@ -2,9 +2,8 @@
 	padding: 10px;
 	border: solid 2px orange; 
 	margin-bottom: 5px;
-	animation: all ease 1s Depliage;
 }
 
-.HistoryInput {
+.CloseHistory {
 	background-color: #2a2836;
 }

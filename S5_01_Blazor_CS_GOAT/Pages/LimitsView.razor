@@ -2,10 +2,12 @@
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject LimitsViewModel ViewModel
 
-<h3>Limites</h3>
+<h1>Limites</h1>
 
 <div class="Limit">
-    <h2>Budget</h2>
+    <div class="Container">
+    <div class="form">
+            <h2>Budget</h2>
     <label>
         Limite :
         <select class="inputLimit" name="type" @onchange="(e) => ViewModel.SortLimit(ViewModel.Period, e.Value.ToString())">
@@ -16,7 +18,6 @@
             <option value="Améliorations">Améliorations</option>
         </select>
     </label>
-    <br />
     <label>
         Période :
         <select class="inputLimit" name="period" @onchange="(e) => ViewModel.SortLimit(e.Value.ToString(), ViewModel.Type)">
@@ -27,15 +28,15 @@
             <option value="Mensuel">Mensuel</option>
         </select>
     </label>
-    <br />
     <label>
         Montant Max :
         <input type="number" @bind="ViewModel.Amount" min="0" step="any" class="inputLimit" name="amount" />
-        <br />
-        <button class="inputLimit" @onclick="async () => await ViewModel.SaveLimitAsync()">Sauver</button>
     </label>
-
-    <h3>Valeur Actuelle</h3>
+            <button class="inputLimit" @onclick="async () => await ViewModel.SaveLimitAsync()">Mettre à jour la limite</button>
+    </div>
+    </div>
+    <div class="Container">
+    <h2>Valeur Actuelle</h2><br/>
     @if (ViewModel.SortedLimits == null)
     {
         <div>Aucune limite sélectionnée</div>
@@ -56,6 +57,7 @@
             }
         </ul>
     }
+    </div>
 </div>
 
 @code {
