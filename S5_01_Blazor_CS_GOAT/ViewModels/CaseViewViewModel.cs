@@ -274,7 +274,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                             RarityColor = wonSkin.RarityColor,
                             RarityName = wonSkin.RarityName,
                             SkinName = wonSkin.SkinName,
-                            WearName = wonSkin.WearName,
+                            WearTypeName = wonSkin.WearTypeName,
                             CurrentPrice = wonSkin.CurrentPrice
                         });
                     }
