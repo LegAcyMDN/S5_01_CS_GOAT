@@ -14,10 +14,6 @@ public class SkinMapper : Profile
             .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.Item.ItemName))
             .ForMember(dest => dest.RarityName, opt => opt.MapFrom(src => src.Rarity.RarityName))
             .ForMember(dest => dest.RarityColor, opt => opt.MapFrom(src => src.Rarity.RarityColor))
-            .ForMember(dest => dest.BestPrice, opt => opt.MapFrom(src => 
-                src.Prices(false).Any() ? src.Prices(false).Max(p => p.PriceValue) : 0.0))
-            .ForMember(dest => dest.WorstPrice, opt => opt.MapFrom(src =>
-                src.Prices(false).Any() ? src.Prices(false).Min(p => p.PriceValue) : 0.0))
             .ForMember(dest => dest.AnyUuid, opt => opt.MapFrom(src => 
                 src.Wears != null && src.Wears.Any() 
                     ? src.Wears.First().Uuid : null))

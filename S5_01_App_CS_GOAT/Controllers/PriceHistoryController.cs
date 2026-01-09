@@ -27,12 +27,12 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             QueryOptions<Wear> options =
                 new QueryOptions<Wear>()
-                .After(ph => ph.WearType.PriceHistories);
+                .After(w => w.WearClass.PriceHistories);
             Wear? wear = await wearManager.GetByIdAsyncNew(wearId, options);
             if (wear == null) return NotFound();
-            IEnumerable<PriceHistory> result = wear.PriceHistories();
+            IEnumerable<PriceHistory> result = wear.PriceHistories(false);
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
-            return Ok(result);
+            return Ok(dto);
         }
 
 
@@ -49,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             QueryOptions<Wear> options =
                 new QueryOptions<Wear>()
-                .After(w => w.WearType.PriceHistories);
+                .After(w => w.WearClass.PriceHistories);
             Wear? wear = await wearManager.GetByIdAsyncNew(wearId, options);
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory>? result = await manager.PredictWithAI(wear);

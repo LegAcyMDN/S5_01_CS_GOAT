@@ -2,7 +2,7 @@
 {
     public class ItemTransactionDetailDTO
     {
-        public int InventoryItemId { get; set; }
+        public int? InventoryItemId { get; set; }
 
         public DateTime TransactionDate { get; set; }
 

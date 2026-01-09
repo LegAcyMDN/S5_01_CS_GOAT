@@ -9,6 +9,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public DbSet<Item> Items { get; set; }
         public DbSet<ItemType> ItemTypes { get; set; }
         public DbSet<Skin> Skins { get; set; }
+        public DbSet<WearClass> WearClasses { get; set; }
         public DbSet<Wear> Wears { get; set; }
         public DbSet<WearType> WearTypes { get; set; }
         public DbSet<Rarity> Rarities { get; set; }
@@ -366,12 +367,19 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             modelBuilder.Entity<PriceHistory>(e =>
             {
                 e.HasKey(p => p.PriceHistoryId);
+                e.HasOne(p => p.WearClass)
+                    .WithMany(m => m.PriceHistories)
+                    .HasForeignKey(p => new { p.SkinId, p.WearTypeId })
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_pricehistory_wearclass");
                 e.HasOne(p => p.WearType)
                     .WithMany(m => m.PriceHistories)
+                    .HasForeignKey(p => p.WearTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_weartype");
                 e.HasOne(p => p.Skin)
                     .WithMany(m => m.PriceHistories)
+                    .HasForeignKey(p => p.SkinId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_skin");
             });
@@ -426,6 +434,28 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     .WithOne(m => m.WearType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_weartype");
+            });
+
+            // Configure WearClass
+            modelBuilder.Entity<WearClass>(e =>
+            {
+                e.HasKey(p => new { p.SkinId, p.WearTypeId });
+                e.HasOne(p => p.Skin)
+                    .WithMany(m => m.WearClasses)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_wearclass_skin");
+                e.HasOne(p => p.WearType)
+                    .WithMany(m => m.WearClasses)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_wearclass_weartype");
+                e.HasMany(p => p.Wears)
+                    .WithOne(m => m.WearClass)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_wear_wearclass");
+                e.HasMany(p => p.PriceHistories)
+                    .WithOne(m => m.WearClass)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_pricehistory_wearclass");
             });
 
             // Seeding static data
