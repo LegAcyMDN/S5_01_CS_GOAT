@@ -38,6 +38,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string? _serverHash;
         private int? _userNonce;
         private readonly IService<FairRandomDTO> _fairRandomService;
+        private MultipleCaseResultDTO _caseOpenResult;
+        
+        
 
 
         public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService, IService<FairRandomDTO> fairRandomService)
@@ -140,6 +143,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _userNonce, value);
         }
 
+
+        public MultipleCaseResultDTO CaseOpenResult
+        {
+            get => _caseOpenResult;
+            set => SetProperty(ref _caseOpenResult, value);
+        }
+
         /// <summary>
         /// Charge les données de la caisse et ses skins
         /// </summary>
@@ -217,10 +227,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine(SelectedCount);
                 try
                 {
-                    MultipleCaseResultDTO casesObj = await CallCaseOpen(SelectedCount);
-                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(casesObj);
+                    CaseOpenResult = await CallCaseOpen(SelectedCount);
+                    
+                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(CaseOpenResult);
 
-                    foreach (var c in casesObj.Results)
+                    
+
+                    foreach (var c in CaseOpenResult.Results)
                     {
                         ListWonSkinItemDetail.Add(c.Reward);
                     }
@@ -247,11 +260,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 // Non-esthetic mode - skip animations, show results immediately
                 Console.WriteLine($"Opening {SelectedCount} cases without animation");
                 try
-                {
-                var results = await CallCaseOpen(SelectedCount);
+                { 
+                    CaseOpenResult = await CallCaseOpen(SelectedCount);
                 IsInvalidPromoCode = false;
                 // Extract won skins directly from results
-                foreach (var oneCase in results.Results)
+                foreach (var oneCase in CaseOpenResult.Results)
                 {
                     var wonSkin = oneCase.Reward;
                     WonSkins.Add(new InventoryItemDetailDTO
