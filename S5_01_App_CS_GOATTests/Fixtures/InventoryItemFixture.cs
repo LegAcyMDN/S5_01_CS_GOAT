@@ -80,7 +80,7 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             {
                 InventoryItemId = 1,
                 Float = 0.15f,
-                WearName = "Field-Tested",
+                WearTypeName = "Field-Tested",
                 SkinName = "Redline",
                 ItemName = "AK-47",
                 ItemTypeName = "Rifle",
