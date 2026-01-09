@@ -43,7 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                           .ReturnsAsync(notificationTypes);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
                       .Returns(notificationTypeDTOs);
@@ -53,7 +53,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            notificationTypeRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion

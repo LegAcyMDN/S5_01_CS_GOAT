@@ -28,7 +28,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
-            IEnumerable<Case> caseResult = await manager.GetAllAsync();
+            IEnumerable<Case> caseResult = await manager.GetAllAsyncOld();
             IEnumerable<CaseDTO> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -56,7 +56,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
-            Case? result = await manager.GetByIdAsync(id, "CaseContents");
+            Case? result = await manager.GetByIdAsyncOld(id, "CaseContents");
             if (result == null) return NotFound();
             CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 
@@ -85,7 +85,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            Case? caseToOpen = await manager.GetByIdAsync(caseOpenning.CaseId);
+            Case? caseToOpen = await manager.GetByIdAsyncNew(caseOpenning.CaseId);
             if (caseToOpen == null) return NotFound();
             MultipleCaseResultDTO caseResult;
             try

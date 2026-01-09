@@ -30,7 +30,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                         "CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item")
                 .After("CaseContents.Skin.PriceHistories");
-            Case? _case = await caseManager.GetByIdAsync(caseid, options);
+            Case? _case = await caseManager.GetByIdAsyncNew(caseid, options);
             if (_case == null) return NotFound();
 
             IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 

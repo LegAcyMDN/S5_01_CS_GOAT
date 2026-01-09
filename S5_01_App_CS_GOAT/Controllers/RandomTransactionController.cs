@@ -31,7 +31,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsync();
+            IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsyncOld();
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
             return Ok(transactionsDTO);
         }
@@ -67,7 +67,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            RandomTransaction? result = await manager.GetByIdAsync(id,
+            RandomTransaction? result = await manager.GetByIdAsyncOld(id,
                 "Case",
                 "InventoryItem.Wear.WearType",
                 "InventoryItem.Wear.Skin.Rarity",

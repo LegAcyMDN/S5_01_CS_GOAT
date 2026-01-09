@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             _context = context;
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(
+        public async Task<IEnumerable<TEntity>> GetAllAsyncOld(
             Expression<Func<TEntity, bool>>? where = null,
             params string[] includes)
         {
@@ -30,7 +30,7 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             return await query.ToListAsync();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync(QueryOptions<TEntity>? options)
+        public async Task<IEnumerable<TEntity>> GetAllAsyncNew(QueryOptions<TEntity>? options)
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
             if (options != null) query = options.ApplyBefore(query);
@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             return list;
         }
 
-        public async Task<TEntity?> GetByIdAsync(TIdentifier id, QueryOptions<TEntity>? options = null)
+        public async Task<TEntity?> GetByIdAsyncNew(TIdentifier id, QueryOptions<TEntity>? options = null)
         {
             DbSet<TEntity> dbSet = _context.Set<TEntity>(); // Use DbSet for FindAsync
             IQueryable<TEntity> query = dbSet.AsQueryable(); // Ensure query is IQueryable
@@ -81,12 +81,7 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             return entity;
         }
 
-        public async Task<TEntity?> GetByIdAsync(bool LUL, TIdentifier id, QueryOptions<TEntity>? options = null)
-        {
-            return await GetByIdAsync(id, options);
-        }
-
-        public async Task<TEntity?> GetByIdAsync(int id, params string[] includes)
+        public async Task<TEntity?> GetByIdAsyncOld(int id, params string[] includes)
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
             foreach (var include in includes)
@@ -102,9 +97,26 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             return await query.FirstOrDefaultAsync(
                 e => EF.Property<int>(e, keyName) == id);
         }
+
+        public async Task<TEntity?> GetByIdAsync(TIdentifier id)
+        {
+            if (typeof(TIdentifier).Name.StartsWith("ValueTuple"))
+            {
+                var fields = typeof(TIdentifier).GetFields();
+                var values = new object[fields.Length];
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    values[i] = fields[i].GetValue(id)!;
+                }
+
+                return await _context.Set<TEntity>().FindAsync(values);
+            }
+
+            return await _context.Set<TEntity>().FindAsync(id);
+        }
     }
 
-    public class ReadRepository<TEntity> : ReadRepository<TEntity, int>
+        public class ReadRepository<TEntity> : ReadRepository<TEntity, int>
     where TEntity : class
     {
         public ReadRepository(CSGOATDbContext context) : base(context) { }

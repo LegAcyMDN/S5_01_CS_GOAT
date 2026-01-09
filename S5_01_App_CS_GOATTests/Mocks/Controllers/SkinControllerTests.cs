@@ -48,7 +48,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_ValidCaseId_ReturnsOk()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(
                 1,
               "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
             )).ReturnsAsync(caseWithSkins);
@@ -66,7 +66,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             OkObjectResult okResult = (OkObjectResult)result;
             Assert.IsNotNull(okResult.Value);
-            caseRepositoryMock.Verify(r => r.GetByIdAsync(
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(
                 1,
                "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
             ), Times.Once);
@@ -75,7 +75,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_InvalidCaseId_ReturnsNotFound()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(
                 999,
              "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
             )).ReturnsAsync((Case?)null);
@@ -85,7 +85,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsync(
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(
                 999,
               "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
             ), Times.Once);

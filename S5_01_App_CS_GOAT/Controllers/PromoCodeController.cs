@@ -35,7 +35,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             Case? targetCase = null;
             if (caseId != null)
             {
-                targetCase = await caseRepository.GetByIdAsync(caseId.Value);
+                targetCase = await caseRepository.GetByIdAsyncNew(caseId.Value);
                 if (targetCase == null) return NotFound();
             }
             PromoCode? promoCode = await manager.Check(
@@ -67,7 +67,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
-            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsync();
+            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsyncOld();
             return Ok(promoCodes);
         }
 
@@ -112,7 +112,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
 
-            PromoCode? existingPromoCode = await manager.GetByIdAsync(id);
+            PromoCode? existingPromoCode = await manager.GetByIdAsyncNew(id);
             if (existingPromoCode == null) return NotFound();
 
             await manager.UpdateAsync(existingPromoCode, updatedPromoCode);
@@ -134,7 +134,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
-            var promoCode = await manager.GetByIdAsync(id);
+            var promoCode = await manager.GetByIdAsyncNew(id);
             if (promoCode == null) 
                 return NotFound();
 

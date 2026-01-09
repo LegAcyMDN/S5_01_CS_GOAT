@@ -50,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Services
                 params string[] includes)
                 where T1 : class, IUserDependant
         {
-            IEnumerable<T1> allObjects = await manager.GetAllAsync(where, includes);
+            IEnumerable<T1> allObjects = await manager.GetAllAsyncOld(where, includes);
             AuthResult self = this;
             return allObjects.Where(o => self.IsAllowed(o, adminOverride));
         }

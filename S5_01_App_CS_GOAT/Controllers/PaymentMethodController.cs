@@ -19,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
         {
-            IEnumerable<PaymentMethod> payments = await manager.GetAllAsync();
+            IEnumerable<PaymentMethod> payments = await manager.GetAllAsyncOld();
             return Ok(payments);
         }
     }

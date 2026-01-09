@@ -72,7 +72,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            itemTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -86,7 +86,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            itemTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -94,7 +94,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(null))
+            itemTransactionRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                          .ReturnsAsync(itemTransactions);
             mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDTO>>(itemTransactions))
                       .Returns(itemTransactionDTOs);
@@ -104,7 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion
@@ -119,7 +119,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsync(1), Times.Never);
+            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(1), Times.Never);
         }
 
         [TestMethod]
@@ -129,7 +129,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 1;
             
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId))
+            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId))
                                          .ReturnsAsync(itemTransaction);
             mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(itemTransaction))
                       .Returns(itemTransactionDetailDTO);
@@ -139,7 +139,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsync(transactionId), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(transactionId), Times.Once);
         }
 
         [TestMethod]
@@ -149,7 +149,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 999;
             
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId))
+            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId))
                                          .ReturnsAsync((ItemTransaction?)null);
 
             // When
@@ -157,7 +157,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsync(transactionId), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(transactionId), Times.Once);
         }
 
         [TestMethod]
@@ -167,7 +167,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 2;
             
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId))
+            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId))
                                          .ReturnsAsync(otherUserItemTransaction);
 
             // When
@@ -175,7 +175,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsync(transactionId), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(transactionId), Times.Once);
         }
 
         [TestMethod]
@@ -185,7 +185,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, admin);
             int transactionId = 2;
             
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId))
+            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId))
                                          .ReturnsAsync(otherUserItemTransaction);
             mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(otherUserItemTransaction))
                       .Returns(itemTransactionDetailDTO);
@@ -195,7 +195,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsync(transactionId), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(transactionId), Times.Once);
         }
 
         #endregion
@@ -210,7 +210,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            itemTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -218,7 +218,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(null))
+            itemTransactionRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                          .ReturnsAsync(itemTransactions);
 
             // When
@@ -226,7 +226,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            itemTransactionRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            itemTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion
