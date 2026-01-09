@@ -59,7 +59,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (limitType == null)
                 return NotFound($"LimitType not found: {limitDto.LimitTypeName}");
 
-            Limit? existingLimit = await manager.GetByIdAsyncNew((userId, limitType.LimitTypeId));
+            Limit? existingLimit = await manager.GetByIdAsync((userId, limitType.LimitTypeId));
             if (existingLimit == null)
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitType.LimitTypeId}");
 

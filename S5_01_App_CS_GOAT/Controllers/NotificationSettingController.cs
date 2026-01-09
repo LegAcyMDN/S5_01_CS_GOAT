@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             int userId = authResult.AuthUserId.Value;
 
-            NotificationSetting? setting = await manager.GetByIdAsyncNew((userId, notificationTypeId));
+            NotificationSetting? setting = await manager.GetByIdAsync((userId, notificationTypeId));
             if (setting == null) return NotFound();
 
             await manager.PatchAsync(setting, patchData);
