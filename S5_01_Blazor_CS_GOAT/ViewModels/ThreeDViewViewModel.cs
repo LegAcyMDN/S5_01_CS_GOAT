@@ -313,26 +313,31 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
             }
         }
-
         public async Task DrawPriceHistoryGraph()
         {
-            PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
-#if false
             try
             {
                 IsLoadingPriceHistory = true;
-                PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+                ObservableCollection<PriceHistoryDTO>? allPriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+
+                // Filtrer pour obtenir seulement les 30 derniers jours
+                DateTime? thirtyDaysAgo = DateTime.Now.AddDays(-80);
+                PriceHistory = new ObservableCollection<PriceHistoryDTO>(
+                    allPriceHistory
+                        .Where(p => p.PriceDate >= thirtyDaysAgo)
+                        .OrderBy(p => p.PriceDate)
+                        .ToList()
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur: {ex.Message}");
-                PriceHistory = null;
+                Console.WriteLine($"Erreur lors du chargement de l'historique des prix: {ex.Message}");
+                PriceHistory = new ObservableCollection<PriceHistoryDTO>();
             }
             finally
             {
                 IsLoadingPriceHistory = false;
             }
-#endif
         }
     }
     }

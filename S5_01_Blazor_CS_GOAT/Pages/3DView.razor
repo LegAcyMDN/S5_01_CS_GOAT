@@ -3,6 +3,7 @@
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @using Radzen
 @using Radzen.Blazor
+@using Shared.DTO
 @implements IDisposable
 @inject ThreeDViewViewModel ViewModel
 
@@ -95,19 +96,31 @@
 </div>
 
 <div class="price-history">
-    <h2 class="price-history-title">Historique des Prix</h2>
+    <h2 class="price-history-title">Historique des Prix (30 derniers jours)</h2>
     <RadzenChart>
         <RadzenLineSeries Smooth="true"
                           Data="@ViewModel.PriceHistory"
                           CategoryProperty="PriceDate"
                           ValueProperty="PriceValue"
-                          Title="Price Evolution">
-            <RadzenMarkers MarkerType="MarkerType.Circle" />
+                          Title="Évolution du Prix"
+                          Stroke="orange"
+                          StrokeWidth="4"
+                          LineType="LineType.Solid">
+            <ChildContent>
+                <RadzenMarkers MarkerType="MarkerType.Circle" Fill="orange" Stroke="orange" Size="6" StrokeWidth="2" />
+            </ChildContent>
+            <TooltipTemplate Context="data">
+                <div style="padding: 8px;">
+                    <strong>Date:</strong> @(((PriceHistoryDTO)data).PriceDate.ToString("dd/MM/yyyy"))<br/>
+                    <strong>Prix:</strong> @(((PriceHistoryDTO)data).PriceValue.ToString("C2"))
+                </div>
+            </TooltipTemplate>
         </RadzenLineSeries>
-        <RadzenCategoryAxis Padding="20" />
-        <RadzenValueAxis>
+        <RadzenCategoryAxis Padding="20" FormatString="{0:dd/MM}" />
+        <RadzenValueAxis Formatter="@FormatPrice">
             <RadzenGridLines Visible="true" />
         </RadzenValueAxis>
+        <RadzenLegend Position="LegendPosition.Top" />
     </RadzenChart>
 </div>
 
@@ -124,14 +137,14 @@
         View3D1.ObjectLoaded -= OnObjectLoaded;
         View3D1.JsModuleLoaded -= OnJsModuleLoaded;
     }
-    
+
     protected override Task OnInitializedAsync()
     {
         ViewModel.InitializeLights();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
         return base.OnInitializedAsync();
     }
-    
+
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -142,7 +155,7 @@
 
         return base.OnAfterRenderAsync(firstRender);
     }
-    
+
     private async Task OnJsModuleLoaded()
     {
         await ViewModel.LoadModelAsync(InventoryItemId, View3D1);
@@ -156,4 +169,12 @@
         StateHasChanged();
     }
 
+    string FormatPrice(object value)
+    {
+        if (value is decimal decimalValue)
+        {
+            return decimalValue.ToString("C2");
+        }
+        return value?.ToString() ?? "";
+    }
 }
