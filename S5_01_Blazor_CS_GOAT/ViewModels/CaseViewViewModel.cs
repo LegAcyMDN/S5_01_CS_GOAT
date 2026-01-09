@@ -221,6 +221,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 return;
 
             WonSkins.Clear();
+            ListWonSkinItemDetail.Clear();
+            
 
             if (IsEsthetic)
             {
