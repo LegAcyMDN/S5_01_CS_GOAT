@@ -8,7 +8,7 @@ public class InventoryItemDetail
     public bool IsFavorite { get; set; }
     public DateTime AcquiredOn { get; set; }
     public string? Uuid { get; set; }
-    public string WearName { get; set; } = null!;
+    public string WearTypeName { get; set; } = null!;
     public string SkinName { get; set; } = null!;
     public string ItemName { get; set; } = null!;
     public string ItemTypeName { get; set; } = null!;
