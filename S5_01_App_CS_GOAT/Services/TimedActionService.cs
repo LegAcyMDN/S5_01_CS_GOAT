@@ -49,7 +49,7 @@ namespace S5_01_App_CS_GOAT.Services
                     {
                         TRepository repository = scope.ServiceProvider.GetRequiredService<TRepository>();
 
-                        IEnumerable<TEntity> entities = await repository.GetAllAsync();
+                        IEnumerable<TEntity> entities = await repository.GetAllAsyncOld();
                         foreach (TEntity entity in entities)
                         {
                             try

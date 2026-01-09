@@ -61,7 +61,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             int inventoryItemId = 1;
             JwtService.AuthentifyController(controller, normalUser);
-            upgradeResultRepositoryMock.Setup(r => r.GetAllAsync(ur => ur.InventoryItemId == inventoryItemId))
+            upgradeResultRepositoryMock.Setup(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == inventoryItemId))
                                        .ReturnsAsync(upgradeResults.Where(ur => ur.InventoryItemId == inventoryItemId));
             mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults))
                        .Returns(upgradeResultDTOs);
@@ -71,7 +71,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsync(ur => ur.InventoryItemId == inventoryItemId), Times.Once);
+            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == inventoryItemId), Times.Once);
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsync(ur => ur.InventoryItemId == 1), Times.Never);
+            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == 1), Times.Never);
         }
 
         [TestMethod]
@@ -90,7 +90,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             int transactionId = 1;
             JwtService.AuthentifyController(controller, normalUser);
-            upgradeResultRepositoryMock.Setup(r => r.GetAllAsync(ur => ur.TransactionId == transactionId))
+            upgradeResultRepositoryMock.Setup(r => r.GetAllAsyncOld(ur => ur.TransactionId == transactionId))
                                        .ReturnsAsync(upgradeResults.Where(ur => ur.TransactionId == transactionId));
             mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults))
                        .Returns(upgradeResultDTOs);
@@ -100,7 +100,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsync(ur => ur.TransactionId == transactionId), Times.Once);
+            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.TransactionId == transactionId), Times.Once);
         }
 
         [TestMethod]
@@ -111,7 +111,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsync(ur => ur.TransactionId == 1), Times.Never);
+            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.TransactionId == 1), Times.Never);
         }
 
         #endregion

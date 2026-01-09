@@ -353,14 +353,18 @@
                                 {
                                     @foreach (var promo in PromoCodeViewModel.FilteredAndSortedPromoCodes)
                                     {
-                                        var isExpired = promo.ExpiryDate.HasValue && promo.ExpiryDate.Value < DateTime.Now;
-                                        var isNotStarted = promo.ValidityStart > DateTime.Now;
-                                        var isActive = !isExpired && !isNotStarted && (promo.RemainingUses == null || promo.RemainingUses > 0);
+                                        var status = PromoCodeViewModel.GetPromoStatus(promo);
+                                        var nextRefresh = PromoCodeViewModel.GetNextRefresh(promo);
+                                        var willBeDeleted = PromoCodeViewModel.WillBeDeleted(promo);
 
-                                        <tr class="@(isActive ? "promo-active" : isExpired ? "promo-expired" : "")">
+                                        <tr class="@status.CssClass">
                                             <td>@promo.PromoCodeId</td>
                                             <td>
                                                 <strong>@promo.Code</strong>
+                                                @if (willBeDeleted)
+                                                {
+                                                    <span class="warning-badge" title="Ce code sera automatiquement supprimé">⚠️</span>
+                                                }
                                             </td>
                                             <td>
                                                 @if (promo.RemainingUses.HasValue)
@@ -399,6 +403,13 @@
                                                 @if (promo.ExpiryDate.HasValue)
                                                 {
                                                     <span>@promo.ExpiryDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    @if (promo.RefreshDelay.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-info" title="Délai de rafraîchissement">
+                                                            🔄 +@FormatTimeSpan(promo.RefreshDelay.Value)
+                                                        </small>
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -420,22 +431,16 @@
                                                 }
                                             </td>
                                             <td>
-                                                @if (isNotStarted)
-                                                {
-                                                    <span class="status-badge status-pending">⏳ En attente</span>
-                                                }
-                                                else if (isExpired)
-                                                {
-                                                    <span class="status-badge status-expired">❌ Expiré</span>
-                                                }
-                                                else if (promo.RemainingUses == 0)
-                                                {
-                                                    <span class="status-badge status-depleted">🚫 Épuisé</span>
-                                                }
-                                                else if (isActive)
-                                                {
-                                                    <span class="status-badge status-active">✅ Actif</span>
-                                                }
+                                                <div class="status-container" title="@status.Description">
+                                                    <span class="status-badge @status.CssClass">@status.Status</span>
+                                                    @if (nextRefresh.HasValue && promo.RefreshDelay.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">
+                                                            Prochain: @nextRefresh.Value.ToString("dd/MM/yyyy HH:mm")
+                                                        </small>
+                                                    }
+                                                </div>
                                             </td>
                                             <td>
                                                 <div class="action-buttons">
@@ -712,6 +717,26 @@
         if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le code promo '{code}' ? Cette action est irréversible."))
         {
             await PromoCodeViewModel.DeletePromoCodeAsync(promoCodeId);
+        }
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        if (timeSpan.TotalDays >= 1)
+        {
+            return $"{(int)timeSpan.TotalDays}j";
+        }
+        else if (timeSpan.TotalHours >= 1)
+        {
+            return $"{(int)timeSpan.TotalHours}h";
+        }
+        else if (timeSpan.TotalMinutes >= 1)
+        {
+            return $"{(int)timeSpan.TotalMinutes}min";
+        }
+        else
+        {
+            return $"{(int)timeSpan.TotalSeconds}s";
         }
     }
 

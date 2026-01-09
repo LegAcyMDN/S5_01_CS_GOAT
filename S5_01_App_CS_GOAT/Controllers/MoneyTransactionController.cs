@@ -50,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
             
-            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync(null, "PaymentMethod");
+            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsyncOld(null, "PaymentMethod");
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(transactionsDto);
         }

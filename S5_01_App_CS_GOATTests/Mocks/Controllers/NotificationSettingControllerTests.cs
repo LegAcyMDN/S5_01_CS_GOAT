@@ -65,7 +65,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            notificationSettingRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Never);
+            notificationSettingRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
         }
 
         [TestMethod]
@@ -73,7 +73,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            notificationSettingRepositoryMock.Setup(r => r.GetAllAsync(null))
+            notificationSettingRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                              .ReturnsAsync(notificationSettings);
 
             // When
@@ -81,7 +81,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationSettingRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            notificationSettingRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion
@@ -99,7 +99,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsync(notificationSettingKey), Times.Never);
+            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsyncNew(notificationSettingKey), Times.Never);
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int notificationTypeId = 1;
 
-            notificationSettingRepositoryMock.Setup(r => r.GetByIdAsync(notificationSettingKey))
+            notificationSettingRepositoryMock.Setup(r => r.GetByIdAsyncNew(notificationSettingKey))
                                              .ReturnsAsync(notificationSetting);
             notificationSettingRepositoryMock.Setup(r => r.PatchAsync(notificationSetting, patchData))
                                              .Returns(Task.CompletedTask);
@@ -119,7 +119,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsync(notificationSettingKey), Times.Once);
+            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsyncNew(notificationSettingKey), Times.Once);
         }
 
         [TestMethod]
@@ -130,7 +130,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int notificationTypeId = 999;
             (int, int) nonExistingKey = NotificationFixture.GetNotificationSettingKey(normalUser.UserId, notificationTypeId);
 
-            notificationSettingRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingKey))
+            notificationSettingRepositoryMock.Setup(r => r.GetByIdAsyncNew(nonExistingKey))
                                              .ReturnsAsync((NotificationSetting?)null);
 
             // When
@@ -138,7 +138,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingKey), Times.Once);
+            notificationSettingRepositoryMock.Verify(r => r.GetByIdAsyncNew(nonExistingKey), Times.Once);
         }
 
         #endregion

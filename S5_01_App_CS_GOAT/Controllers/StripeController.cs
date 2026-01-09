@@ -178,7 +178,7 @@ public async Task<IActionResult> Webhook()
             
             Console.WriteLine($"Processing withdrawal: userId={userId}, amount={amount}"); 
             
-            var user = await _userRepository.GetByIdAsync(userId);  
+            var user = await _userRepository.GetByIdAsyncNew(userId);  
             if (user == null)  
             {
                 Console.WriteLine($"❌ User {userId} not found!");      
@@ -285,7 +285,7 @@ public async Task<IActionResult> Webhook()
             
             // Get user  
             Console.WriteLine($"Fetching user {userId}...");  
-            var user = await _userRepository.GetByIdAsync(userId); 
+            var user = await _userRepository.GetByIdAsyncNew(userId); 
             
             if (user == null)  
             {
@@ -342,7 +342,7 @@ public async Task<IActionResult> Webhook()
             {      
                 // Verify user authentication      
                 var userId = GetUserIdFromJwt(); // Your JWT helper method      
-                var user = await _userRepository.GetByIdAsync(userId);      
+                var user = await _userRepository.GetByIdAsyncNew(userId);      
                 
                 if (user == null) return NotFound(new { message = "User not found" });      
                 

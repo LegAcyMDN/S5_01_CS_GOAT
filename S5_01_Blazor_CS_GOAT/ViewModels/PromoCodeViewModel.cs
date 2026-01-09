@@ -123,6 +123,86 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _sortBy, value);
         }
 
+        /// <summary>
+        /// Calcule la prochaine date de rafraîchissement pour un code promo
+        /// </summary>
+        public DateTime? GetNextRefresh(PromoCode promo)
+        {
+            if (promo.RefreshDelay == null || promo.ExpiryDate == null) return null;
+            return promo.ExpiryDate.Value.Add(promo.RefreshDelay.Value);
+        }
+
+        /// <summary>
+        /// Vérifie si un code promo est expiré
+        /// </summary>
+        public bool IsExpired(PromoCode promo)
+        {
+            return promo.ExpiryDate.HasValue && DateTime.Now > promo.ExpiryDate.Value;
+        }
+
+        /// <summary>
+        /// Vérifie si un code promo est prêt à être rafraîchi
+        /// </summary>
+        public bool IsDueForRefresh(PromoCode promo)
+        {
+            if (!IsExpired(promo)) return false;
+            if (promo.RefreshDelay == null) return false;
+            var nextRefresh = GetNextRefresh(promo);
+            return nextRefresh.HasValue && DateTime.Now >= nextRefresh.Value;
+        }
+
+        /// <summary>
+        /// Vérifie si un code promo sera automatiquement supprimé
+        /// </summary>
+        public bool WillBeDeleted(PromoCode promo)
+        {
+            if (promo.RefreshDelay != null) return false;
+            return IsExpired(promo) || promo.RemainingUses == 0;
+        }
+
+        /// <summary>
+        /// Obtient le statut d'un code promo avec sa description
+        /// </summary>
+        public (string Status, string Description, string CssClass) GetPromoStatus(PromoCode promo)
+        {
+            var isNotStarted = promo.ValidityStart > DateTime.Now;
+            var isExpired = IsExpired(promo);
+            var willBeDeleted = WillBeDeleted(promo);
+            var dueForRefresh = IsDueForRefresh(promo);
+
+            if (willBeDeleted)
+            {
+                return ("🗑️ À supprimer", "Ce code sera automatiquement supprimé", "status-to-delete");
+            }
+            if (dueForRefresh)
+            {
+                var nextRefresh = GetNextRefresh(promo);
+                return ("🔄 À rafraîchir", $"Sera rafraîchi le {nextRefresh:dd/MM/yyyy HH:mm}", "status-refresh");
+            }
+            if (isNotStarted)
+            {
+                return ("⏳ En attente", $"Début le {promo.ValidityStart:dd/MM/yyyy HH:mm}", "status-pending");
+            }
+            if (isExpired)
+            {
+                if (promo.RefreshDelay != null)
+                {
+                    var nextRefresh = GetNextRefresh(promo);
+                    return ("⏰ Expiré", $"Sera rafraîchi le {nextRefresh:dd/MM/yyyy HH:mm}", "status-expired-refresh");
+                }
+                return ("❌ Expiré", "Ce code a expiré", "status-expired");
+            }
+            if (promo.RemainingUses == 0)
+            {
+                if (promo.RefreshDelay != null)
+                {
+                    return ("🔄 Épuisé", "Sera réinitialisé lors du rafraîchissement", "status-depleted-refresh");
+                }
+                return ("🚫 Épuisé", "Aucune utilisation restante", "status-depleted");
+            }
+            return ("✅ Actif", "Code promo actif et utilisable", "status-active");
+        }
+
         public List<PromoCode> FilteredAndSortedPromoCodes
         {
             get

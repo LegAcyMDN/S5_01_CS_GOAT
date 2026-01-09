@@ -36,7 +36,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if(!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsync();
+            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsyncOld();
              IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
             return Ok(promoCodesDTO);
         }
@@ -55,7 +55,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            ItemTransaction? itemTransaction = await manager.GetByIdAsync(id);
+            ItemTransaction? itemTransaction = await manager.GetByIdAsyncNew(id);
             if (itemTransaction == null) return NotFound();
             if (authResult.AuthUserId != itemTransaction.DependantUserId && !authResult.IsAdmin)
                 return Forbid();

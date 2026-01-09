@@ -33,7 +33,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 
         public async Task<PromoCode?> Check(string code, int userId, int? caseId = null)
         {
-            IEnumerable<PromoCode> promoCodes = await GetAllAsync(
+            IEnumerable<PromoCode> promoCodes = await GetAllAsyncOld(
                 pc => pc.Code == code &&
                 (pc.UserId == null || pc.UserId == userId) &&
                 (pc.CaseId == null || pc.CaseId == caseId)

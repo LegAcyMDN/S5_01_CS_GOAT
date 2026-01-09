@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(null))
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
                                        .ReturnsAsync(paymentMethods);
 
             // When
@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            paymentMethodRepositoryMock.Verify(r => r.GetAllAsync(null), Times.Once);
+            paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
         }
 
         #endregion

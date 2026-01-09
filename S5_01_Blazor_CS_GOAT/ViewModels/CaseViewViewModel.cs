@@ -261,6 +261,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                         RarityColor = wonSkin.RarityColor,
                         RarityName = wonSkin.RarityName,
                         SkinName = wonSkin.SkinName,
+                        WearName =  wonSkin.WearName,
                         LastPrice = 1 //TODO make it good
                     });
                 }
