@@ -151,6 +151,9 @@
                                 <th>Nom d'affichage</th>
                                 <th>Email</th>
                                 <th>Téléphone</th>
+                                <th>Compte Steam</th>
+                                <th>Date d'inscription</th>
+                                <th>Dernière connexion</th>
                                 <th>Portefeuille</th>
                                 <th>2FA</th>
                                 <th>Admin</th>
@@ -194,6 +197,28 @@
                                                 <span class="text-muted">-</span>
                                             }
                                         </td>
+                                        <td>
+                                            @if (user.IsSteamLogin)
+                                            {
+                                                <span class="badge badge-steam" title="Compte lié à Steam">
+                                                    🎮 Steam
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Non lié</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span title="@user.CreationDate.ToString("dd/MM/yyyy HH:mm:ss")">
+                                                @user.CreationDate.ToString("dd/MM/yyyy")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span title="@user.LastLogin.ToString("dd/MM/yyyy HH:mm:ss")">
+                                                @user.LastLogin.ToString("dd/MM/yyyy HH:mm")
+                                            </span>
+                                        </td>
                                         <td>@($"{user.Wallet:F2}€")</td>
                                         <td>
                                             @if (user.TwoFA == 0)
@@ -228,6 +253,11 @@
                                                             title="@(user.IsAdmin ? "Retirer admin" : "Promouvoir admin")">
                                                         @(user.IsAdmin ? "👤" : "🛡️")
                                                     </button>
+                                                    <button class="btn-action btn-anonymize" 
+                                                            @onclick="() => ShowAnonymizeNotImplemented()"
+                                                            title="Anonymiser le joueur">
+                                                        🕶️
+                                                    </button>
                                                     <button class="btn-action btn-ban" 
                                                             @onclick="async () => await ViewModel.ToggleBanUserAsync(user.UserId)"
                                                             title="Bannir/Débannir">
@@ -251,7 +281,7 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="9" class="no-data">Aucun utilisateur trouvé</td>
+                                    <td colspan="12" class="no-data">Aucun utilisateur trouvé</td>
                                 </tr>
                             }
                         </tbody>
@@ -353,14 +383,18 @@
                                 {
                                     @foreach (var promo in PromoCodeViewModel.FilteredAndSortedPromoCodes)
                                     {
-                                        var isExpired = promo.ExpiryDate.HasValue && promo.ExpiryDate.Value < DateTime.Now;
-                                        var isNotStarted = promo.ValidityStart > DateTime.Now;
-                                        var isActive = !isExpired && !isNotStarted && (promo.RemainingUses == null || promo.RemainingUses > 0);
+                                        var status = PromoCodeViewModel.GetPromoStatus(promo);
+                                        var nextRefresh = PromoCodeViewModel.GetNextRefresh(promo);
+                                        var willBeDeleted = PromoCodeViewModel.WillBeDeleted(promo);
 
-                                        <tr class="@(isActive ? "promo-active" : isExpired ? "promo-expired" : "")">
+                                        <tr class="@status.CssClass">
                                             <td>@promo.PromoCodeId</td>
                                             <td>
                                                 <strong>@promo.Code</strong>
+                                                @if (willBeDeleted)
+                                                {
+                                                    <span class="warning-badge" title="Ce code sera automatiquement supprimé">⚠️</span>
+                                                }
                                             </td>
                                             <td>
                                                 @if (promo.RemainingUses.HasValue)
@@ -399,6 +433,13 @@
                                                 @if (promo.ExpiryDate.HasValue)
                                                 {
                                                     <span>@promo.ExpiryDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                                    @if (promo.RefreshDelay.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-info" title="Délai de rafraîchissement">
+                                                            🔄 +@FormatTimeSpan(promo.RefreshDelay.Value)
+                                                        </small>
+                                                    }
                                                 }
                                                 else
                                                 {
@@ -420,22 +461,16 @@
                                                 }
                                             </td>
                                             <td>
-                                                @if (isNotStarted)
-                                                {
-                                                    <span class="status-badge status-pending">⏳ En attente</span>
-                                                }
-                                                else if (isExpired)
-                                                {
-                                                    <span class="status-badge status-expired">❌ Expiré</span>
-                                                }
-                                                else if (promo.RemainingUses == 0)
-                                                {
-                                                    <span class="status-badge status-depleted">🚫 Épuisé</span>
-                                                }
-                                                else if (isActive)
-                                                {
-                                                    <span class="status-badge status-active">✅ Actif</span>
-                                                }
+                                                <div class="status-container" title="@status.Description">
+                                                    <span class="status-badge @status.CssClass">@status.Status</span>
+                                                    @if (nextRefresh.HasValue && promo.RefreshDelay.HasValue)
+                                                    {
+                                                        <br />
+                                                        <small class="text-muted">
+                                                            Prochain: @nextRefresh.Value.ToString("dd/MM/yyyy HH:mm")
+                                                        </small>
+                                                    }
+                                                </div>
                                             </td>
                                             <td>
                                                 <div class="action-buttons">
@@ -713,6 +748,31 @@
         {
             await PromoCodeViewModel.DeletePromoCodeAsync(promoCodeId);
         }
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        if (timeSpan.TotalDays >= 1)
+        {
+            return $"{(int)timeSpan.TotalDays}j";
+        }
+        else if (timeSpan.TotalHours >= 1)
+        {
+            return $"{(int)timeSpan.TotalHours}h";
+        }
+        else if (timeSpan.TotalMinutes >= 1)
+        {
+            return $"{(int)timeSpan.TotalMinutes}min";
+        }
+        else
+        {
+            return $"{(int)timeSpan.TotalSeconds}s";
+        }
+    }
+
+    private void ShowAnonymizeNotImplemented()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "La fonctionnalité d'anonymisation n'est pas encore implémentée.");
     }
 
     public void Dispose()
