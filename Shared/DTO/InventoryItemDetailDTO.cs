@@ -14,7 +14,7 @@ public class InventoryItemDetailDTO
 
     public string? Uuid { get; set; }
 
-    public string WearName { get; set; } = null!; // name of the wear for the item
+    public string WearTypeName { get; set; } = null!; // name of the wear for the item
 
     public string SkinName { get; set; } = null!; // name of the skin for the item
 

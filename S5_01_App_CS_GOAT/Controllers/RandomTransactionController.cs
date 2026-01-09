@@ -5,6 +5,7 @@ using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using S5_01_App_CS_GOAT.Mapper;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -77,15 +78,32 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get live feed of random transactions
+        /// Get live feed of random transactions from cases
         /// </summary>
-        /// <param name="count">Number of transactions to retrieve</param>
-        /// <returns>List of RandomTransaction objects</returns>
+        /// <param name="count">Number of transactions to retrieve (default: 20)</param>
+        /// <returns>List of RandomTransactionLiveFeedDTO objects</returns>
         [HttpGet("livefeed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> LiveFeed(int count)
         {
-            throw new NotImplementedException();
+            var queryOptions = new QueryOptions<RandomTransaction>()
+                .Before(rt => rt.CaseId != null)
+                .Before(
+                    rt => rt.InventoryItem.Wear.WearType,
+                    rt => rt.InventoryItem.Wear.Skin.Rarity,
+                    rt => rt.InventoryItem.Wear.Skin.Item
+                );
+
+            var transactions = await manager.GetAllAsyncNew(queryOptions);
+
+            var recentTransactions = transactions
+                .OrderByDescending(t => t.TransactionDate)
+                .Take(count)
+                .ToList();
+
+            var liveFeedDTOs = mapper.Map<IEnumerable<RandomTransactionLiveFeedDTO>>(recentTransactions);
+
+            return Ok(liveFeedDTOs);
         }
     }
 }
