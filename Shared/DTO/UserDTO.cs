@@ -24,6 +24,8 @@ public class UserDTO
 
     public DateTime CreationDate { get; set; }
 
+    public DateTime LastLogin { get; set; }
+
     public string Seed { get; set; } = null!; // seed of the user for the fair random
 
     public int Nonce { get; set; } // nonce for the fair random

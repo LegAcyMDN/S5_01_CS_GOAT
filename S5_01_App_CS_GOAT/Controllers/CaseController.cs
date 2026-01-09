@@ -56,7 +56,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
-            Case? result = await manager.GetByIdAsyncOld(id, "CaseContents");
+            QueryOptions<Case> options = new QueryOptions<Case>()
+                .Before("CaseContents.Skin.Wears.WearType",
+                        "CaseContents.Skin.Rarity",
+                        "CaseContents.Skin.Item.ItemType");
+            Case? result = await manager.GetByIdAsyncNew(id, options);
             if (result == null) return NotFound();
             CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 

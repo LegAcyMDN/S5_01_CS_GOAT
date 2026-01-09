@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_pricehistory_prh")]
+    [Index(nameof(SkinId), nameof(WearTypeId))]
     [Index(nameof(PriceDate))]
     public class PriceHistory
     {
@@ -36,14 +37,18 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         [Required]
         [Column("skn_id")]
-        public int SkinId { get; set; } 
+        public int SkinId { get; set; }
 
-        [ForeignKey(nameof(WearTypeId))]
-        [InverseProperty(nameof(WearType.PriceHistories))]
-        public virtual WearType WearType { get; set; } = null!;
+        [ForeignKey($"{nameof(SkinId)}, {nameof(WearTypeId)}")]
+        [InverseProperty(nameof(WearClass.PriceHistories))]
+        public virtual WearClass WearClass { get; set; } = null!;
 
         [ForeignKey(nameof(SkinId))]
         [InverseProperty(nameof(Skin.PriceHistories))]
         public virtual Skin Skin { get; set; } = null!;
+
+        [ForeignKey(nameof(WearTypeId))]
+        [InverseProperty(nameof(WearType.PriceHistories))]
+        public virtual WearType WearType { get; set; } = null!;
     }
 }

@@ -18,10 +18,13 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         [StringLength(100)]
         public string WearTypeName { get; set; } = null!;
 
-        [InverseProperty(nameof(PriceHistory.WearType))]
-        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = null!;
-
+        [InverseProperty(nameof(WearClass.WearType))]
+        public virtual ICollection<WearClass> WearClasses { get; set; } = null!;
+    
         [InverseProperty(nameof(Wear.WearType))]
         public virtual ICollection<Wear> Wears { get; set; } = null!;
+
+        [InverseProperty(nameof(PriceHistory.WearType))]
+        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = null!;
     }
 }

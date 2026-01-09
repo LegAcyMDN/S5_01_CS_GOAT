@@ -62,7 +62,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .Before("CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item.ItemType",
                         "CaseContents.Skin.Wears.WearType")
-                .After("CaseContents.Skin.PriceHistories");
+                .After("CaseContents.Skin.WearClasses.PriceHistories");
             Case? targetCase = await _caseRepository.GetByIdAsyncNew(
                 caseOpenningDTO.CaseId,
                 options

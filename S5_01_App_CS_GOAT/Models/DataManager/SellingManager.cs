@@ -52,21 +52,14 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             if (invItem.RemovedOn != null) return StatusCodes.Status410Gone;
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
-            PriceHistory? lastPrice = invItem.LastPrice();
-            double currentPrice = lastPrice != null ? lastPrice.PriceValue : 0;
-            try
-            {
-                IEnumerable<PriceHistory>? newPrices = await _priceHistoryRepository.PredictWithAI(invItem, 7, true);
-                if (newPrices == null) throw new Exception("AI prediction unsuccessful");
-                currentPrice = newPrices.Min(p => p.PriceValue);
-            }
-            catch (Exception ex) { Console.WriteLine(ex.Message); }
+            double? currentPrice = invItem.Wear.CurrentPrice;
+            if (currentPrice == null) return StatusCodes.Status503ServiceUnavailable;
 
             invItem.RemovedOn = DateTime.Now;
-            invItem.User.Wallet += currentPrice;
+            invItem.User.Wallet += (double)currentPrice;
             ItemTransaction itemTransaction = new ItemTransaction()
             {
-                WalletValue = currentPrice,
+                WalletValue = (double)currentPrice,
                 InventoryItemId = invItem.InventoryItemId,
                 UserId = invItem.UserId,
             };

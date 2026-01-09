@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using S5_01_App_CS_GOAT.Services;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -5,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     [Table("t_e_fairrandom_frn")]
+    [Index(nameof(UserNonce))]
     public partial class FairRandom
     {
         [Key]
