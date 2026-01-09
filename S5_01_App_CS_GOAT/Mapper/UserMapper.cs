@@ -23,6 +23,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                     src.TwoFaIsEmail ? TwoFAmethod.Email : 
                     TwoFAmethod.None))
                 .ForMember(dest => dest.CreationDate, opt => opt.MapFrom(src => src.CreationDate))
+                .ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
                 .ForMember(dest => dest.Seed, opt => opt.MapFrom(src => src.Seed))
                 .ForMember(dest => dest.Nonce, opt => opt.MapFrom(src => src.Nonce))
                 .ForMember(dest => dest.Wallet, opt => opt.MapFrom(src => src.Wallet))
