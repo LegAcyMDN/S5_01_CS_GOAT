@@ -136,7 +136,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     
     public async Task<ObservableCollection<TEntity>?> GetByWear(int wearId)
     {
-       return  await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
+        return await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
     }
 
     public async Task<List<TEntity>?> GetLiveFeedAsync(int count = 20)
