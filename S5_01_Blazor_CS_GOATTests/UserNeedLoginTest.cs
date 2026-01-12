@@ -66,12 +66,19 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         await Page.ClickAsync("button[type='submit']");
         Console.WriteLine("click sur le bouton submit");
         
+        
+        await Page.WaitForTimeoutAsync(10000);
+
+        Console.WriteLine(await Page.ContentAsync());
+        
         // Wait to get redirected to the home page
-        await Page.WaitForURLAsync($"{BaseUrl}", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
         { 
             Timeout = 60000 
         });
         Console.WriteLine("attendre d'être redirect à la page principale et de voir le username");
+        
+
         
         
         // See if the username is at the top right
@@ -82,35 +89,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
     [TestMethod]
     public async Task UserCanConnectAndChangePassword()
     {
-        // Navigate to wallet page with longer timeout
-        await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions 
-        { 
-            WaitUntil = WaitUntilState.DOMContentLoaded,
-            Timeout = 60000 
-        });
-
-        // Wait for Blazor to initialize
-        await Page.WaitForSelectorAsync("text=connexion", new PageWaitForSelectorOptions 
-        { 
-            Timeout = 60000 
-        });
-
-        // Click on connexion button
-        await Page.GetByText("connexion").First.ClickAsync();
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-        
-        // Fill connexion informations
-        await Page.FillAsync("[id='identifier']", "testuser123");
-        await Page.FillAsync("[id='password']", "Test123#");
-        
-        // Submit
-        await Page.ClickAsync("button[type='submit']");
-        
-        // Wait to get redirected to the home page
-        await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
-        { 
-            Timeout = 60000 
-        });
+        await TestHelpers.LoginAsync(Page, BaseUrl, "testuser123", "Test123#");
         
         // See if the username is at the top right
         var burgerMenuButton = Page.GetByText("testuser123");
@@ -144,6 +123,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         
         // Submit the password change
         await Page.GetByText("Changer le mot de passe").ClickAsync();
+        
         
         // See if the password was changed successfully
         await Expect(Page.GetByText("Mot de passe modifié avec succès !")).ToBeVisibleAsync();
