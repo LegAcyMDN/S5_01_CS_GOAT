@@ -37,6 +37,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string? _serverHash;
         private int? _userNonce;
         private MultipleCaseResultDTO _caseOpenResult;
+        private bool _needAuth = false;
 
         public CaseViewViewModel(
             IService<SkinDTO> skinRepository,
@@ -152,6 +153,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _caseOpenResult;
             set => SetProperty(ref _caseOpenResult, value);
         }
+        public bool NeedAuth
+        {
+            get => _needAuth;
+            set => SetProperty(ref _needAuth, value);
+        }
 
         #endregion
 
@@ -212,11 +218,25 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
+        public async Task TryBuyCaseAsync()
+        {
+            if (IsAuthenticated)
+            {
+                NeedAuth = false;
+                await BuyCaseAsync();
+            }
+            else
+            {
+                NeedAuth = true;
+            }
+        }
+
         /// <summary>
         /// Achète une ou plusieurs caisses via le service dédié
         /// </summary>
         public async Task BuyCaseAsync()
         {
+
             if (SkinsList == null || SkinsList.Count == 0 || ActiveCase == null)
                 return;
 

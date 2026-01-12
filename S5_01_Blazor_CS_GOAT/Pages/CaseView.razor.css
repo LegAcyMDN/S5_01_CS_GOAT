@@ -304,8 +304,11 @@ input:checked + .slider:after {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 30px;
 }
+
+    .popup-skins > li {
+        margin: 0px 10px 10px 10px;
+    }
 
 .itemDetails {
     white-space-collapse: preserve-breaks;
@@ -521,11 +524,11 @@ input:checked + .slider:after {
 .PromoCode {
     background-color: #2a2836;
     width: 150px;
-    height: 30px;
-    margin-left: 20px;
-    align-self: anchor-center;
+    height: 35px;
     color: white;
     text-align-last: center;
+    border: solid 2px #f8a11d;
+    border-radius: 25px;
 }
 
 
