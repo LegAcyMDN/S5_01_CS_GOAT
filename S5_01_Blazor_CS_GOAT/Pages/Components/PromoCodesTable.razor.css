@@ -1,0 +1,376 @@
+/* === PROMO CODES TABLE COMPONENT STYLES === */
+
+.promocodes-section {
+    background: rgba(30, 30, 30, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    color: #fff;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.search-box {
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #6478ff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    color: #a0a0a0;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #6478ff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #6478ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    margin-top: 1rem;
+    color: #a0a0a0;
+}
+
+.promocodes-table-container {
+    overflow-x: auto;
+}
+
+.promocodes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.promocodes-table thead {
+    background: rgba(100, 120, 255, 0.1);
+}
+
+.promocodes-table th {
+    padding: 1rem;
+    text-align: left;
+    color: #fff;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+}
+
+.promocodes-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #d0d0d0;
+}
+
+.promocodes-table tbody tr {
+    transition: background 0.3s ease;
+}
+
+.promocodes-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.promocodes-table tbody tr.promo-active {
+    background: rgba(76, 175, 80, 0.05);
+}
+
+.promocodes-table tbody tr.promo-expired {
+    background: rgba(244, 67, 54, 0.05);
+    opacity: 0.7;
+}
+
+.warning-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(255, 193, 7, 0.3);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.text-danger {
+    color: #f44336;
+}
+
+.text-success {
+    color: #4caf50;
+}
+
+.text-muted {
+    color: #666;
+}
+
+.text-info {
+    color: #2196f3;
+}
+
+.discount-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(100, 120, 255, 0.2);
+    border-radius: 12px;
+    font-weight: 600;
+    color: #6478ff;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-user {
+    background: rgba(100, 120, 255, 0.2);
+    color: #6478ff;
+}
+
+.badge-case {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.badge-global {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-container small {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.status-expired {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.status-pending {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.status-depleted {
+    background: rgba(158, 158, 158, 0.2);
+    color: #9e9e9e;
+}
+
+.status-to-delete {
+    background: rgba(244, 67, 54, 0.3) !important;
+    color: #f44336 !important;
+}
+
+.status-refresh {
+    background: rgba(33, 150, 243, 0.2);
+    color: #2196f3;
+}
+
+.status-expired-refresh {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.status-depleted-refresh {
+    background: rgba(156, 39, 176, 0.2);
+    color: #9c27b0;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-action:hover {
+    transform: scale(1.1);
+}
+
+.btn-edit {
+    background: rgba(100, 120, 255, 0.2);
+}
+
+.btn-edit:hover {
+    background: rgba(100, 120, 255, 0.4);
+}
+
+.btn-delete:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem !important;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .promocodes-table {
+        font-size: 0.85rem;
+    }
+
+    .promocodes-table th,
+    .promocodes-table td {
+        padding: 0.5rem;
+    }
+}
