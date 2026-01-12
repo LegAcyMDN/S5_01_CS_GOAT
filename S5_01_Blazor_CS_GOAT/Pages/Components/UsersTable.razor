@@ -1,0 +1,179 @@
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject IJSRuntime JSRuntime
+
+<div class="users-section">
+    <div class="section-header">
+        <h2>Gestion des Utilisateurs</h2>
+        <div class="search-box">
+            <input type="text" 
+                   class="search-input" 
+                   @bind="ViewModel.SearchQuery" 
+                   @bind:event="oninput"
+                   placeholder="Rechercher un utilisateur..." />
+        </div>
+    </div>
+
+    <div class="users-table-container">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Login</th>
+                    <th>Nom d'affichage</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Compte Steam</th>
+                    <th>Date d'inscription</th>
+                    <th>Dernière connexion</th>
+                    <th>Portefeuille</th>
+                    <th>2FA</th>
+                    <th>Admin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewModel.FilteredUsers != null && ViewModel.FilteredUsers.Any())
+                {
+                    @foreach (var user in ViewModel.FilteredUsers)
+                    {
+                        <tr class="@(user.UserId == ViewModel.CurrentUser?.UserId ? "current-user" : "")">
+                            <td>@user.UserId</td>
+                            <td>@user.Login</td>
+                            <td>@user.DisplayName</td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.Email))
+                                {
+                                    <span>@user.Email</span>
+                                    @if (user.EmailIsVerified)
+                                    {
+                                        <span class="verified-badge">✓</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.Phone))
+                                {
+                                    <span>@user.Phone</span>
+                                    @if (user.PhoneIsVerified)
+                                    {
+                                        <span class="verified-badge">✓</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (user.IsSteamLogin)
+                                {
+                                    <span class="badge badge-steam" title="Compte lié à Steam">
+                                        🎮 Steam
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Non lié</span>
+                                }
+                            </td>
+                            <td>
+                                <span title="@user.CreationDate.ToString("dd/MM/yyyy HH:mm:ss")">
+                                    @user.CreationDate.ToString("dd/MM/yyyy")
+                                </span>
+                            </td>
+                            <td>
+                                <span title="@user.LastLogin.ToString("dd/MM/yyyy HH:mm:ss")">
+                                    @user.LastLogin.ToString("dd/MM/yyyy HH:mm")
+                                </span>
+                            </td>
+                            <td>@($"{user.Wallet:F2}€")</td>
+                            <td>
+                                @if (user.TwoFA == Shared.Enum.TwoFAmethod.None)
+                                {
+                                    <span class="badge badge-grey">Désactivé</span>
+                                }
+                                else if (user.TwoFA == Shared.Enum.TwoFAmethod.Phone)
+                                {
+                                    <span class="badge badge-blue">SMS</span>
+                                }
+                                else if (user.TwoFA == Shared.Enum.TwoFAmethod.Email)
+                                {
+                                    <span class="badge badge-green">Email</span>
+                                }
+                            </td>
+                            <td>
+                                @if (user.IsAdmin)
+                                {
+                                    <span class="badge badge-admin">Admin</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-user">User</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    @if (user.UserId != ViewModel.CurrentUser?.UserId)
+                                    {
+                                        <button class="btn-action btn-admin" 
+                                                @onclick="async () => await ViewModel.ToggleAdminRoleAsync(user.UserId)"
+                                                title="@(user.IsAdmin ? "Retirer admin" : "Promouvoir admin")">
+                                            @(user.IsAdmin ? "👤" : "🛡️")
+                                        </button>
+                                        <button class="btn-action btn-anonymize" 
+                                                @onclick="() => ShowAnonymizeNotImplemented()"
+                                                title="Anonymiser le joueur">
+                                            🕶️
+                                        </button>
+                                        <button class="btn-action btn-ban" 
+                                                @onclick="async () => await ViewModel.ToggleBanUserAsync(user.UserId)"
+                                                title="Bannir/Débannir">
+                                            🚫
+                                        </button>
+                                        <button class="btn-action btn-delete" 
+                                                @onclick="async () => await ConfirmDeleteUser(user.UserId, user.DisplayName)"
+                                                title="Supprimer">
+                                            🗑️
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">C'est vous</span>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="12" class="no-data">Aucun utilisateur trouvé</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AdminViewModel ViewModel { get; set; } = default!;
+
+    private async Task ConfirmDeleteUser(int userId, string displayName)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer l'utilisateur '{displayName}' ? Cette action est irréversible."))
+        {
+            await ViewModel.DeleteUserAsync(userId);
+        }
+    }
+
+    private void ShowAnonymizeNotImplemented()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "La fonctionnalité d'anonymisation n'est pas encore implémentée.");
+    }
+}
