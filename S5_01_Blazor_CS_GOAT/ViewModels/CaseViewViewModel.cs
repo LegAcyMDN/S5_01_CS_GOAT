@@ -40,6 +40,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _needAuth = false;
         private bool _showConfirmPopup = false;
         private bool _isLoadingCase = false;
+        private double _calculatedPrice = 0;
 
         public CaseViewViewModel(
             IService<SkinDTO> skinRepository,
@@ -173,6 +174,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _isLoadingCase, value);
         }
 
+        public double CalculatedPrice
+        {
+            get => _calculatedPrice;
+            set => SetProperty(ref _calculatedPrice, value);
+        }
+
         #endregion
 
         /// <summary>
@@ -237,7 +244,38 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             if (IsAuthenticated)
             {
                 NeedAuth = false;
-                ShowConfirmPopup = true;
+                IsInvalidPromoCode = false;
+                
+                
+                if (!string.IsNullOrEmpty(PromoCode))
+                {
+                    try
+                    {
+                        
+                        double previewResult = await _caseOpeningService.PreviewPriceAsync(
+                            ActiveCase.CaseId,
+                            SelectedCount,
+                            PromoCode);
+                        
+                        CalculatedPrice = previewResult;
+                        ShowConfirmPopup = true;
+                    }
+                    catch (InvalidPromoCodeException)
+                    {
+                        IsInvalidPromoCode = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erreur lors de la validation du code promo: {ex.Message}");
+                        CalculatedPrice = ActiveCase.CasePrice * SelectedCount;
+                        ShowConfirmPopup = true;
+                    }
+                }
+                else
+                {
+                    CalculatedPrice = ActiveCase.CasePrice * SelectedCount;
+                    ShowConfirmPopup = true;
+                }
             }
             else
             {

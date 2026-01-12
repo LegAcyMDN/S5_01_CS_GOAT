@@ -125,7 +125,16 @@
                 <div class="popup-backdrop">
                     <div class="popup-modal">
                         <h3>Confirmer l'achat</h3>
-                        <p>Voulez-vous vraiment acheter @ViewModel.SelectedCount caisse@(ViewModel.SelectedCount > 1 ? "s" : "") pour @(ViewModel.ActiveCase.CasePrice * ViewModel.SelectedCount)€ ?</p>
+                        <p>Voulez-vous vraiment acheter @ViewModel.SelectedCount caisse@(ViewModel.SelectedCount > 1 ? "s" : "") ?</p>
+                        @if (!string.IsNullOrEmpty(ViewModel.PromoCode))
+                        {
+                            <p style="color: #888; text-decoration: line-through;">Prix normal : @(ViewModel.ActiveCase.CasePrice * ViewModel.SelectedCount)€</p>
+                            <p style="color: #4CAF50; font-weight: bold; font-size: 1.2em;">Prix avec code "@ViewModel.PromoCode" : @ViewModel.CalculatedPrice€</p>
+                        }
+                        else
+                        {
+                            <p style="font-weight: bold; font-size: 1.2em;">Prix total : @ViewModel.CalculatedPrice€</p>
+                        }
                         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
                             <button class="popup-close" @onclick="ViewModel.ConfirmPurchaseAsync" style="background-color: #4CAF50;">Confirmer</button>
                             <button class="popup-close" @onclick="ViewModel.CancelPurchase" style="background-color: #f44336;">Annuler</button>
