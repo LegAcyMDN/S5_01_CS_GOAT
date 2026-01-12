@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Radzen;
+using S5_01_Blazor_CS_GOAT.Models;
 using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.Service
@@ -32,7 +34,8 @@ namespace S5_01_Blazor_CS_GOAT.Service
             var response = await _httpClient.GetAsync("User/all");
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadFromJsonAsync<List<UserDTO>>();
+                var rt = await response.Content.ReadFromJsonAsync<GetOptionsResponse<UserDTO>>();
+                return rt?.Result;
             }
 
             return null;

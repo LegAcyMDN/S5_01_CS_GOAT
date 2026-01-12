@@ -45,9 +45,10 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         if (!string.IsNullOrEmpty(jwtToken))
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>($"{_endpoint}/all");
+            return response.Result;
         }
-        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/all");
-        return response?.Result;
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
     }
 
     public async Task<TEntity?> GetByIdAsync(int id)
