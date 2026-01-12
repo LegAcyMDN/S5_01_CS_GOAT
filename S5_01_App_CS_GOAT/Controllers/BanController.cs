@@ -33,9 +33,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Forbid();
             
             IEnumerable<Ban> bans = await manager.GetAllAsyncOld(null, "BanType");
-
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
-            return Ok(bansDTO);
+            return Ok(new GetOptions<BanDTO>(Request, bansDTO));
         }
 
         /// <summary>
@@ -51,9 +50,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
 
             IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, null, "BanType");
-
             IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
-            return Ok(userBansDTO);
+            return Ok(new GetOptions<BanDTO>(Request, userBansDTO));
         }
 
         /// <summary>

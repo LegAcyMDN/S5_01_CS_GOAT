@@ -1,11 +1,23 @@
 ﻿
 
 using Shared.Enum;
+using Shared.Interfaces;
 
 namespace Shared.DTO;
 
-public class UserDTO
+public class UserDTO : IQueryableDTO
 {
+    public static string? DefaultSortKey => "Login";
+
+    public static SortingType? DefaultSortType => SortingType.Ascending;
+
+    public static int DefaultPageSize => 50;
+
+    public static bool CanSearch => true;
+
+    public string? SearchTerm => DisplayName;
+
+
     public int UserId { get; set; }
 
     public string Login { get; set; } = null!;

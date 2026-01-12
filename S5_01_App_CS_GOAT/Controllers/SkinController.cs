@@ -28,8 +28,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             QueryOptions<Case> options = new QueryOptions<Case>()
                 .Before("CaseContents.Skin.Wears.WearType",
                         "CaseContents.Skin.Rarity",
-                        "CaseContents.Skin.Item")
-                .After("CaseContents.Skin.PriceHistories");
+                        "CaseContents.Skin.Item");
             Case? _case = await caseManager.GetByIdAsyncNew(caseid, options);
             if (_case == null) return NotFound();
 
@@ -40,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     return skinDto;
                 });
 
-            return Ok(skins);
+            return Ok(new GetOptions<SkinDTO>(Request, skins));
         }
     }
 }

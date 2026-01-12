@@ -113,7 +113,7 @@
                             <ul class="popup-skins" style="list-style-type: none;">
                                 @foreach (var skin in ViewModel.WonSkins)
                                 {
-                                    <li>
+                                    <li class="skin-item">
                                         @{
                                             SkinDTO translatedSkin = new SkinDTO()
                                             {
@@ -127,13 +127,17 @@
                                             var img = string.IsNullOrEmpty(skin.Uuid)
                                             ? string.Empty
                                             : $"https://screenshots.cs.money/csmoney2/{skin.Uuid}_icon.png";
-                                            <WeaponDisplayComponent WeaponSkin="@translatedSkin" ImageLink="@img" />
+
+                                            var tooltipBgColor = skin.RarityColor ?? "#333";
                                         }
-                                        <div class="itemDetails">
-                                        @(skin.ItemName.ToString() ?? "null")
-                                        @(skin.SkinName.ToString() ?? "null")
-                                        @(skin.WearTypeName.ToString() ?? "null")
-                                        @(skin.CurrentPrice == null ? "" : skin.CurrentPrice.ToString() + " €" )
+
+                                        <WeaponDisplayComponent WeaponSkin="@translatedSkin" ImageLink="@img" />
+
+                                        <div class="item-tooltip" style="background-color: @tooltipBgColor;">
+                                            @(skin.ItemName ?? "null")<br />
+                                            @(skin.SkinName ?? "null")<br />
+                                            @(skin.WearTypeName ?? "null")<br />
+                                            @(skin.CurrentPrice == null ? "" : skin.CurrentPrice.ToString() + " €")
                                         </div>
                                     </li>
                                 }

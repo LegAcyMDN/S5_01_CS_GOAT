@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false, null, "PaymentMethod");
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
-            return Ok(transactionsDto);
+            return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             
             IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsyncOld(null, "PaymentMethod");
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
-            return Ok(transactionsDto);
+            return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }
     }
 }

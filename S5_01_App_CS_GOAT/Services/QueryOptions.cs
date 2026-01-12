@@ -153,6 +153,8 @@ public class QueryOptions<TEntity> where TEntity : class
 {
     private List<QueryOption<TEntity>> BeforeOptions = new();
     private List<QueryOption<TEntity>> AfterOptions = new();
+    private Expression<Func<TEntity, object?>>? Sorting;
+    private bool SortIsDescending = false;
 
     public QueryOptions() { }
 
@@ -222,11 +224,26 @@ public class QueryOptions<TEntity> where TEntity : class
         return this;
     }
 
+    public QueryOptions<TEntity> OrderBy(
+        Expression<Func<TEntity, object?>> property,
+        bool isDescending = false)
+    {
+        Sorting = property;
+        SortIsDescending = isDescending;
+        return this;
+    }
+
     public IQueryable<TEntity> ApplyBefore(IQueryable<TEntity> query)
     {
         foreach (QueryOption<TEntity> option in BeforeOptions)
         {
             query = option.ApplyOption(query);
+        }
+        if (Sorting != null)
+        {
+            query = SortIsDescending
+                ? query.OrderByDescending(Sorting)
+                : query.OrderBy(Sorting);
         }
         return query;
     }

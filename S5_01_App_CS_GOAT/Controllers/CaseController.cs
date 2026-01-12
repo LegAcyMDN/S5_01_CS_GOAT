@@ -33,17 +33,12 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated) return Ok(caseDTO);
+            IEnumerable<Favorite> favorites = await authResult.GetByUser(favoriteManager, false);
 
             foreach (CaseDTO caseDto in caseDTO)
-            {
-                Favorite? favorite = await favoriteManager.GetByIdAsync(
-                    (authResult.AuthUserId.Value,
-                    caseDto.CaseId)
-                );
-                caseDto.IsFavorite = favorite != null;
-            }
+                caseDto.IsFavorite = favorites.Any(fav => fav.CaseId == caseDto.CaseId);
 
-            return Ok(caseDTO);
+            return Ok(new GetOptions<CaseDTO>(Request, caseDTO));
         }
 
         /// <summary>
