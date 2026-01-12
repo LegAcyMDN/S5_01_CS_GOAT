@@ -1,87 +1,45 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Components;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Wallet - Gère le portefeuille
+    /// ViewModel pour la page Wallet - Refactorisé selon le principe SRP
+    /// Responsabilité : Afficher le portefeuille et coordonner les opérations financières
     /// </summary>
     public class WalletViewModel : ViewModelBase
     {
-        private readonly IService<MoneyTransaction> _moneyTransactionRepository;
-        private readonly IService<Limit> _limitRepository;
+        private readonly IService<MoneyTransactionDTO> _moneyTransactionRepository;
         private readonly AuthService _authService;
-        private readonly HttpClient _httpClient;
-        private readonly NavigationManager  _navigationManager;
         private readonly StripeService _stripeService;
+        private readonly NavigationService _navigationService;
 
-        private User? _currentUser;
-        private List<MoneyTransaction>? _transactionsList;
-        private List<Limit>? _limits;
-        private List<Limit>? _sortedLimits;
-        private string _type = "";
-        private string _period = "";
-        private double? _amount = null;
+        private UserDTO? _currentUser;
+        private List<MoneyTransactionDTO>? _transactionsList;
         private bool _isLoading = true;
 
         public WalletViewModel(
-            IService<MoneyTransaction> moneyTransactionRepository,
-            IService<Limit> limitRepository,
+            IService<MoneyTransactionDTO> moneyTransactionRepository,
             AuthService authService,
-            HttpClient httpClient, 
-            NavigationManager navigationManager, 
-            StripeService stripeService)
+            StripeService stripeService,
+            NavigationService navigationService)
         {
             _moneyTransactionRepository = moneyTransactionRepository;
-            _limitRepository = limitRepository;
             _authService = authService;
-            _httpClient = httpClient;
-            _navigationManager = navigationManager;
             _stripeService = stripeService;
+            _navigationService = navigationService;
         }
 
-        public User? CurrentUser
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
         }
 
-        public List<MoneyTransaction>? TransactionsList
+        public List<MoneyTransactionDTO>? TransactionsList
         {
             get => _transactionsList;
             set => SetProperty(ref _transactionsList, value);
-        }
-
-        public List<Limit>? Limits
-        {
-            get => _limits;
-            set => SetProperty(ref _limits, value);
-        }
-
-        public List<Limit>? SortedLimits
-        {
-            get => _sortedLimits;
-            set => SetProperty(ref _sortedLimits, value);
-        }
-
-        public string Type
-        {
-            get => _type;
-            set => SetProperty(ref _type, value);
-        }
-
-        public string Period
-        {
-            get => _period;
-            set => SetProperty(ref _period, value);
-        }
-
-        public double? Amount
-        {
-            get => _amount;
-            set => SetProperty(ref _amount, value);
         }
 
         public bool IsLoading
@@ -135,14 +93,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             CurrentUser = _authService.CurrentUser;
         }
 
+        /// <summary>
+        /// Ajoute des fonds via Stripe
+        /// </summary>
         public async Task AddFunds(double amount)
         {
             var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(amount);
         
             if (checkoutUrl != null)
             {
-                // Redirect to Stripe checkout
-                _navigationManager.NavigateTo(checkoutUrl, forceLoad: true);
+                _navigationService.NavigateTo(checkoutUrl, forceLoad: true);
             }
             else
             {
@@ -150,6 +110,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
         
+        /// <summary>
+        /// Retire des fonds via Stripe
+        /// </summary>
         public async Task WithdrawFunds(double amount)
         {
             if (amount <= 0)
@@ -170,7 +133,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     
                 if (withdrawalUrl != null)
                 {
-                    _navigationManager.NavigateTo(withdrawalUrl, forceLoad: true);
+                    _navigationService.NavigateTo(withdrawalUrl, forceLoad: true);
                 }
                 else
                 {
@@ -183,5 +146,4 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
     }
-    
 }

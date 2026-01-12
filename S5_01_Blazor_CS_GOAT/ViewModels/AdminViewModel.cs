@@ -1,22 +1,22 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
-using Microsoft.AspNetCore.Components;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Admin - Gère l'administration du site
+    /// ViewModel pour la page Admin - Refactorisé selon le principe SRP
+    /// Responsabilité : Coordonner l'affichage de l'administration
     /// </summary>
     public class AdminViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigation;
-        private readonly HttpClient _httpClient;
+        private readonly AdminUserService _adminUserService;
+        private readonly TwoFactorAuthService _twoFactorAuthService;
+        private readonly AdminStatisticsService _statisticsService;
+        private readonly NavigationService _navigationService;
 
-        private User? _currentUser;
-        private List<User>? _allUsers;
+        private UserDTO? _currentUser;
+        private List<UserDTO>? _allUsers;
         private bool _isLoading = true;
         private bool _isProcessing = false;
         private string _errorMessage = string.Empty;
@@ -32,22 +32,29 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _totalTransactions = 0;
         private double _totalRevenue = 0;
 
-        public AdminViewModel(AuthService authService, NavigationManager navigation, HttpClient httpClient)
+        public AdminViewModel(
+            AuthService authService,
+            AdminUserService adminUserService,
+            TwoFactorAuthService twoFactorAuthService,
+            AdminStatisticsService statisticsService,
+            NavigationService navigationService)
         {
             _authService = authService;
-            _navigation = navigation;
-            _httpClient = httpClient;
+            _adminUserService = adminUserService;
+            _twoFactorAuthService = twoFactorAuthService;
+            _statisticsService = statisticsService;
+            _navigationService = navigationService;
         }
 
         #region Properties
 
-        public User? CurrentUser
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
         }
 
-        public List<User>? AllUsers
+        public List<UserDTO>? AllUsers
         {
             get => _allUsers;
             set => SetProperty(ref _allUsers, value);
@@ -125,11 +132,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _totalRevenue, value);
         }
 
-        public List<User> FilteredUsers
+        public List<UserDTO> FilteredUsers
         {
             get
             {
-                if (AllUsers == null) return new List<User>();
+                if (AllUsers == null) return new List<UserDTO>();
                 if (string.IsNullOrWhiteSpace(SearchQuery)) return AllUsers;
 
                 return AllUsers.Where(u =>
@@ -159,48 +166,35 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 var userId = await _authService.GetUserIdAsync();
                 if (userId == null)
                 {
-                    _navigation.NavigateTo("/login");
+                    _navigationService.NavigateToLogin();
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token))
+                CurrentUser = _authService.CurrentUser;
+                if (CurrentUser == null)
                 {
-                    _navigation.NavigateTo("/login");
-                    return;
+                    await _authService.LoadCurrentUserAsync();
+                    CurrentUser = _authService.CurrentUser;
                 }
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 
-                var response = await _httpClient.GetAsync($"User/details/{userId}");
-                if (response.IsSuccessStatusCode)
+                if (CurrentUser == null || !CurrentUser.IsAdmin)
                 {
-                    CurrentUser = await response.Content.ReadFromJsonAsync<User>();
-                    
-                    if (CurrentUser == null || !CurrentUser.IsAdmin)
-                    {
-                        ErrorMessage = "Accès refusé : vous n'êtes pas administrateur.";
-                        _navigation.NavigateTo("/");
-                        return;
-                    }
+                    ErrorMessage = "Accès refusé : vous n'êtes pas administrateur.";
+                    _navigationService.NavigateToHome();
+                    return;
+                }
 
-                    // Vérifier si 2FA est activé
-                    if (CurrentUser.TwoFA > 0)
-                    {
-                        Requires2FA = true;
-                        IsLoading = false;
-                    }
-                    else
-                    {
-                        // Pas de 2FA, accès direct
-                        Is2FAVerified = true;
-                        await LoadAdminDataAsync();
-                    }
+                // Vérifier si 2FA est activé
+                if (CurrentUser.TwoFA > 0)
+                {
+                    Requires2FA = true;
+                    IsLoading = false;
                 }
                 else
                 {
-                    ErrorMessage = "Impossible de charger les informations utilisateur.";
-                    _navigation.NavigateTo("/");
+                    // Pas de 2FA, accès direct
+                    Is2FAVerified = true;
+                    await LoadAdminDataAsync();
                 }
             }
             catch (Exception ex)
@@ -211,7 +205,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Vérifie le code 2FA
+        /// Vérifie le code 2FA via le service dédié
         /// </summary>
         public async Task Verify2FAAsync()
         {
@@ -227,20 +221,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token))
-                {
-                    _navigation.NavigateTo("/login");
-                    return;
-                }
+                bool isValid = await _twoFactorAuthService.VerifyCodeAsync(TwoFACode);
 
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                // Appel API pour vérifier le code 2FA
-                var verifyRequest = new { code = TwoFACode };
-                var response = await _httpClient.PostAsJsonAsync("User/verify-2fa", verifyRequest);
-
-                if (response.IsSuccessStatusCode)
+                if (isValid)
                 {
                     Is2FAVerified = true;
                     Requires2FA = false;
@@ -248,7 +231,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
                     TwoFAError = "Code 2FA incorrect. Veuillez réessayer.";
                 }
             }
@@ -272,37 +254,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 IsLoading = true;
                 await LoadUsersAsync();
                 await LoadStatisticsAsync();
-                IsLoading = false;
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Erreur lors du chargement des données : {ex.Message}";
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
         /// <summary>
-        /// Charge la liste de tous les utilisateurs
+        /// Charge la liste de tous les utilisateurs via le service
         /// </summary>
         public async Task LoadUsersAsync()
         {
             try
             {
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                
-                var response = await _httpClient.GetAsync("User/all");
-                if (response.IsSuccessStatusCode)
-                {
-                    AllUsers = await response.Content.ReadFromJsonAsync<List<User>>();
-                    TotalUsers = AllUsers?.Count ?? 0;
-                }
-                else
-                {
-                    ErrorMessage = $"Erreur lors du chargement des utilisateurs : {response.StatusCode}";
-                }
+                AllUsers = await _adminUserService.GetAllUsersAsync();
+                TotalUsers = AllUsers?.Count ?? 0;
             }
             catch (Exception ex)
             {
@@ -311,30 +282,17 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Charge les statistiques générales
+        /// Charge les statistiques via le service
         /// </summary>
         private async Task LoadStatisticsAsync()
         {
             try
             {
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                double totalWalletAmount = AllUsers?.Sum(u => u.Wallet) ?? 0;
+                var stats = await _statisticsService.GetStatisticsAsync(TotalUsers, totalWalletAmount);
                 
-                // Charger les transactions
-                var transactionResponse = await _httpClient.GetAsync("Transaction");
-                if (transactionResponse.IsSuccessStatusCode)
-                {
-                    var transactions = await transactionResponse.Content.ReadFromJsonAsync<List<dynamic>>();
-                    TotalTransactions = transactions?.Count ?? 0;
-                }
-
-                // Calculer le revenu total à partir des wallets
-                if (AllUsers != null)
-                {
-                    TotalRevenue = AllUsers.Sum(u => u.Wallet);
-                }
+                TotalTransactions = stats.TotalTransactions;
+                TotalRevenue = stats.TotalRevenue;
             }
             catch (Exception ex)
             {
@@ -343,7 +301,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Bannir/Débannir un utilisateur
+        /// Bannir/Débannir un utilisateur via le service
         /// </summary>
         public async Task ToggleBanUserAsync(int userId)
         {
@@ -353,13 +311,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 ErrorMessage = string.Empty;
                 SuccessMessage = string.Empty;
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                bool success = await _adminUserService.ToggleBanAsync(userId);
                 
-                var response = await _httpClient.PostAsync($"Ban/toggle/{userId}", null);
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     SuccessMessage = "Statut de bannissement modifié avec succès.";
                     await LoadUsersAsync();
@@ -380,7 +334,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Supprimer un utilisateur
+        /// Supprimer un utilisateur via le service
         /// </summary>
         public async Task DeleteUserAsync(int userId)
         {
@@ -397,21 +351,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                bool success = await _adminUserService.DeleteUserAsync(userId);
                 
-                var response = await _httpClient.DeleteAsync($"User/delete/{userId}");
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     SuccessMessage = "Utilisateur supprimé avec succès.";
                     await LoadUsersAsync();
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la suppression : {errorContent}";
+                    ErrorMessage = "Erreur lors de la suppression.";
                 }
             }
             catch (Exception ex)
@@ -425,7 +374,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Modifier le rôle admin d'un utilisateur
+        /// Modifier le rôle admin d'un utilisateur via le service
         /// </summary>
         public async Task ToggleAdminRoleAsync(int userId)
         {
@@ -442,13 +391,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                bool success = await _adminUserService.ToggleAdminRoleAsync(userId);
                 
-                var response = await _httpClient.PostAsync($"User/toggle-admin/{userId}", null);
-                if (response.IsSuccessStatusCode)
+                if (success)
                 {
                     SuccessMessage = "Rôle administrateur modifié avec succès.";
                     await LoadUsersAsync();
@@ -470,7 +415,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
         public void NavigateTo(string url)
         {
-            _navigation.NavigateTo(url);
+            _navigationService.NavigateTo(url);
         }
     }
 }

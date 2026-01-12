@@ -1,5 +1,5 @@
-﻿using S5_01_Blazor_CS_GOAT.Models;
-using S5_01_Blazor_CS_GOAT.Service;
+﻿using S5_01_Blazor_CS_GOAT.Service;
+using Shared.DTO;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 
@@ -10,20 +10,20 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class LimitsViewModel : ViewModelBase
     {
-        private readonly IService<Limit> _limitRepository;
+        private readonly IService<LimitDTO> _limitRepository;
         private readonly AuthService _authService;
         private readonly HttpClient _httpClient;
         private readonly NavigationManager  _navigationManager;
-        private User? _currentUser;
-        private List<Limit>? _limits;
-        private List<Limit>? _sortedLimits;
+        private UserDTO? _currentUser;
+        private List<LimitDTO>? _limits;
+        private List<LimitDTO>? _sortedLimits;
         private string _type = "";
         private string _period = "";
         private double? _amount = null;
         private bool _isLoading = true;
 
         public LimitsViewModel(
-            IService<Limit> limitRepository,
+            IService<LimitDTO> limitRepository,
             AuthService authService,
             HttpClient httpClient, 
             NavigationManager navigationManager)
@@ -33,12 +33,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             _httpClient = httpClient;
             _navigationManager = navigationManager;
         }
-        public User? CurrentUser
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
         }
-        public List<Limit>? Limits
+        public List<LimitDTO>? Limits
         {
             get => _limits;
             set => SetProperty(ref _limits, value);
@@ -49,7 +49,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public List<Limit>? SortedLimits
+        public List<LimitDTO>? SortedLimits
         {
             get => _sortedLimits;
             set => SetProperty(ref _sortedLimits, value);
@@ -183,9 +183,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// </summary>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public List<Limit> SortLimit(string? period, string? type)
+        public List<LimitDTO> SortLimit(string? period, string? type)
         {
-            SortedLimits = new List<Limit>();
+            SortedLimits = new List<LimitDTO>();
             Period = period;
             Type = type;
 

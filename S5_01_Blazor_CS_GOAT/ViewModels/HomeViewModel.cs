@@ -1,5 +1,5 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -8,15 +8,15 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class HomeViewModel : ViewModelBase
     {
-        private readonly IService<Case> _caseRepository;
+        private readonly IService<CaseDTO> _caseRepository;
         private readonly AuthService _authService;
 
-        private List<Case> _cases = new();
-        private List<Case> _filteredCases = new();
+        private List<CaseDTO> _cases = new();
+        private List<CaseDTO> _filteredCases = new();
         private string _searchTerm = string.Empty;
         private bool _isLoading = true;
 
-        public HomeViewModel(IService<Case> caseRepository, AuthService authService)
+        public HomeViewModel(IService<CaseDTO> caseRepository, AuthService authService)
         {
             _caseRepository = caseRepository;
             _authService = authService;
@@ -25,7 +25,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Liste complète des caisses
         /// </summary>
-        public List<Case> Cases
+        public List<CaseDTO> Cases
         {
             get => _cases;
             set
@@ -40,7 +40,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Liste des caisses filtrées selon le terme de recherche
         /// </summary>
-        public List<Case> FilteredCases
+        public List<CaseDTO> FilteredCases
         {
             get => _filteredCases;
             private set => SetProperty(ref _filteredCases, value);
@@ -101,12 +101,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 var jwtToken = await _authService.GetTokenAsync();
                 
                 // Charger les caisses avec le token pour obtenir l'état IsFavorite correct
-                Cases = await _caseRepository.GetAllAsync(jwtToken) ?? new List<Case>();
+                Cases = await _caseRepository.GetAllAsync(jwtToken) ?? new List<CaseDTO>();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du chargement des caisses: {ex.Message}");
-                Cases = new List<Case>();
+                Cases = new List<CaseDTO>();
             }
             finally
             {

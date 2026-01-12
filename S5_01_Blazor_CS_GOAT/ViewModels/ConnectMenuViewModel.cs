@@ -1,28 +1,28 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
-using Microsoft.AspNetCore.Components;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour ConnectMenu - Gère l'état de connexion et le menu utilisateur
+    /// ViewModel pour ConnectMenu - Refactorisé selon le principe SRP
+    /// Responsabilité : Gérer l'affichage du menu utilisateur
     /// </summary>
     public class ConnectMenuViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigation;
-        private User? _currentUser;
+        private readonly NavigationService _navigationService;
+        private UserDTO? _currentUser;
 
-        public ConnectMenuViewModel(AuthService authService, NavigationManager navigation)
+        public ConnectMenuViewModel(AuthService authService, NavigationService navigationService)
         {
             _authService = authService;
-            _navigation = navigation;
+            _navigationService = navigationService;
         
             // Subscribe to AuthService changes
             _authService.UserDataChanged += OnUserDataChanged;
         }
 
-        public User? CurrentUser
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
@@ -52,31 +52,19 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             CurrentUser = _authService.CurrentUser;
         }
 
-        public void NavigateToLogin()
-        {
-            _navigation.NavigateTo("/login");
-        }
+        public void NavigateToLogin() => _navigationService.NavigateToLogin();
 
-        public void NavigateToWallet()
-        {
-            _navigation.NavigateTo("/wallet");
-        }
+        public void NavigateToWallet() => _navigationService.NavigateToWallet();
 
-        public void NavigateToProfile()
-        {
-            _navigation.NavigateTo("/profile");
-        }
+        public void NavigateToProfile() => _navigationService.NavigateToProfile();
 
-        public void NavigateToAdmin()
-        {
-            _navigation.NavigateTo("/admin");
-        }
+        public void NavigateToAdmin() => _navigationService.NavigateToAdmin();
 
         public async Task HandleLogoutAsync()
         {
             await _authService.LogoutAsync();
             CurrentUser = null;
-            _navigation.NavigateTo("/", forceLoad: true);
+            _navigationService.NavigateToHome(forceLoad: true);
         }
 
         public void Dispose()
