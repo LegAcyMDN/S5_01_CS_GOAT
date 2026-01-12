@@ -7,10 +7,12 @@ import joblib
 import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, Skin, db
+from S5_01_Flask_CS_GOAT.services.model import PriceHistory, Wear, Skin,Item,WearType, db
 from S5_01_Flask_CS_GOAT import debug, debug_print
 from enum import IntEnum
 from scipy.stats import linregress
+from S5_01_Flask_CS_GOAT.fonctionnalites.fetch_steam_prices import main as fetch_price_data
+import urllib.parse
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -19,6 +21,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.regularizers import l2
 from sklearn.preprocessing import MinMaxScaler
 
 ia_bp = Blueprint('ia', __name__)
@@ -26,11 +29,52 @@ ia_bp = Blueprint('ia', __name__)
 MODELS_DIR = os.path.join(os.path.dirname(__file__), 'models')
 os.makedirs(MODELS_DIR, exist_ok=True)
 
+def get_item_name(skin_id: int = None, wear_id: int = None) -> str:
+    if skin_id:
+        skin = Skin.query.get(skin_id)
+        if not skin:
+            return None
+
+        item = Item.query.get(skin.item_id)
+        if not item:
+            return None
+        
+        return f"{item.item_name} | {skin.skin_name}"
+
+    elif wear_id:
+        wear = Wear.query.get(wear_id)
+        if not wear:
+            return None
+
+        skin = Skin.query.get(wear.skin_id)
+        if not skin:
+            return None
+
+        item = Item.query.get(skin.item_id)
+        wear_type = WearType.query.get(wear.wear_type_id)
+        if not item or not wear_type:
+            return None
+
+        return f"{item.item_name} | {skin.skin_name} ({wear_type.wear_type_name})"
+
+    return None
+
+
+
+
 def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type_id:int=None) -> bool:
     if jours > 30:
         debug_print(f"Limiting prediction from {jours} to 30 days for better accuracy")
         jours = 30
+
+    item_name = get_item_name(skin_id=skin_id, wear_id=wear_id)
+    if not item_name:
+        debug_print("Item name could not be determined.")
+        return False
     
+    debug_print("Fetching the latest price data...")
+    fetch_price_data(item_name)
+
     if wear_id:
         (skin_id, wear_type_id) = predict_with_wear(wear_id)
     if skin_id is None or wear_type_id is None:
@@ -80,47 +124,52 @@ def save_scaler(scaler, item_id: int):
     joblib.dump(scaler, scaler_path)
     debug_print(f"Saved scaler to {scaler_path}")
 
-def create_lstm_sequences(data, lookback=14):
+def create_lstm_sequences(data, lookback=7):
     X, y = [], []
     for i in range(lookback, len(data)):
         X.append(data[i-lookback:i])
         y.append(data[i])
     return np.array(X), np.array(y)
 
-def build_lstm_model(lookback=14):
+def build_lstm_model(lookback=7):
     model = Sequential([
-        LSTM(128, activation='tanh', return_sequences=True, input_shape=(lookback, 1)),
-        Dropout(0.3),
-        LSTM(64, activation='tanh', return_sequences=True),
-        Dropout(0.3),
-        LSTM(32, activation='tanh', return_sequences=False),
+        LSTM(50, activation='tanh', return_sequences=True, input_shape=(lookback, 1), 
+             kernel_regularizer=l2(0.001)),
         Dropout(0.2),
-        Dense(32, activation='relu'),
-        Dense(16, activation='relu'),
+        LSTM(25, activation='tanh', return_sequences=False, kernel_regularizer=l2(0.001)),
+        Dropout(0.2),
+        Dense(12, activation='relu', kernel_regularizer=l2(0.001)),
         Dense(1)
     ])
-    model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+    model.compile(optimizer='adam', loss='huber', metrics=['mae'])
     return model
 
-def train_lstm_model(df_train, item_id, lookback=14):
+def train_lstm_model(df_train, item_id, lookback=7):
     prices = df_train['y'].values.reshape(-1, 1)
     
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    prices_scaled = scaler.fit_transform(prices)
+    # Use price differences instead of absolute prices for better learning
+    price_diffs = np.diff(prices.flatten())
+    price_diffs = np.insert(price_diffs, 0, 0)  # Add 0 at the beginning
     
-    if len(prices_scaled) < lookback + 5:
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    prices_scaled = scaler.fit_transform(price_diffs.reshape(-1, 1))
+    
+    if len(prices_scaled) < lookback + 10:
         debug_print(f"Not enough data for LSTM: {len(prices_scaled)} points")
         return None, None
     
     X, y = create_lstm_sequences(prices_scaled, lookback)
     
     debug_print(f"LSTM training data: X shape {X.shape}, y shape {y.shape}")
+    debug_print(f"Price range: {prices.min():.4f}€ - {prices.max():.4f}€")
     
     model = build_lstm_model(lookback)
     
+    early_stop = EarlyStopping(monitor='loss', patience=15, restore_best_weights=True, min_delta=0.0001)
+    
     debug_print("Fitting LSTM model...")
     debug_print("="*80)
-    history = model.fit(X, y, epochs=5, batch_size=4, verbose=1)
+    history = model.fit(X, y, epochs=200, batch_size=16, verbose=1, callbacks=[early_stop], validation_split=0.1)
     debug_print("="*80)
     debug_print(f"Training completed after {len(history.history['loss'])} epochs")
     debug_print(f"Final loss: {history.history['loss'][-1]:.6f}")
@@ -128,22 +177,34 @@ def train_lstm_model(df_train, item_id, lookback=14):
     save_lstm_model(model, item_id)
     save_scaler(scaler, item_id)
     
-    return model, scaler
+    # Return both model, scaler, and the actual prices for prediction
+    return model, scaler, prices.flatten()
 
-def predict_lstm(model, scaler, last_sequence, jours):
+def predict_lstm(model, scaler, last_sequence, last_prices, jours, lookback=7):
     predictions = []
     current_sequence = last_sequence.copy()
+    current_price = last_prices[-1]
     
-    for _ in range(jours):
-        pred_scaled = model.predict(current_sequence.reshape(1, -1, 1), verbose=0)
-        pred_price = scaler.inverse_transform(pred_scaled)[0, 0]
-        predictions.append(pred_price)
+    for i in range(jours):
         
-        current_sequence = np.append(current_sequence[1:], pred_scaled[0, 0])
+        pred_diff_scaled = model.predict(current_sequence.reshape(1, -1, 1), verbose=0)
+        pred_diff = scaler.inverse_transform(pred_diff_scaled)[0, 0]
+        
+        
+        pred_price = current_price + pred_diff
+       
+        noise = np.random.normal(0, abs(pred_diff) * 0.1)
+        pred_price += noise
+        
+        predictions.append(pred_price)
+        current_price = pred_price
+        
+        
+        current_sequence = np.append(current_sequence[1:], pred_diff_scaled[0, 0])
     
     return np.array(predictions)
 
-def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=60) -> bool:
+def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=30) -> bool:
     item_id = get_item_id_by_skin(skin_id)
     if item_id is None:
         return False
@@ -170,8 +231,9 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
     
     real_data_max = df_train['y'].max()
     real_data_min = df_train['y'].min()
-    price_ceiling = real_data_max * 1.15
-    price_floor = real_data_min * 0.85
+    price_range = real_data_max - real_data_min
+    price_ceiling = real_data_max * 1.3 
+    price_floor = max(0.01, real_data_min * 0.7)
     
     df_train['cap'] = price_ceiling
     df_train['floor'] = price_floor
@@ -180,44 +242,18 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
     debug_print(f"Last historical price: {last_historical_price:.4f}€")
     debug_print(f"Last historical date: {last_historical_date}")
     debug_print(f"Real data max: {real_data_max:.4f}€, min: {real_data_min:.4f}€")
+    debug_print(f"Price range: {price_range:.4f}€")
     debug_print(f"Price ceiling: {price_ceiling:.4f}€, floor: {price_floor:.4f}€")
     
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    gap_days = (today - last_historical_date).days
-    
-    MAX_GAP_DAYS = 30
-    
-    if gap_days > MAX_GAP_DAYS:
-        debug_print(f"WARNING: Gap too large ({gap_days} days). Limiting to {MAX_GAP_DAYS} days.")
-        gap_days = MAX_GAP_DAYS
-    
-    if gap_days > 0:
-        debug_print(f"Filling gap: {gap_days} days with constant price {last_historical_price:.4f}€")
-        gap_rows = []
-        gap_start_date = today - timedelta(days=gap_days)
-        for i in range(gap_days):
-            date = gap_start_date + timedelta(days=i+1)
-            gap_rows.append({
-                'ds': date,
-                'y': last_historical_price,
-                'cap': price_ceiling,
-                'floor': price_floor
-            })
-        
-        df_train = pd.concat([df_train, pd.DataFrame(gap_rows)]).sort_values('ds').reset_index(drop=True)
-        debug_print(f"Training data after gap filling: {len(df_train)} points")
-        debug_print(f"Gap filled from {gap_start_date} to {today}")
-        debug_print(f"Last training date: {df_train['ds'].max()}")
-    
     model = Prophet(
-        growth='logistic',
+        growth='linear',  
         yearly_seasonality=False,
-        weekly_seasonality=True,
+        weekly_seasonality=True,  
         daily_seasonality=False,
-        changepoint_prior_scale=0.001,
-        seasonality_prior_scale=0.5,
+        changepoint_prior_scale=0.05, 
+        seasonality_prior_scale=1.0,  
         interval_width=0.85,
-        changepoint_range=0.8
+        changepoint_range=0.9  
     )
     
     debug_print("Fitting Prophet model (logistic growth with natural volatility)...")
@@ -247,15 +283,21 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
     debug_print(forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].head(7).to_string())
     debug_print("="*80)
     
-    lstm_model, scaler = train_lstm_model(df_train, item_id)
+    lstm_result = train_lstm_model(df_train, item_id)
     
     lstm_predictions = None
-    if lstm_model is not None and scaler is not None:
-        lookback = 14
-        prices_scaled = scaler.transform(df_train['y'].values.reshape(-1, 1))
+    if lstm_result[0] is not None and lstm_result[1] is not None:
+        lstm_model, scaler, prices = lstm_result
+        lookback = 7
+        
+        # Create price differences
+        price_diffs = np.diff(prices)
+        price_diffs = np.insert(price_diffs, 0, 0)
+        
+        prices_scaled = scaler.transform(price_diffs.reshape(-1, 1))
         last_sequence = prices_scaled[-lookback:].flatten()
         
-        lstm_predictions = predict_lstm(lstm_model, scaler, last_sequence, jours)
+        lstm_predictions = predict_lstm(lstm_model, scaler, last_sequence, prices, jours, lookback)
         
         debug_print("="*80)
         debug_print("LSTM PREDICTIONS (first 7 days):")
@@ -445,3 +487,4 @@ def get_all(skin_id:int, wear_type_id:int) -> list:
     ).all()
 
     return [ph.to_dict() for ph in price_histories]
+
