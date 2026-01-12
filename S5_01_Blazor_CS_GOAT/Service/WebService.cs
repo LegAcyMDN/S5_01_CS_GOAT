@@ -133,6 +133,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{inventoryItemId}");
     }
+    
     public async Task<ObservableCollection<TEntity>?> GetByWear(int wearId)
     {
        return  await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
