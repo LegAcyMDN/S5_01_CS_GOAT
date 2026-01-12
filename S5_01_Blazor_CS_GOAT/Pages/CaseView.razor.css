@@ -310,9 +310,47 @@ input:checked + .slider:after {
         margin: 0px 10px 10px 10px;
     }
 
-.itemDetails {
-    white-space-collapse: preserve-breaks;
+.skin-item {
+    position: relative;
+    display: inline-block; /* ou block selon ton layout */
 }
+
+    /* Bulle cachée par défaut */
+    .skin-item .item-tooltip {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.15s ease;
+        position: absolute;
+        top: 100%; /* sous l’élément */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 100;
+        font-size: 0.85rem;
+    }
+
+        /* Petite flèche */
+        .skin-item .item-tooltip::after {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+        }
+
+    /* Affichage au survol du li */
+    .skin-item:hover .item-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
 
 .gambling-x.selected {
     outline: 2px solid #f99e1c;
