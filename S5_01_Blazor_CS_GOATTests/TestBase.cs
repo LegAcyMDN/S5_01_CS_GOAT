@@ -77,32 +77,90 @@ public class TestBase : PageTest
         return "Local";
     }
 
-    [TestCleanup]
-    public async Task TestCleanup()
-    {
-        // Save video only on failure
-        if (TestContext.CurrentTestOutcome == UnitTestOutcome.Failed)
-        {
-            try
-            {
-                var videoPath = await Page.Video.PathAsync();
-                var testName = TestContext.TestName;
-                var destinationPath = $"test-results/videos/{testName}-{DateTime.Now:yyyyMMdd-HHmmss}.webm";
-                
-                // Ensure directory exists
-                Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-                
-                // Copy video
-                if (File.Exists(videoPath))
-                {
-                    File.Copy(videoPath, destinationPath, overwrite: true);
-                    Console.WriteLine($"📹 Video saved: {destinationPath}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"⚠️ Could not save video: {ex.Message}");
-            }
-        }
-    }
+    // [TestCleanup]
+    // public async Task TestCleanup()
+    // {
+    //     // Save video only on failure
+    //     if (TestContext.CurrentTestOutcome == UnitTestOutcome.Failed)
+    //     {
+    //         try
+    //         {
+    //             var videoPath = await Page.Video.PathAsync();
+    //             var testName = TestContext.TestName;
+    //             var destinationPath = $"test-results/videos/{testName}-{DateTime.Now:yyyyMMdd-HHmmss}.webm";
+    //             
+    //             // Ensure directory exists
+    //             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+    //             
+    //             // Copy video
+    //             if (File.Exists(videoPath))
+    //             {
+    //                 File.Copy(videoPath, destinationPath, overwrite: true);
+    //                 Console.WriteLine($"📹 Video saved: {destinationPath}");
+    //             }
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"⚠️ Could not save video: {ex.Message}");
+    //         }
+    //     }
+    // }
+    //     [TestCleanup]
+    // public async Task Cleanup()
+    // {
+    //     // Check if test failed
+    //     if (TestContext.CurrentTestOutcome == UnitTestOutcome.Failed)
+    //     {
+    //         Console.WriteLine("════════════════════════════════════════════════════════");
+    //         Console.WriteLine("TEST FAILED - Dumping page content:");
+    //         Console.WriteLine("════════════════════════════════════════════════════════");
+    //         
+    //         try
+    //         {
+    //             // Get current URL
+    //             Console.WriteLine($"Current URL: {Page.Url}");
+    //             Console.WriteLine("────────────────────────────────────────────────────────");
+    //             
+    //             // Get page HTML content
+    //             var content = await Page.ContentAsync();
+    //             Console.WriteLine("HTML Content:");
+    //             Console.WriteLine(content);
+    //             Console.WriteLine("────────────────────────────────────────────────────────");
+    //             
+    //             // Get console logs if available
+    //             Console.WriteLine("Console Messages:");
+    //             // Note: Console messages need to be captured during the test
+    //             
+    //             // Take screenshot (saved to test results)
+    //             var screenshotPath = Path.Combine(
+    //                 TestContext.TestRunDirectory ?? ".", 
+    //                 $"{TestContext.TestName}_failed_{DateTime.Now:yyyyMMdd_HHmmss}.png"
+    //             );
+    //             
+    //             await Page.ScreenshotAsync(new PageScreenshotOptions
+    //             {
+    //                 Path = screenshotPath,
+    //                 FullPage = true
+    //             });
+    //             
+    //             Console.WriteLine($"Screenshot saved: {screenshotPath}");
+    //             TestContext.AddResultFile(screenshotPath);
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             Console.WriteLine($"Error capturing page state: {ex.Message}");
+    //         }
+    //         
+    //         Console.WriteLine("════════════════════════════════════════════════════════");
+    //     }
+    //
+    //     // Cleanup resources
+    //     if (Page != null)
+    //         await Page.CloseAsync();
+    //     
+    //     if (Browser != null)
+    //         await Browser.CloseAsync();
+    //     
+    //     Playwright?.Dispose();
+    // }
 }
