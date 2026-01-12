@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return NotFound();
 
             IEnumerable<NotificationDTO> notificationsDTO = mapper.Map<IEnumerable<NotificationDTO>>(notifications);
-            return Ok(notificationsDTO);
+            return Ok(new GetOptions<NotificationDTO>(Request, notificationsDTO));
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             ];
 
             IEnumerable<NotificationDTO> notificationsDTO = mapper.Map<IEnumerable<NotificationDTO>>(allRelevantNotifications);
-            return Ok(notificationsDTO);
+            return Ok(new GetOptions<NotificationDTO>(Request, notificationsDTO));
         }
 
         /// <summary>

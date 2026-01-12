@@ -34,7 +34,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             IEnumerable<Limit> limits = await authResult.GetByUser(manager, false, null, "LimitType");
 
             IEnumerable<LimitDTO> limitsDTO = mapper.Map<IEnumerable<LimitDTO>>(limits);
-            return Ok(limitsDTO);
+            return Ok(new GetOptions<LimitDTO>(Request, limitsDTO));
         }
 
         /// <summary>

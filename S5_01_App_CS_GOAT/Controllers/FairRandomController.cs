@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false, fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction");
 
             IEnumerable<FairRandomDTO> userFairRandomsDTO = mapper.Map<IEnumerable<FairRandomDTO>>(fairRandoms);
-            return Ok(userFairRandomsDTO);
+            return Ok(new GetOptions<FairRandomDTO>(Request, userFairRandomsDTO));
         }
 
         /// <summary>

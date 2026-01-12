@@ -34,7 +34,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsyncOld();
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
-            return Ok(transactionsDTO);
+            return Ok(new GetOptions<RandomTransactionDTO>(Request, transactionsDTO));
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<RandomTransaction> transactions = await authResult.GetByUser(manager, false);
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
-            return Ok(transactionsDTO);
+            return Ok(new GetOptions<RandomTransactionDTO>(Request, transactionsDTO));
         }
 
         /// <summary>

@@ -1,7 +1,21 @@
-﻿namespace Shared.DTO;
+﻿using Shared.Enum;
+using Shared.Interfaces;
 
-public class BanDTO
+namespace Shared.DTO;
+
+public class BanDTO : IQueryableDTO
 {
+    public static string? DefaultSortKey => "BanDate";
+
+    public static SortingType? DefaultSortType => SortingType.Descending;
+
+    public static int DefaultPageSize => 25;
+
+    public static bool CanSearch => true;
+
+    public string? SearchTerm => BanReason;
+
+
     public int BanId { get; set; }
 
     public string BanReason { get; set; } = null!;

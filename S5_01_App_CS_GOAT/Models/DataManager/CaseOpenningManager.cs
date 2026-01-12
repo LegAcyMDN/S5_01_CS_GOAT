@@ -61,8 +61,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             QueryOptions<Case> options = new QueryOptions<Case>()
                 .Before("CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item.ItemType",
-                        "CaseContents.Skin.Wears.WearType")
-                .After("CaseContents.Skin.WearClasses.PriceHistories");
+                        "CaseContents.Skin.WearClasses.Wears.WearType");
             Case? targetCase = await _caseRepository.GetByIdAsyncNew(
                 caseOpenningDTO.CaseId,
                 options
@@ -134,6 +133,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     Float = floatValue,
                 };
                 await _inventoryItemRepository.AddAsync(newItem);
+                await _context.Entry(newItem.Wear.WearClass).Collection(wc => wc.PriceHistories).LoadAsync();
 
                 RandomTransaction randomTransaction = new RandomTransaction
                 {

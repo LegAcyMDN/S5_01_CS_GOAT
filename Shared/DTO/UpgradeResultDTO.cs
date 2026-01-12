@@ -1,7 +1,21 @@
-﻿namespace Shared.DTO
+﻿using Shared.Enum;
+using Shared.Interfaces;
+
+namespace Shared.DTO
 {
-    public class UpgradeResultDTO
+    public class UpgradeResultDTO : IQueryableDTO
     {
+        public static string? DefaultSortKey => null;
+
+        public static SortingType? DefaultSortType => null;
+
+        public static int DefaultPageSize => 25;
+
+        public static bool CanSearch => false;
+
+        public string? SearchTerm => null;
+
+
         public float FloatStart { get; set; } // actual float of the wear before the upgrade
 
         public float FloatEnd { get; set; } // float of the wear after the upgrade

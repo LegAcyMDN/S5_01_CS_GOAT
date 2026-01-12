@@ -32,8 +32,8 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<InventoryItem> inventoryItems = await authResult.GetByUser(
                 manager, false, i => i.RemovedOn == null, "Wear.Skin.Rarity");
-            IEnumerable<InventoryItemDTO> inventory = mapper.Map< IEnumerable<InventoryItemDTO>>(inventoryItems);
-            return Ok(inventory);
+            IEnumerable<InventoryItemDTO> inventory = mapper.Map<IEnumerable<InventoryItemDTO>>(inventoryItems);
+            return Ok(new GetOptions<InventoryItemDTO>(Request, inventory));
         }
 
         /// <summary>
