@@ -22,8 +22,6 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Get all promo codes (admin only)
         /// </summary>
-        /// <param name="filters">Optional filter parameters</param>
-        /// <param name="sorts">Optional sort parameters</param>
         /// <returns>List of all PromoCode objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -38,7 +36,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsyncOld();
              IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
-            return Ok(promoCodesDTO);
+            return Ok(new GetOptions<ItemTransactionDTO>(Request, promoCodesDTO));
         }
 
         /// <summary>

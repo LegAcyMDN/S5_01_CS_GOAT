@@ -1,7 +1,21 @@
-﻿namespace Shared.DTO;
+﻿using Shared.Enum;
+using Shared.Interfaces;
 
-public class FairRandomDTO
+namespace Shared.DTO;
+
+public class FairRandomDTO : IQueryableDTO
 {
+    public static string? DefaultSortKey => "UserNonce";
+
+    public static SortingType? DefaultSortType => SortingType.Ascending;
+
+    public static int DefaultPageSize => 25;
+
+    public static bool CanSearch => true;
+
+    public string? SearchTerm => ServerHash;
+
+
     public string ServerSeed { get; set; } = null!;
 
     public string ServerHash { get; set; } = null!;

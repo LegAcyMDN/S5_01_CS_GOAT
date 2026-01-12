@@ -1,7 +1,21 @@
-﻿namespace Shared.DTO;
+﻿using Shared.Enum;
+using Shared.Interfaces;
 
-public class CaseDTO
+namespace Shared.DTO;
+
+public class CaseDTO : IQueryableDTO
 {
+    public static string? DefaultSortKey => "CaseName";
+
+    public static SortingType? DefaultSortType => SortingType.Ascending;
+
+    public static int DefaultPageSize => 25;
+
+    public static bool CanSearch => true;
+
+    public string? SearchTerm => CaseName;
+
+
     public int CaseId { get; set; }
 
     public string CaseName { get; set; } = null!;
