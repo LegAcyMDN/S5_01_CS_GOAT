@@ -243,28 +243,5 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             throw new NotImplementedException();
         }
-
-        [HttpGet("msg")]
-        public async Task<IActionResult> TestMsg()
-        {
-            AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-                return Unauthorized();
-            User? user = await manager.GetByIdAsyncNew((int)authResult.AuthUserId);
-            if (user == null)
-                return NotFound();
-            Message message = new Message(configuration, user)
-            {
-                Text = "This is a test message.",
-                Subject = "Test Message",
-                Html = "<h1>This is a test message.</h1>"
-            };
-            Console.WriteLine(message);
-            HttpResponseMessage response = await message.SendSmsAsync();
-            string responseContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(response);
-            Console.WriteLine(responseContent);
-            return StatusCode((int)response.StatusCode, responseContent);
-        }
     }
 }

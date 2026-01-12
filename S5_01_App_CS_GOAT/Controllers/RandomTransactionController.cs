@@ -103,7 +103,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             var liveFeedDTOs = mapper.Map<IEnumerable<RandomTransactionLiveFeedDTO>>(recentTransactions);
 
-            return Ok(liveFeedDTOs);
+            return Ok(new GetOptions<RandomTransactionLiveFeedDTO>(Request, liveFeedDTOs));
         }
     }
 }
