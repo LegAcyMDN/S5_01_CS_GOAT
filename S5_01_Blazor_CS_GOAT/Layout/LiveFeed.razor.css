@@ -36,7 +36,7 @@
 .item-card {
     background-color: #1a1f2e;
     border-radius: 4px;
-    padding: 3px 4px 3px 2px;
+    padding: 3px 4px 3px 3px;
     margin-bottom: 5px;
     text-align: center;
     width: calc(100% - 5px);
@@ -59,9 +59,9 @@
 }
 
 .item-image {
-    width: 70px;
+    width: 80px;
     height: auto;
-    max-height: 45px;
+    max-height: 48px;
     display: block;
     margin: 2px auto;
     object-fit: contain;
