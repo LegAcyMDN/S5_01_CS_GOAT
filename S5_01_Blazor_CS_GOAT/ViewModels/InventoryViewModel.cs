@@ -1,36 +1,37 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
+using Shared.DTO;
 using Microsoft.AspNetCore.Components;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Inventory - Gère l'état et la logique de l'inventaire
+    /// ViewModel pour la page Inventory - Refactorisé selon le principe SRP
+    /// Responsabilité : Afficher et gérer l'inventaire utilisateur
     /// </summary>
     public class InventoryViewModel : ViewModelBase
     {
-        private readonly IService<InventoryItemDetail> _inventoryService;
+        private readonly IService<InventoryItemDetailDTO> _inventoryService;
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigationManager;
+        private readonly NavigationService _navigationService;
 
-        private List<InventoryItemDetail>? _inventoryItems;
+        private List<InventoryItemDetailDTO>? _inventoryItems;
         private bool _isLoading = true;
         private bool _isAuthenticated;
 
         public InventoryViewModel(
-            IService<InventoryItemDetail> inventoryService,
+            IService<InventoryItemDetailDTO> inventoryService,
             AuthService authService,
-            NavigationManager navigationManager)
+            NavigationService navigationService)
         {
             _inventoryService = inventoryService;
             _authService = authService;
-            _navigationManager = navigationManager;
+            _navigationService = navigationService;
         }
 
         /// <summary>
         /// Liste des items de l'inventaire
         /// </summary>
-        public List<InventoryItemDetail>? InventoryItems
+        public List<InventoryItemDetailDTO>? InventoryItems
         {
             get => _inventoryItems;
             set => SetProperty(ref _inventoryItems, value);
@@ -94,7 +95,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du chargement de l'inventaire: {ex.Message}");
-                InventoryItems = new List<InventoryItemDetail>();
+                InventoryItems = new List<InventoryItemDetailDTO>();
             }
             finally
             {
@@ -105,10 +106,10 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Retourne les items triés par date d'acquisition
         /// </summary>
-        public IEnumerable<InventoryItemDetail> GetSortedInventoryItems()
+        public IEnumerable<InventoryItemDetailDTO> GetSortedInventoryItems()
         {
             if (InventoryItems == null)
-                return Enumerable.Empty<InventoryItemDetail>();
+                return Enumerable.Empty<InventoryItemDetailDTO>();
 
             return InventoryItems.OrderByDescending(item => item.AcquiredOn);
         }
@@ -118,13 +119,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// </summary>
         public void NavigateToItemDetail(int inventoryItemId)
         {
-            _navigationManager.NavigateTo($"/viewmodel/{inventoryItemId}");
+            _navigationService.NavigateToItemDetail(inventoryItemId);
         }
 
         /// <summary>
         /// Obtient l'URL de l'image d'un item
         /// </summary>
-        public string GetItemImageUrl(InventoryItemDetail item)
+        public string GetItemImageUrl(InventoryItemDetailDTO item)
         {
             if (!string.IsNullOrEmpty(item.Uuid))
             {

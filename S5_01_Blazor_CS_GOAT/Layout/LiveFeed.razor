@@ -1,5 +1,6 @@
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject LiveFeedViewModel ViewModel
+@implements IDisposable
 
 <div class="live-feed">
     <div class="select-feed">
@@ -12,9 +13,13 @@
     </div>
     @foreach (var item in ViewModel.FeedItems)
     {
-        <div class="armes">
-            <p>@item.ItemName</p>
-            <p>Prix : @item.Price.ToString("F2")€</p>
+        <div class="item-card @(item.IsNew ? "new-item" : "")" style="border-left: 5px solid @item.RarityColor;">
+            <div class="item-header">@item.DisplayName</div>
+            <img src="@item.ImageUrl" alt="@item.DisplayName" class="item-image" />
+            @if (!string.IsNullOrEmpty(item.WearTypeAbbreviation))
+            {
+                <div class="item-wear">@item.WearTypeAbbreviation</div>
+            }
         </div>
     }
 </div>
@@ -23,6 +28,14 @@
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync();
-        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+        ViewModel.PropertyChanged += (s, e) => InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
     }
 }

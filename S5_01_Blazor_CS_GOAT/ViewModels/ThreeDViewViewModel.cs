@@ -19,13 +19,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class ThreeDViewViewModel : ViewModelBase
     {
         private readonly IThreeDModelService<ThreeDModel> _threeDModelRepository;
-        private readonly IService<InventoryItemDetail> _inventoryItemService;
+        private readonly IService<InventoryItemDetailDTO> _inventoryItemService;
         private readonly IService<PriceHistoryDTO> _priceHistoryService;
         private readonly AuthService _authService;
         private readonly CacheService _cacheService;
         private readonly IJSRuntime _jsRuntime;
 
-        private InventoryItemDetail? _itemDetails;
+        private InventoryItemDetailDTO? _itemDetails;
         private string? _modelUrl;
         private bool _isLoading = true;
         private string _loadingMessage = string.Empty;
@@ -37,7 +37,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
         public ThreeDViewViewModel(
             IThreeDModelService<ThreeDModel> threeDModelRepository,
-            IService<InventoryItemDetail> inventoryItemService,
+            IService<InventoryItemDetailDTO> inventoryItemService,
             IService<PriceHistoryDTO> priceHistoryService,
             AuthService authService,
             CacheService cacheService,
@@ -51,7 +51,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             _jsRuntime = jsRuntime;
         }
 
-        public InventoryItemDetail? ItemDetails
+        public InventoryItemDetailDTO? ItemDetails
         {
             get => _itemDetails;
             set => SetProperty(ref _itemDetails, value);
@@ -313,26 +313,31 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
             }
         }
-
         public async Task DrawPriceHistoryGraph()
         {
-            PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
-#if false
             try
             {
                 IsLoadingPriceHistory = true;
-                PriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+                ObservableCollection<PriceHistoryDTO>? allPriceHistory = await _priceHistoryService.GetByWear(ItemDetails.WearId);
+
+                // Filtrer pour obtenir seulement les 30 derniers jours
+                DateTime? thirtyDaysAgo = DateTime.Now.AddDays(-80);
+                PriceHistory = new ObservableCollection<PriceHistoryDTO>(
+                    allPriceHistory
+                        .Where(p => p.PriceDate >= thirtyDaysAgo)
+                        .OrderBy(p => p.PriceDate)
+                        .ToList()
+                );
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur: {ex.Message}");
-                PriceHistory = null;
+                Console.WriteLine($"Erreur lors du chargement de l'historique des prix: {ex.Message}");
+                PriceHistory = new ObservableCollection<PriceHistoryDTO>();
             }
             finally
             {
                 IsLoadingPriceHistory = false;
             }
-#endif
         }
     }
-    }
+}

@@ -1,24 +1,22 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
-using Microsoft.AspNetCore.Components;
-using System.Net.Http.Headers;
+using S5_01_Blazor_CS_GOAT.Models;
+using Shared.DTO;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Profile - Gère l'état et la logique du profil utilisateur
+    /// ViewModel pour la page Profile - Conforme au principe SRP
+    /// Responsabilité : Gérer l'affichage et l'édition du profil utilisateur
     /// </summary>
     public class ProfileViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigation;
+        private readonly NavigationService _navigationService;
         private readonly HttpClient _httpClient;
 
-        private User? _currentUser;
-        private UpdateUser _updateModel = new();
-        private UpdateUser _passwordModel = new();
-        private string _confirmPassword = string.Empty;
+        private UserDTO? _currentUser;
         private bool _isLoading = true;
         private bool _isSaving = false;
         private bool _isChangingPassword = false;
@@ -26,36 +24,27 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string _successMessage = string.Empty;
         private string _passwordErrorMessage = string.Empty;
         private string _passwordSuccessMessage = string.Empty;
+        private string _confirmPassword = string.Empty;
 
-        public ProfileViewModel(AuthService authService, NavigationManager navigation, HttpClient httpClient)
+        private UpdateUserModel _updateModel = new();
+        private ChangePasswordModel _passwordModel = new();
+
+        public ProfileViewModel(
+            AuthService authService,
+            NavigationService navigationService,
+            HttpClient httpClient)
         {
             _authService = authService;
-            _navigation = navigation;
+            _navigationService = navigationService;
             _httpClient = httpClient;
         }
 
-        public User? CurrentUser
+        #region Properties
+
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
-        }
-
-        public UpdateUser UpdateModel
-        {
-            get => _updateModel;
-            set => SetProperty(ref _updateModel, value);
-        }
-
-        public UpdateUser PasswordModel
-        {
-            get => _passwordModel;
-            set => SetProperty(ref _passwordModel, value);
-        }
-
-        public string ConfirmPassword
-        {
-            get => _confirmPassword;
-            set => SetProperty(ref _confirmPassword, value);
         }
 
         public bool IsLoading
@@ -100,72 +89,112 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _passwordSuccessMessage, value);
         }
 
-        public override async Task InitializeAsync()
+        public string ConfirmPassword
         {
-            await LoadUserProfileAsync();
+            get => _confirmPassword;
+            set => SetProperty(ref _confirmPassword, value);
         }
 
-        public async Task LoadUserProfileAsync()
+        public UpdateUserModel UpdateModel
+        {
+            get => _updateModel;
+            set => SetProperty(ref _updateModel, value);
+        }
+
+        public ChangePasswordModel PasswordModel
+        {
+            get => _passwordModel;
+            set => SetProperty(ref _passwordModel, value);
+        }
+
+        #endregion
+
+        public override async Task InitializeAsync()
+        {
+            await LoadProfileAsync();
+        }
+
+        private async Task LoadProfileAsync()
         {
             try
             {
                 IsLoading = true;
-                
-                var userId = await _authService.GetUserIdAsync();
+                ErrorMessage = string.Empty;
 
+                var userId = await _authService.GetUserIdAsync();
                 if (userId == null)
                 {
-                    _navigation.NavigateTo("/login");
+                    _navigationService.NavigateToLogin();
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                
-                if (string.IsNullOrEmpty(token))
-                {
-                    _navigation.NavigateTo("/login");
-                    return;
-                }
+                await _authService.LoadCurrentUserAsync();
+                CurrentUser = _authService.CurrentUser;
 
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.GetAsync($"User/details/{userId}");
-
-                if (response.IsSuccessStatusCode)
+                if (CurrentUser != null)
                 {
-                    CurrentUser = await response.Content.ReadFromJsonAsync<User>();
-                    InitializeUpdateModel();
-                    IsLoading = false;
-                }
-                else
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = "Impossible de charger les informations du profil.";
-                    IsLoading = false;
+                    // Initialiser le modèle de mise à jour avec les valeurs actuelles
+                    UpdateModel = new UpdateUserModel
+                    {
+                        DisplayName = CurrentUser.DisplayName,
+                        Email = CurrentUser.Email,
+                        Phone = CurrentUser.Phone,
+                        TwoFA = CurrentUser.TwoFA,
+                        Seed = CurrentUser.Seed ?? string.Empty
+                    };
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Erreur : {ex.Message}";
+                ErrorMessage = $"Erreur lors du chargement du profil : {ex.Message}";
+                Console.WriteLine($"Erreur LoadProfileAsync : {ex}");
+            }
+            finally
+            {
                 IsLoading = false;
             }
         }
 
-        private void InitializeUpdateModel()
+        public void NavigateTo(string url)
+        {
+            _navigationService.NavigateTo(url);
+        }
+
+        /// <summary>
+        /// Réinitialise le formulaire de profil
+        /// </summary>
+        public void ResetForm()
         {
             if (CurrentUser != null)
             {
-                UpdateModel = new UpdateUser
+                UpdateModel = new UpdateUserModel
                 {
                     DisplayName = CurrentUser.DisplayName,
                     Email = CurrentUser.Email,
                     Phone = CurrentUser.Phone,
                     TwoFA = CurrentUser.TwoFA,
-                    Seed = CurrentUser.Seed
+                    Seed = CurrentUser.Seed ?? string.Empty
                 };
             }
+
+            ErrorMessage = string.Empty;
+            SuccessMessage = string.Empty;
         }
 
+        /// <summary>
+        /// Réinitialise le formulaire de changement de mot de passe
+        /// </summary>
+        public void ResetPasswordForm()
+        {
+            PasswordModel = new ChangePasswordModel();
+            ConfirmPassword = string.Empty;
+            PasswordErrorMessage = string.Empty;
+            PasswordSuccessMessage = string.Empty;
+        }
+
+        /// <summary>
+        /// Sauvegarde les modifications du profil
+        /// </summary>
         public async Task SaveProfileAsync()
         {
             try
@@ -174,77 +203,46 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 ErrorMessage = string.Empty;
                 SuccessMessage = string.Empty;
 
-                var userId = await _authService.GetUserIdAsync();
-                if (userId == null)
+                // Validation
+                if (string.IsNullOrWhiteSpace(UpdateModel.DisplayName))
                 {
-                    ErrorMessage = "Session expirée. Veuillez vous reconnecter.";
+                    ErrorMessage = "Le nom d'affichage est requis.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(UpdateModel.Email) && string.IsNullOrWhiteSpace(UpdateModel.Phone))
+                {
+                    ErrorMessage = "Vous devez fournir au moins un email ou un numéro de téléphone.";
                     return;
                 }
 
                 var token = await _authService.GetTokenAsync();
                 if (string.IsNullOrEmpty(token))
                 {
-                    ErrorMessage = "Session expirée. Veuillez vous reconnecter.";
+                    _navigationService.NavigateToLogin();
                     return;
-                }
-
-                if (UpdateModel.TwoFA != CurrentUser?.TwoFA)
-                {
-                    if (string.IsNullOrWhiteSpace(UpdateModel.OldPassword))
-                    {
-                        ErrorMessage = "Veuillez entrer votre mot de passe actuel pour modifier le 2FA.";
-                        return;
-                    }
-
-                    if (UpdateModel.TwoFA == 2 && (!CurrentUser.EmailIsVerified || string.IsNullOrEmpty(CurrentUser.Email)))
-                    {
-                        ErrorMessage = "Impossible d'activer le 2FA par e-mail : votre adresse e-mail n'est pas vérifiée.";
-                        return;
-                    }
-                    else if (UpdateModel.TwoFA == 1 && (!CurrentUser.PhoneIsVerified || string.IsNullOrEmpty(CurrentUser.Phone)))
-                    {
-                        ErrorMessage = "Impossible d'activer le 2FA par téléphone : votre numéro de téléphone n'est pas vérifié.";
-                        return;
-                    }
                 }
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var profileUpdate = new UpdateUser
-                {
-                    DisplayName = UpdateModel.DisplayName,
-                    Email = UpdateModel.Email,
-                    Phone = UpdateModel.Phone,
-                    TwoFA = UpdateModel.TwoFA,
-                    Seed = UpdateModel.Seed,
-                    OldPassword = UpdateModel.OldPassword,
-                    NewPassword = null
-                };
-
-                var response = await _httpClient.PatchAsJsonAsync($"User/update", profileUpdate);
-
+                var response = await _httpClient.PutAsJsonAsync($"User/update/{CurrentUser?.UserId}", UpdateModel);
+                
                 if (response.IsSuccessStatusCode)
                 {
                     SuccessMessage = "Profil mis à jour avec succès !";
-                    if (UpdateModel.TwoFA != CurrentUser?.TwoFA)
-                    {
-                        SuccessMessage += " Le 2FA a été modifié.";
-                    }
-                    UpdateModel.OldPassword = null;
-                    
-                    // Recharger les données utilisateur pour mettre à jour le menu et la page
-                    await LoadUserProfileAsync();
                     await _authService.LoadCurrentUserAsync();
+                    CurrentUser = _authService.CurrentUser;
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la mise à jour : {errorContent}";
+                    ErrorMessage = $"Erreur lors de la sauvegarde : {errorContent}";
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Erreur : {ex.Message}";
+                ErrorMessage = $"Erreur lors de la sauvegarde : {ex.Message}";
+                Console.WriteLine($"Erreur SaveProfileAsync : {ex}");
             }
             finally
             {
@@ -252,6 +250,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
+        /// <summary>
+        /// Change le mot de passe de l'utilisateur
+        /// </summary>
         public async Task ChangePasswordAsync()
         {
             try
@@ -260,6 +261,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 PasswordErrorMessage = string.Empty;
                 PasswordSuccessMessage = string.Empty;
 
+                // Validation
                 if (string.IsNullOrWhiteSpace(PasswordModel.OldPassword))
                 {
                     PasswordErrorMessage = "L'ancien mot de passe est requis.";
@@ -272,56 +274,47 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                if (PasswordModel.NewPassword.Length < 8)
-                {
-                    PasswordErrorMessage = "Le nouveau mot de passe doit contenir au moins 8 caractères.";
-                    return;
-                }
-
                 if (PasswordModel.NewPassword != ConfirmPassword)
                 {
                     PasswordErrorMessage = "Les mots de passe ne correspondent pas.";
                     return;
                 }
 
-                if (PasswordModel.OldPassword == PasswordModel.NewPassword)
+                if (PasswordModel.NewPassword.Length < 8)
                 {
-                    PasswordErrorMessage = "Le nouveau mot de passe doit être différent de l'ancien.";
-                    return;
-                }
-
-                var userId = await _authService.GetUserIdAsync();
-                if (userId == null)
-                {
-                    PasswordErrorMessage = "Session expirée. Veuillez vous reconnecter.";
+                    PasswordErrorMessage = "Le mot de passe doit contenir au moins 8 caractères.";
                     return;
                 }
 
                 var token = await _authService.GetTokenAsync();
                 if (string.IsNullOrEmpty(token))
                 {
-                    PasswordErrorMessage = "Session expirée. Veuillez vous reconnecter.";
+                    _navigationService.NavigateToLogin();
                     return;
                 }
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.PatchAsJsonAsync($"User/update", PasswordModel);
-
+                var response = await _httpClient.PatchAsJsonAsync("User/update", PasswordModel);
+                
                 if (response.IsSuccessStatusCode)
                 {
+                    // Réinitialiser uniquement les champs du formulaire, pas les messages
+                    PasswordModel = new ChangePasswordModel();
+                    ConfirmPassword = string.Empty;
+                    // Afficher le message de succès
                     PasswordSuccessMessage = "Mot de passe modifié avec succès !";
-                    ResetPasswordForm();
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    PasswordErrorMessage = $"Erreur lors du changement de mot de passe : {errorContent}";
+                    PasswordErrorMessage = $"Erreur : {errorContent}";
                 }
             }
             catch (Exception ex)
             {
                 PasswordErrorMessage = $"Erreur : {ex.Message}";
+                Console.WriteLine($"Erreur ChangePasswordAsync : {ex}");
             }
             finally
             {
@@ -329,35 +322,49 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
-        public void ResetForm()
-        {
-            InitializeUpdateModel();
-            ErrorMessage = string.Empty;
-            SuccessMessage = string.Empty;
-        }
-
-        public void ResetPasswordForm()
-        {
-            PasswordModel = new UpdateUser();
-            ConfirmPassword = string.Empty;
-            PasswordErrorMessage = string.Empty;
-        }
-
+        /// <summary>
+        /// Déconnecte l'utilisateur de l'appareil actuel
+        /// </summary>
         public async Task LogoutCurrentDeviceAsync()
         {
             await _authService.LogoutAsync();
-            _navigation.NavigateTo("/login");
+            _navigationService.NavigateToHome(forceLoad: true);
         }
 
+        /// <summary>
+        /// Déconnecte l'utilisateur de tous les appareils
+        /// </summary>
         public async Task LogoutAllDevicesAsync()
         {
-            await _authService.LogoutAsync();
-            _navigation.NavigateTo("/login");
-        }
+            try
+            {
+                var token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    _navigationService.NavigateToLogin();
+                    return;
+                }
 
-        public void NavigateTo(string url)
-        {
-            _navigation.NavigateTo(url);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                // Appel API pour révoquer tous les tokens
+                var response = await _httpClient.PostAsync("User/logout-all-devices", null);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    await _authService.LogoutAsync();
+                    _navigationService.NavigateToHome(forceLoad: true);
+                }
+                else
+                {
+                    ErrorMessage = "Erreur lors de la déconnexion de tous les appareils.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur : {ex.Message}";
+                Console.WriteLine($"Erreur LogoutAllDevicesAsync : {ex}");
+            }
         }
     }
 }

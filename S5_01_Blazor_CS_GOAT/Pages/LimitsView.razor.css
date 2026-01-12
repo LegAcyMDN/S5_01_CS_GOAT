@@ -1,4 +1,69 @@
-﻿.inputLimit {
-	background-color: #2a2836;
-	color: white;
+﻿h1 {
+    color: white;
+    font-size: 2.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    justify-self: center;
+    margin-bottom: 2%;
+}
+
+/*Div principale*/
+.Limit {
+    display: inline-flex;
+    height: 80%;
+    width:100%;
+    justify-content: space-evenly;
+    padding: 0 100px;
+}
+
+.Container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/*Form limites*/
+h2{
+    align-self: center;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-evenly;
+}
+
+label{
+    font-weight: bold;
+}
+
+.inputLimit {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #ff9800c7;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    color: white;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+/*Liste des limites*/
+ul{
+    justify-content:space-around;
+    display: flex;
+    flex-direction: column;
+}
+
+li{
+    display:flex;
+    margin-bottom: 6px;
+}
+
+strong {
+    color: #ffa219;
 }

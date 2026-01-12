@@ -1,28 +1,31 @@
-using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
-using Microsoft.AspNetCore.Components;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour CaseComponent - Gère l'affichage et la navigation d'une caisse
+    /// ViewModel pour CaseComponent - Refactorisé selon le principe SRP
+    /// Responsabilité : Afficher un composant de caisse
     /// </summary>
     public class CaseComponentViewModel : ViewModelBase
     {
-        private readonly NavigationManager _navigation;
+        private readonly NavigationService _navigationService;
         private readonly FavoriteService _favoriteService;
         private readonly AuthService _authService;
-        private Case? _caseObject;
+        private CaseDTO? _caseObject;
         private bool _isAuthenticated;
 
-        public CaseComponentViewModel(NavigationManager navigation, FavoriteService favoriteService, AuthService authService)
+        public CaseComponentViewModel(
+            NavigationService navigationService,
+            FavoriteService favoriteService,
+            AuthService authService)
         {
-            _navigation = navigation;
+            _navigationService = navigationService;
             _favoriteService = favoriteService;
             _authService = authService;
         }
 
-        public Case? CaseObject
+        public CaseDTO? CaseObject
         {
             get => _caseObject;
             set => SetProperty(ref _caseObject, value);
@@ -34,20 +37,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _isAuthenticated, value);
         }
 
-        /// <summary>
-        /// Navigue vers la page de détail de la caisse
-        /// </summary>
         public void NavigateToCase()
         {
             if (CaseObject != null)
             {
-                _navigation.NavigateTo($"/caseview/{CaseObject.CaseId}");
+                _navigationService.NavigateToCase(CaseObject.CaseId);
             }
         }
 
-        /// <summary>
-        /// Bascule le statut favori de la caisse
-        /// </summary>
         public async Task ToggleFavoriteAsync()
         {
             if (CaseObject == null || !IsAuthenticated)
@@ -62,10 +59,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
-        /// <summary>
-        /// Initialise le statut d'authentification
-        /// </summary>
-        public async Task InitializeAsync()
+        public override async Task InitializeAsync()
         {
             IsAuthenticated = await _authService.IsAuthenticatedAsync();
         }

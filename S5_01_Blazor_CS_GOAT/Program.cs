@@ -13,26 +13,28 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Register services with configuration
-builder.Services.AddScoped<IService<Case>>(sp => 
-    new WebService<Case>(sp.GetRequiredService<IConfiguration>(), "case"));
+builder.Services.AddScoped<IService<CaseDTO>>(sp => 
+    new WebService<CaseDTO>(sp.GetRequiredService<IConfiguration>(), "case"));
 builder.Services.AddScoped<IService<SkinDTO>>(sp => 
     new WebService<SkinDTO>(sp.GetRequiredService<IConfiguration>(), "skin"));
-builder.Services.AddScoped<IService<User>>(sp => 
-    new WebService<User>(sp.GetRequiredService<IConfiguration>(), "user"));
-builder.Services.AddScoped<IService<InventoryItemDetail>>(sp => 
-    new WebService<InventoryItemDetail>(sp.GetRequiredService<IConfiguration>(), "inventoryitem"));
+builder.Services.AddScoped<IService<UserDTO>>(sp => 
+    new WebService<UserDTO>(sp.GetRequiredService<IConfiguration>(), "user"));
+builder.Services.AddScoped<IService<InventoryItemDetailDTO>>(sp => 
+    new WebService<InventoryItemDetailDTO>(sp.GetRequiredService<IConfiguration>(), "inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => 
     new ThreeDModelWebService<ThreeDModel>("wear/get3dmodel"));
-builder.Services.AddScoped<IService<MoneyTransaction>>(sp => 
-    new WebService<MoneyTransaction>(sp.GetRequiredService<IConfiguration>(), "moneytransaction"));
-builder.Services.AddScoped<IService<Limit>>(sp => 
-    new WebService<Limit>(sp.GetRequiredService<IConfiguration>(), "limit"));
+builder.Services.AddScoped<IService<MoneyTransactionDTO>>(sp => 
+    new WebService<MoneyTransactionDTO>(sp.GetRequiredService<IConfiguration>(), "moneytransaction"));
+builder.Services.AddScoped<IService<LimitDTO>>(sp => 
+    new WebService<LimitDTO>(sp.GetRequiredService<IConfiguration>(), "limit"));
 builder.Services.AddScoped<IService<FairRandomDTO>>(sp => 
     new WebService<FairRandomDTO>(sp.GetRequiredService<IConfiguration>(), "fairrandom"));
 builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp => 
     new WebService<PriceHistoryDTO>(sp.GetRequiredService<IConfiguration>(), "pricehistory"));
 builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => 
     new WebService<RandomTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
+builder.Services.AddScoped<IService<RandomTransactionLiveFeedDTO>>(sp => 
+    new WebService<RandomTransactionLiveFeedDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
 
 builder.Services.AddScoped<CacheService>(sp => 
 {
@@ -40,9 +42,18 @@ builder.Services.AddScoped<CacheService>(sp =>
     return new CacheService(sp.GetRequiredService<IJSRuntime>(), httpClient);
 });
 
+// Core services
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<StripeService>();
+
+// NEW: Specialized services following SRP
+builder.Services.AddScoped<NavigationService>();
+builder.Services.AddScoped<AdminUserService>();
+builder.Services.AddScoped<TwoFactorAuthService>();
+builder.Services.AddScoped<AdminStatisticsService>();
+builder.Services.AddScoped<CaseOpeningService>();
+builder.Services.AddScoped<CaseResultMapperService>();
 
 // ViewModels
 builder.Services.AddScoped<HomeViewModel>();

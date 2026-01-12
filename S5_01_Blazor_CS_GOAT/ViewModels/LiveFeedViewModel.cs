@@ -1,12 +1,26 @@
+using Shared.DTO;
+using S5_01_Blazor_CS_GOAT.Service;
+using System.Timers;
+
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
     /// ViewModel pour LiveFeed - Gère le fil d'actualité des drops en direct
     /// </summary>
-    public class LiveFeedViewModel : ViewModelBase
+    public class LiveFeedViewModel : ViewModelBase, IDisposable
     {
+        private readonly IService<RandomTransactionLiveFeedDTO> _randomTransactionService;
         private bool _showBestOnly = false;
         private List<LiveFeedItem> _feedItems = new();
+        private System.Timers.Timer? _refreshTimer;
+        private DateTime _lastUpdateTime = DateTime.UtcNow;
+        private const int REFRESH_INTERVAL_MS = 5000; // Rafraîchir toutes les 5 secondes
+        private const int MAX_ITEMS = 20; // Nombre max d'items à afficher
+
+        public LiveFeedViewModel(IService<RandomTransactionLiveFeedDTO> randomTransactionService)
+        {
+            _randomTransactionService = randomTransactionService;
+        }
 
         public bool ShowBestOnly
         {
@@ -29,6 +43,72 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public override async Task InitializeAsync()
         {
             await LoadFeedItemsAsync();
+            StartAutoRefresh();
+        }
+
+        /// <summary>
+        /// Démarre le rafraîchissement automatique
+        /// </summary>
+        private void StartAutoRefresh()
+        {
+            _refreshTimer = new System.Timers.Timer(REFRESH_INTERVAL_MS);
+            _refreshTimer.Elapsed += async (sender, e) => await RefreshFeedAsync();
+            _refreshTimer.AutoReset = true;
+            _refreshTimer.Start();
+        }
+
+        /// <summary>
+        /// Rafraîchit le feed avec les nouvelles transactions
+        /// </summary>
+        private async Task RefreshFeedAsync()
+        {
+            try
+            {
+                var transactions = await _randomTransactionService.GetLiveFeedAsync(50);
+                
+                if (transactions != null && transactions.Any())
+                {
+                    var newItems = transactions
+                        .Where(t => t.TransactionDate > _lastUpdateTime)
+                        .Select(t => new LiveFeedItem
+                        {
+                            ItemName = t.ItemName,
+                            SkinName = t.SkinName,
+                            RarityColor = t.RarityColor,
+                            WearTypeAbbreviation = t.WearTypeAbbreviation,
+                            Uuid = t.Uuid,
+                            TransactionDate = t.TransactionDate,
+                            IsNew = true
+                        })
+                        .OrderByDescending(item => item.TransactionDate)
+                        .ToList();
+
+                    if (newItems.Any())
+                    {
+                        // Ajouter les nouveaux items au début
+                        var updatedList = newItems.Concat(_feedItems).ToList();
+                        
+                        // Limiter le nombre d'items
+                        if (updatedList.Count > MAX_ITEMS)
+                        {
+                            updatedList = updatedList.Take(MAX_ITEMS).ToList();
+                        }
+
+                        // Marquer les anciens items comme non nouveaux
+                        foreach (var item in updatedList.Skip(newItems.Count))
+                        {
+                            item.IsNew = false;
+                        }
+
+                        FeedItems = updatedList;
+                        _lastUpdateTime = newItems.First().TransactionDate;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du rafraîchissement du live feed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -36,17 +116,35 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// </summary>
         private async Task LoadFeedItemsAsync()
         {
-            // TODO: Implémenter le chargement depuis l'API
-            // Pour l'instant, données de démonstration
-            FeedItems = Enumerable.Range(0, 23)
-                .Select(i => new LiveFeedItem
+            try
+            {
+                var transactions = await _randomTransactionService.GetLiveFeedAsync(MAX_ITEMS);
+                
+                if (transactions != null)
                 {
-                    ItemName = "AK47 | Asimov",
-                    Price = 256.64m
-                })
-                .ToList();
+                    FeedItems = transactions
+                        .OrderByDescending(t => t.TransactionDate)
+                        .Select(t => new LiveFeedItem
+                        {
+                            ItemName = t.ItemName,
+                            SkinName = t.SkinName,
+                            RarityColor = t.RarityColor,
+                            WearTypeAbbreviation = t.WearTypeAbbreviation,
+                            Uuid = t.Uuid,
+                            TransactionDate = t.TransactionDate,
+                            IsNew = false
+                        }).ToList();
 
-            await Task.CompletedTask;
+                    if (FeedItems.Any())
+                    {
+                        _lastUpdateTime = FeedItems.First().TransactionDate;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement du live feed: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -55,6 +153,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private void FilterFeedItems()
         {
             // TODO: Implémenter le filtrage des meilleurs drops
+            // Pour l'instant, on recharge tout
+            _ = LoadFeedItemsAsync();
+        }
+
+        public void Dispose()
+        {
+            _refreshTimer?.Stop();
+            _refreshTimer?.Dispose();
         }
 
         /// <summary>
@@ -63,7 +169,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public class LiveFeedItem
         {
             public string ItemName { get; set; } = string.Empty;
-            public decimal Price { get; set; }
+            public string SkinName { get; set; } = string.Empty;
+            public string RarityColor { get; set; } = string.Empty;
+            public string WearTypeAbbreviation { get; set; } = string.Empty;
+            public string Uuid { get; set; } = string.Empty;
+            public DateTime TransactionDate { get; set; }
+            public bool IsNew { get; set; } = false;
+
+            public string DisplayName => $"{ItemName} | {SkinName}";
+            
+            public string ImageUrl => $"https://screenshots.cs.money/csmoney2/{Uuid}_icon.png";
         }
     }
 }

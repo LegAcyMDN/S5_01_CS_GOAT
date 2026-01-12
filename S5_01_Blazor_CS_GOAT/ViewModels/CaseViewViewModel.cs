@@ -7,51 +7,57 @@ using Shared.Exceptions.CaseExceptions;
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page CaseView - Gère l'ouverture des caisses
+    /// ViewModel pour la page CaseView - Refactorisé selon le principe SRP
+    /// Responsabilité : Coordonner l'affichage et l'interaction avec les cases
     /// </summary>
     public class CaseViewViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
         private readonly FavoriteService _favoriteService;
         private readonly IService<SkinDTO> _skinRepository;
-        private readonly IService<Case> _caseRepository;
-        private static readonly Random _rng = new();
+        private readonly IService<CaseDTO> _caseRepository;
+        private readonly IService<FairRandomDTO> _fairRandomService;
+        private readonly CaseOpeningService _caseOpeningService;
+        private readonly CaseResultMapperService _resultMapperService;
 
         private List<SkinDTO> _skinsList = new();
-        private Case? _activeCase;
+        private CaseDTO? _activeCase;
         private List<InventoryItemDetailDTO> _wonSkins = new();
         private bool _isEsthetic;
         private bool _showPopup;
         private int _selectedCount = 1;
         private string _promoCode = "";
         private bool _isLoading = true;
-        private List<Skin> _caseOpenList = new();
-        private bool _justBoughtCase = false;
         private List<List<SkinDTO>> _boughtCasesListWithSkins = new();
         private List<InventoryItemDetailDTO> _listWonSkinItemDetail = new();
-
         private int _completedAnimations = 0;
         private int _totalAnimations = 0;
-
         private bool _isInvalidPromoCode = false;
         private bool _isAuthenticated = false;
         private string? _serverHash;
         private int? _userNonce;
-        private readonly IService<FairRandomDTO> _fairRandomService;
         private MultipleCaseResultDTO _caseOpenResult;
+        private bool _needAuth = false;
 
-
-
-
-        public CaseViewViewModel(IService<SkinDTO> skinRepository, IService<Case> caseRepository, AuthService authService, FavoriteService favoriteService, IService<FairRandomDTO> fairRandomService)
+        public CaseViewViewModel(
+            IService<SkinDTO> skinRepository,
+            IService<CaseDTO> caseRepository,
+            AuthService authService,
+            FavoriteService favoriteService,
+            IService<FairRandomDTO> fairRandomService,
+            CaseOpeningService caseOpeningService,
+            CaseResultMapperService resultMapperService)
         {
             _skinRepository = skinRepository;
             _caseRepository = caseRepository;
             _authService = authService;
             _favoriteService = favoriteService;
             _fairRandomService = fairRandomService;
+            _caseOpeningService = caseOpeningService;
+            _resultMapperService = resultMapperService;
         }
 
+        #region Properties
 
         public string PromoCode
         {
@@ -77,7 +83,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _skinsList, value);
         }
 
-        public Case? ActiveCase
+        public CaseDTO? ActiveCase
         {
             get => _activeCase;
             set => SetProperty(ref _activeCase, value);
@@ -115,8 +121,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
         public bool JustBoughtCase
         {
-            get => _justBoughtCase;
-            set => SetProperty(ref _justBoughtCase, value);
+            get => _completedAnimations < _totalAnimations && _totalAnimations > 0;
         }
 
         public List<InventoryItemDetailDTO> ListWonSkinItemDetail
@@ -143,12 +148,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _userNonce, value);
         }
 
-
         public MultipleCaseResultDTO CaseOpenResult
         {
             get => _caseOpenResult;
             set => SetProperty(ref _caseOpenResult, value);
         }
+        public bool NeedAuth
+        {
+            get => _needAuth;
+            set => SetProperty(ref _needAuth, value);
+        }
+
+        #endregion
 
         /// <summary>
         /// Charge les données de la caisse et ses skins
@@ -160,15 +171,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 IsLoading = true;
                 IsAuthenticated = await _authService.IsAuthenticatedAsync();
 
-                // Récupérer le token JWT si l'utilisateur est connecté
                 var jwtToken = await _authService.GetTokenAsync();
 
                 SkinsList = await _skinRepository.GetByCaseIdAsync(caseId);
-
-                // Charger la caisse avec le token pour obtenir l'état IsFavorite correct
                 ActiveCase = await _caseRepository.GetByIdAsync(caseId, jwtToken);
 
-                // Charger les informations de provably fair si l'utilisateur est connecté
                 if (IsAuthenticated)
                 {
                     await LoadFairRandomInfoAsync();
@@ -185,7 +192,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Charge les informations de provably fair (ServerHash et UserNonce) pour l'utilisateur actuel
+        /// Charge les informations de provably fair pour l'utilisateur actuel
         /// </summary>
         private async Task LoadFairRandomInfoAsync()
         {
@@ -196,7 +203,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 if (fairRandomList != null && fairRandomList.Count > 0)
                 {
-                    // Récupérer le dernier enregistrement (le plus récent)
                     var latestFairRandom = fairRandomList.OrderByDescending(f => f.TransactionId).FirstOrDefault();
 
                     if (latestFairRandom != null)
@@ -212,92 +218,71 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
-        /// <summary>
-        /// Achète une ou plusieurs caisses et génère les skins gagnés
-        /// </summary>
-        public async Task BuyCaseAsync()
+        public async Task TryBuyCaseAsync()
         {
-            if (SkinsList == null || SkinsList.Count == 0)
-                return;
-
-            WonSkins.Clear();
-
-            if (IsEsthetic)
+            if (IsAuthenticated)
             {
-                Console.WriteLine(SelectedCount);
-                try
-                {
-                    CaseOpenResult = await CallCaseOpen(SelectedCount);
-
-                    BoughtCasesListWithSkins = convertMultipleCaseResultsToSkinList(CaseOpenResult);
-
-
-
-                    foreach (var c in CaseOpenResult.Results)
-                    {
-                        ListWonSkinItemDetail.Add(c.Reward);
-                    }
-
-                    _totalAnimations = BoughtCasesListWithSkins.Count;
-                    _completedAnimations = 0;
-
-                    IsInvalidPromoCode = false;
-                    JustBoughtCase = true;
-                }
-                catch (CaseOpeningException e)
-                {
-                    switch (e)
-                    {
-                        case InvalidPromoCodeException:
-                            IsInvalidPromoCode = true;
-                            break;
-                            // Add the other exceptions if needed
-                    }
-                }
+                NeedAuth = false;
+                await BuyCaseAsync();
             }
             else
             {
-                // Non-esthetic mode - skip animations, show results immediately
-                Console.WriteLine($"Opening {SelectedCount} cases without animation");
-                try
-                {
-                    CaseOpenResult = await CallCaseOpen(SelectedCount);
-                    IsInvalidPromoCode = false;
-                    // Extract won skins directly from results
-                    foreach (var oneCase in CaseOpenResult.Results)
-                    {
-                        var wonSkin = oneCase.Reward;
-                        WonSkins.Add(new InventoryItemDetailDTO
-                        {
-                            Uuid = wonSkin.Uuid,
-                            ItemName = wonSkin.ItemName,
-                            RarityColor = wonSkin.RarityColor,
-                            RarityName = wonSkin.RarityName,
-                            SkinName = wonSkin.SkinName,
-                            WearTypeName = wonSkin.WearTypeName,
-                            CurrentPrice = wonSkin.CurrentPrice
-                        });
-                    }
-
-                    // Show popup immediately
-                    ShowPopup = true;
-
-                }
-                catch (CaseOpeningException e)
-                {
-                    switch (e)
-                    {
-                        case InvalidPromoCodeException:
-                            IsInvalidPromoCode = true;
-                            break;
-                            // Add the other exceptions if needed
-                    }
-                }
-
-
+                NeedAuth = true;
             }
         }
 
+        /// <summary>
+        /// Achète une ou plusieurs caisses via le service dédié
+        /// </summary>
+        public async Task BuyCaseAsync()
+        {
+
+            if (SkinsList == null || SkinsList.Count == 0 || ActiveCase == null)
+                return;
+
+            WonSkins.Clear();
+            ListWonSkinItemDetail.Clear();
+
+            try
+            {
+                // Appel du service d'ouverture de cases
+                CaseOpenResult = await _caseOpeningService.OpenCasesAsync(
+                    ActiveCase.CaseId, 
+                    SelectedCount, 
+                    PromoCode);
+
+                IsInvalidPromoCode = false;
+
+                if (IsEsthetic)
+                {
+                    // Mode avec animation - préparer les données
+                    BoughtCasesListWithSkins = _resultMapperService.ConvertMultipleCaseResultsToSkinLists(CaseOpenResult);
+                    ListWonSkinItemDetail = _resultMapperService.ExtractWonSkins(CaseOpenResult);
+
+                    _totalAnimations = BoughtCasesListWithSkins.Count;
+                    _completedAnimations = 0;
+                    OnPropertyChanged(nameof(JustBoughtCase));
+                }
+                else
+                {
+                    // Mode sans animation - afficher directement les résultats
+                    WonSkins = _resultMapperService.ExtractWonSkins(CaseOpenResult);
+                    ShowPopup = true;
+                }
+            }
+            catch (InvalidPromoCodeException)
+            {
+                IsInvalidPromoCode = true;
+            }
+            catch (CaseOpeningException ex)
+            {
+                Console.WriteLine($"Erreur lors de l'ouverture de la caisse: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Appelé quand une animation de case se termine
+        /// </summary>
         public void OnCaseAnimationComplete()
         {
             _completedAnimations++;
@@ -305,33 +290,21 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
             if (_completedAnimations >= _totalAnimations)
             {
-                // All animations done - show popup!
                 ShowResultsPopup();
             }
+            
+            OnPropertyChanged(nameof(JustBoughtCase));
         }
 
+        /// <summary>
+        /// Affiche la popup des résultats
+        /// </summary>
         private void ShowResultsPopup()
         {
             Console.WriteLine("All animations complete! Showing results...");
 
-            // Extract won skins from the roller results
-            //foreach (var caseList in BoughtCasesListWithSkins)
-            //{
-            //    // The won skin is at position 72 (middle of the 82 items)
-            //    if (caseList.Count > 72)
-            //    {
-            //        WonSkins.Add(caseList);
-            //    }
-            //}
-
-            foreach (var reward in ListWonSkinItemDetail)
-            {
-                WonSkins.Add(reward);
-            }
-
+            WonSkins = ListWonSkinItemDetail;
             ShowPopup = true;
-            JustBoughtCase = false; // Hide the rollers
-
         }
 
         /// <summary>
@@ -366,81 +339,5 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 OnPropertyChanged(nameof(ActiveCase));
             }
         }
-
-        private async Task<MultipleCaseResultDTO?> CallCaseOpen(int numberOfCases)
-        {
-            CaseOpenningDTO caseOpenningInfo = new CaseOpenningDTO
-            {
-                CaseId = _activeCase.CaseId,
-                Quantity = numberOfCases,
-                RaffleRollerLength = 82,
-                PromoCode = PromoCode == "" ? null : PromoCode
-            };
-
-            string jwtToken = await _authService.GetTokenAsync();
-            MultipleCaseResultDTO casesReturn = await _caseRepository.OpenCaseAsync(caseOpenningInfo, jwtToken);
-
-            // Refresh wallet
-            await _authService.LoadCurrentUserAsync();
-
-            // This will trigger the event and update the menu!
-            _authService.NotifyUserDataChanged();
-
-            return casesReturn;
-
-        }
-
-        private List<List<SkinDTO>> convertMultipleCaseResultsToSkinList(MultipleCaseResultDTO multipleCaseResults)
-        {
-            List<List<SkinDTO>> casesWithSkins = new();
-            int caseNumber = 0;
-            foreach (var oneCase in multipleCaseResults.Results)
-            {
-                casesWithSkins.Add(new List<SkinDTO>());
-                for (int i = 0; i <= 71; i++)
-                {
-                    SkinDTO skinOfThisIteration = multipleCaseResults.Skins[
-                        oneCase.Roller[i]
-                    ];
-
-                    casesWithSkins[caseNumber].Add(skinOfThisIteration);
-                }
-
-                // Add the skin won from the API
-                InventoryItemDetailDTO wonSkinDetail = oneCase.Reward;
-
-                casesWithSkins[caseNumber].Add(new SkinDTO
-                {
-                    AnyUuid = wonSkinDetail.Uuid,
-                    ItemName = wonSkinDetail.ItemName,
-                    RarityColor = wonSkinDetail.RarityColor,
-                    RarityName = wonSkinDetail.RarityName,
-                    SkinName = wonSkinDetail.SkinName
-                });
-                Console.WriteLine(oneCase.Roller.Length);
-                Console.WriteLine("item found UUID : " + wonSkinDetail.Uuid);
-                Console.WriteLine("item : " + wonSkinDetail.ItemName);
-
-
-                for (int i = 72; i < 82; i++)
-                {
-                    SkinDTO skinOfThisIteration = multipleCaseResults.Skins[
-                        oneCase.Roller[i]
-                    ];
-
-                    casesWithSkins[caseNumber].Add(skinOfThisIteration);
-                }
-
-
-                caseNumber++;
-            }
-
-            Console.WriteLine("cases with skins : " + casesWithSkins[0].Count);
-            return casesWithSkins;
-        }
-
-
-
-
     }
 }

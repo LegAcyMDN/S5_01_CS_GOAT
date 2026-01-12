@@ -1,10 +1,19 @@
 ﻿li {
 	padding: 10px;
-	border: solid 2px orange; 
+	border: solid 2px orange;
 	margin-bottom: 5px;
-	animation: all ease 1s Depliage;
+	background-color: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	text-align-last: center;
 }
 
-.HistoryInput {
-	background-color: #2a2836;
+.CloseHistory {
+	justify-self: center;
+}
+
+.label {
+	display: inline;
+	font-weight: bolder;
+	color: #f8a11d;
 }

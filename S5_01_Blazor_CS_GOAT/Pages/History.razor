@@ -2,6 +2,7 @@
 @using S5_01_Blazor_CS_GOAT.Layout
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject HistoryViewModel ViewModel
+@implements IDisposable
 
 <div class="history-page">
     <h1>Historique des transactions</h1>
@@ -27,23 +28,27 @@
 
                     @foreach (var rt in ViewModel.RandomsTransactionsDetail)
                     {
-                        <li>
-                            Date d'ouverture : @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
-                            Montant de la transaction : @(rt.WalletValue.ToString() ?? "Montant Inconnu") € <br/>
+                        <li style="border-color:@(rt.RarityColor)">
+                            <p class="label">Date d'ouverture </p>: @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
+                            <p class="label">Montant de la transaction </p> : @(Math.Round(rt.WalletValue, 2).ToString() ?? "Montant Inconnu") € <br/>
 
                         @if (!ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
                         {
-                            <button class="CloseHistory" @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">Deplier</button>
+                            <p class="CloseHistory" @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">
+                                <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                            </p>
                         }
 
                         @if (ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
                         {
                             <div>
-                                Caisse : @(rt.Case != null ? rt.Case.CaseName ?? "Nom de caisse Inconnu" : "Caisse Inconnue")<br/>
-                                Item : @(rt.ItemName ?? "Item Inconnu") <br/>
-                                Skin : <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
-                                Qualité : @(rt.WearName ?? "Qualité Inconnue") <br/>
-                                <button class="CloseHistory" @onclick="async () => await ViewModel.UnloadTransactionDetailsAsync(rt.TransactionId)">Replier</button>
+                                <p class="label">Caisse </p>: @(rt.Case != null ? rt.Case.CaseName ?? "Nom de caisse Inconnu" : "Caisse Inconnue")<br/>
+                                <p class="label">Item </p>: @(rt.ItemName ?? "Item Inconnu") <br/>
+                                <p class="label">Skin </p>: <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
+                                <p class="label">Qualité </p>: @(rt.WearName ?? "Qualité Inconnue") <br/>
+                                <p class="CloseHistory" @onclick="async () => await ViewModel.UnloadTransactionDetailsAsync(rt.TransactionId)">
+                                    <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                </p>
                             </div>
                         }
                         </li>
@@ -61,5 +66,10 @@
     {
         await ViewModel.InitializeAsync();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        ViewModel.OpenTransactionIds.Clear();
     }
 }

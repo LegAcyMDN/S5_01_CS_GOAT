@@ -4,18 +4,19 @@ using Microsoft.AspNetCore.Components;
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour AuthOverlay - Gère l'affichage de l'overlay d'authentification
+    /// ViewModel pour AuthOverlay - Refactorisé selon le principe SRP
+    /// Responsabilité : Gérer l'affichage de l'overlay d'authentification
     /// </summary>
     public class AuthOverlayViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigation;
+        private readonly NavigationService _navigationService;
         private bool _isAuthenticated = false;
 
-        public AuthOverlayViewModel(AuthService authService, NavigationManager navigation)
+        public AuthOverlayViewModel(AuthService authService, NavigationService navigationService)
         {
             _authService = authService;
-            _navigation = navigation;
+            _navigationService = navigationService;
         }
 
         public bool IsAuthenticated
@@ -31,20 +32,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             IsAuthenticated = await _authService.IsLoggedInAsync();
         }
 
-        /// <summary>
-        /// Navigue vers la page de connexion
-        /// </summary>
-        public void NavigateToLogin()
-        {
-            _navigation.NavigateTo("/login");
-        }
+        public void NavigateToLogin() => _navigationService.NavigateToLogin();
 
-        /// <summary>
-        /// Navigue vers la page d'inscription
-        /// </summary>
-        public void NavigateToRegister()
-        {
-            _navigation.NavigateTo("/register");
-        }
+        public void NavigateToRegister() => _navigationService.NavigateToRegister();
     }
 }

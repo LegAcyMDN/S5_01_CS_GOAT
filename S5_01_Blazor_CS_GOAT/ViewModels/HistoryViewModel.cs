@@ -11,7 +11,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class HistoryViewModel : ViewModelBase
     {
         private bool _isLoading = true;
-        private User? _currentUser;
+        private UserDTO? _currentUser;
         private readonly IService<RandomTransactionDetailDTO> _randomTransactionRepository;
         private readonly AuthService _authService;
         private readonly HttpClient _httpClient;
@@ -36,7 +36,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _randomsTransactionsDetail;
             set => SetProperty(ref _randomsTransactionsDetail, value);
         }
-        public User? CurrentUser
+        public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
@@ -61,6 +61,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 if (!string.IsNullOrEmpty(jwtToken))
                 {
                     RandomsTransactionsDetail = await _randomTransactionRepository.GetByUserAsync(jwtToken);
+                    RandomsTransactionsDetail.Sort((x, y) => y.TransactionDate.CompareTo(x.TransactionDate));
                 }
             }
             catch (Exception ex)

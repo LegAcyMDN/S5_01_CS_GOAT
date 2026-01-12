@@ -284,7 +284,7 @@ input:checked + .slider:after {
     border-radius: 8px;
     padding: 20px;
     min-width: 300px;
-    max-width: 500px;
+    max-width: 60%;
     text-align: -webkit-center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
@@ -304,8 +304,53 @@ input:checked + .slider:after {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 30px;
 }
+
+    .popup-skins > li {
+        margin: 0px 10px 10px 10px;
+    }
+
+.skin-item {
+    position: relative;
+    display: inline-block; /* ou block selon ton layout */
+}
+
+    /* Bulle cachée par défaut */
+    .skin-item .item-tooltip {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.15s ease;
+        position: absolute;
+        top: 100%; /* sous l’élément */
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        z-index: 100;
+        font-size: 0.85rem;
+    }
+
+        /* Petite flèche */
+        .skin-item .item-tooltip::after {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+        }
+
+    /* Affichage au survol du li */
+    .skin-item:hover .item-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
 
 .gambling-x.selected {
     outline: 2px solid #f99e1c;
@@ -517,9 +562,14 @@ input:checked + .slider:after {
 .PromoCode {
     background-color: #2a2836;
     width: 150px;
-    height: 30px;
-    margin-left: 20px;
-    align-self: anchor-center;
+    height: 35px;
     color: white;
     text-align-last: center;
+    border: solid 2px #f8a11d;
+    border-radius: 25px;
+}
+
+
+.result-promocode {
+    color: lime;
 }

@@ -1,0 +1,244 @@
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject IJSRuntime JSRuntime
+
+<div class="promocodes-section">
+    <div class="section-header">
+        <h2>Gestion des Codes Promo</h2>
+        <div class="header-actions">
+            <button class="btn btn-primary" @onclick="() => PromoCodeViewModel.OpenCreateModal()">
+                ➕ Nouveau Code Promo
+            </button>
+        </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="filters-container">
+        <div class="search-box">
+            <input type="text" 
+                   class="search-input" 
+                   @bind="PromoCodeViewModel.SearchQuery" 
+                   @bind:event="oninput"
+                   placeholder="Rechercher un code..." />
+        </div>
+        
+        <div class="filter-group">
+            <label>Type:</label>
+            <select @bind="PromoCodeViewModel.FilterType" class="filter-select">
+                <option value="all">Tous</option>
+                <option value="global">Global</option>
+                <option value="user">Utilisateur spécifique</option>
+                <option value="case">Case spécifique</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Trier par:</label>
+            <select @bind="PromoCodeViewModel.SortBy" class="filter-select">
+                <option value="code">Code</option>
+                <option value="validityStart">Date de début</option>
+                <option value="expiryDate">Date d'expiration</option>
+                <option value="discountPercentage">% Réduction</option>
+                <option value="discountAmount">Montant</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Du:</label>
+            <input type="date" 
+                   @bind="PromoCodeViewModel.FilterDateFrom" 
+                   class="filter-input" />
+        </div>
+
+        <div class="filter-group">
+            <label>Au:</label>
+            <input type="date" 
+                   @bind="PromoCodeViewModel.FilterDateTo" 
+                   class="filter-input" />
+        </div>
+
+        <button class="btn btn-secondary" @onclick="() => PromoCodeViewModel.ResetFilters()">
+            🔄 Réinitialiser
+        </button>
+    </div>
+
+    @if (PromoCodeViewModel.IsLoading)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Chargement des codes promos...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Tableau des codes promos -->
+        <div class="promocodes-table-container">
+            <table class="promocodes-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Code</th>
+                        <th>Utilisations</th>
+                        <th>% Réduction</th>
+                        <th>Montant</th>
+                        <th>Début</th>
+                        <th>Expiration</th>
+                        <th>Utilisateur</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (PromoCodeViewModel.FilteredAndSortedPromoCodes != null && PromoCodeViewModel.FilteredAndSortedPromoCodes.Any())
+                    {
+                        @foreach (var promo in PromoCodeViewModel.FilteredAndSortedPromoCodes)
+                        {
+                            var status = PromoCodeViewModel.GetPromoStatus(promo);
+                            var nextRefresh = PromoCodeViewModel.GetNextRefresh(promo);
+                            var willBeDeleted = PromoCodeViewModel.WillBeDeleted(promo);
+
+                            <tr class="@status.CssClass">
+                                <td>@promo.PromoCodeId</td>
+                                <td>
+                                    <strong>@promo.Code</strong>
+                                    @if (willBeDeleted)
+                                    {
+                                        <span class="warning-badge" title="Ce code sera automatiquement supprimé">⚠️</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (promo.RemainingUses.HasValue)
+                                    {
+                                        <span class="@(promo.RemainingUses == 0 ? "text-danger" : "")">
+                                            @promo.RemainingUses
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">♾️ Illimité</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (promo.DiscountPercentage.HasValue)
+                                    {
+                                        <span class="discount-badge">@promo.DiscountPercentage%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (promo.DiscountAmount.HasValue)
+                                    {
+                                        <span class="discount-badge">@($"{promo.DiscountAmount:F2}€")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>@promo.ValidityStart.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (promo.ExpiryDate.HasValue)
+                                    {
+                                        <span>@promo.ExpiryDate.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                                        @if (promo.RefreshDelay.HasValue)
+                                        {
+                                            <br />
+                                            <small class="text-info" title="Délai de rafraîchissement">
+                                                🔄 +@FormatTimeSpan(promo.RefreshDelay.Value)
+                                            </small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">Permanent</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (promo.UserId.HasValue)
+                                    {
+                                        <span class="badge badge-user">👤 User #@promo.UserId</span>
+                                    }
+                                    else if (promo.CaseId.HasValue)
+                                    {
+                                        <span class="badge badge-case">📦 Case #@promo.CaseId</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-global">🌍 Global</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="status-container" title="@status.Description">
+                                        <span class="status-badge @status.CssClass">@status.Status</span>
+                                        @if (nextRefresh.HasValue && promo.RefreshDelay.HasValue)
+                                        {
+                                            <br />
+                                            <small class="text-muted">
+                                                Prochain: @nextRefresh.Value.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn-action btn-edit" 
+                                                @onclick="() => PromoCodeViewModel.OpenEditModal(promo)"
+                                                title="Modifier">
+                                            ✏️
+                                        </button>
+                                        <button class="btn-action btn-delete" 
+                                                @onclick="async () => await ConfirmDeletePromoCode(promo.PromoCodeId, promo.Code)"
+                                                title="Supprimer">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="no-data">Aucun code promo trouvé</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public PromoCodeViewModel PromoCodeViewModel { get; set; } = default!;
+
+    private async Task ConfirmDeletePromoCode(int promoCodeId, string code)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le code promo '{code}' ? Cette action est irréversible."))
+        {
+            await PromoCodeViewModel.DeletePromoCodeAsync(promoCodeId);
+        }
+    }
+
+    private string FormatTimeSpan(TimeSpan timeSpan)
+    {
+        if (timeSpan.TotalDays >= 1)
+        {
+            return $"{(int)timeSpan.TotalDays}j";
+        }
+        else if (timeSpan.TotalHours >= 1)
+        {
+            return $"{(int)timeSpan.TotalHours}h";
+        }
+        else if (timeSpan.TotalMinutes >= 1)
+        {
+            return $"{(int)timeSpan.TotalMinutes}min";
+        }
+        else
+        {
+            return $"{(int)timeSpan.TotalSeconds}s";
+        }
+    }
+}

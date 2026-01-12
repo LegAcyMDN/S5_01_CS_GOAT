@@ -1,0 +1,204 @@
+/* === USERS TABLE COMPONENT STYLES === */
+
+/* Users Section */
+.users-section {
+    background: rgba(30, 30, 30, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.section-header h2 {
+    color: #fff;
+    margin: 0;
+}
+
+.search-box {
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #6478ff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Users Table */
+.users-table-container {
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table thead {
+    background: rgba(100, 120, 255, 0.1);
+}
+
+.users-table th {
+    padding: 1rem;
+    text-align: left;
+    color: #fff;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.users-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #d0d0d0;
+}
+
+.users-table tbody tr {
+    transition: background 0.3s ease;
+}
+
+.users-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.users-table tbody tr.current-user {
+    background: rgba(100, 120, 255, 0.1);
+}
+
+.verified-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.text-muted {
+    color: #666;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.badge-grey {
+    background: rgba(128, 128, 128, 0.2);
+    color: #999;
+}
+
+.badge-blue {
+    background: rgba(100, 120, 255, 0.2);
+    color: #6478ff;
+}
+
+.badge-green {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.badge-admin {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.badge-user {
+    background: rgba(100, 120, 255, 0.2);
+    color: #6478ff;
+}
+
+.badge-steam {
+    background: rgba(102, 192, 244, 0.2);
+    color: #66c0f4;
+    border: 1px solid rgba(102, 192, 244, 0.3);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-action:hover {
+    transform: scale(1.1);
+}
+
+.btn-admin:hover {
+    background: rgba(255, 152, 0, 0.2);
+}
+
+.btn-anonymize {
+    background: rgba(156, 39, 176, 0.2);
+}
+
+.btn-anonymize:hover {
+    background: rgba(156, 39, 176, 0.3);
+}
+
+.btn-ban:hover {
+    background: rgba(244, 67, 54, 0.2);
+}
+
+.btn-delete:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.no-data {
+    text-align: center;
+    padding: 2rem !important;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: 100%;
+    }
+
+    .users-table {
+        font-size: 0.85rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem;
+    }
+}
