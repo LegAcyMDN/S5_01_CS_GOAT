@@ -4,6 +4,7 @@ using Shared.Exceptions.CaseExceptions;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using S5_01_Blazor_CS_GOAT.Models;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -36,7 +37,8 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     public async Task<List<TEntity>?> GetAllAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/all");
+        return response?.Result;
     }
 
     public async Task<List<TEntity>?> GetAllAsync(string? jwtToken)
@@ -45,7 +47,8 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         }
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/all");
+        return response?.Result;
     }
 
     public async Task<TEntity?> GetByIdAsync(int id)
@@ -69,15 +72,12 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return await response.Content.ReadFromJsonAsync<TEntity>();
     }
     
-    //TODO remove that and make the system better
     public async Task<List<TEntity>?> GetByCaseIdAsync(int id)
     {
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/bycase/{id}");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/bycase/{id}");
+        return response?.Result;
     }
 
-    
-    
-    
     public async Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken) 
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
@@ -118,7 +118,8 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     public async Task<List<TEntity>?> GetByUserAsync(string jwtToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/byuser");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/byuser");
+        return response?.Result;
     }
 
     public async Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken)
@@ -139,6 +140,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     public async Task<List<TEntity>?> GetLiveFeedAsync(int count = 20)
     {
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/livefeed?count={count}");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/livefeed?count={count}");
+        return response?.Result;
     }
 }
