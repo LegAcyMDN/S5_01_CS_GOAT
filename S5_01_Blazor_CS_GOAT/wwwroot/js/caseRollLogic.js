@@ -46,7 +46,7 @@ window.caseRollLogic = {
                     lastThresholdAudio = endingPixel;
                 }
 
-                await new Promise(r => setTimeout(r, 4));
+                await new Promise(r => setTimeout(r, 2));
             }
 
             console.log(`Finished roll for component: ${componentId}`);

@@ -38,6 +38,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int? _userNonce;
         private MultipleCaseResultDTO _caseOpenResult;
         private bool _needAuth = false;
+        private bool _showConfirmPopup = false;
 
         public CaseViewViewModel(
             IService<SkinDTO> skinRepository,
@@ -159,6 +160,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _needAuth, value);
         }
 
+        public bool ShowConfirmPopup
+        {
+            get => _showConfirmPopup;
+            set => SetProperty(ref _showConfirmPopup, value);
+        }
+
         #endregion
 
         /// <summary>
@@ -223,12 +230,29 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             if (IsAuthenticated)
             {
                 NeedAuth = false;
-                await BuyCaseAsync();
+                ShowConfirmPopup = true;
             }
             else
             {
                 NeedAuth = true;
             }
+        }
+
+        /// <summary>
+        /// Confirme l'achat après la popup de confirmation
+        /// </summary>
+        public async Task ConfirmPurchaseAsync()
+        {
+            ShowConfirmPopup = false;
+            await BuyCaseAsync();
+        }
+
+        /// <summary>
+        /// Annule l'achat et ferme la popup de confirmation
+        /// </summary>
+        public void CancelPurchase()
+        {
+            ShowConfirmPopup = false;
         }
 
         /// <summary>

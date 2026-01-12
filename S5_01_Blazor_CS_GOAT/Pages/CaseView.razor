@@ -103,6 +103,19 @@
                     </a>
                 </div>
             </div>
+            @if (ViewModel.ShowConfirmPopup)
+            {
+                <div class="popup-backdrop">
+                    <div class="popup-modal">
+                        <h3>Confirmer l'achat</h3>
+                        <p>Voulez-vous vraiment acheter @ViewModel.SelectedCount caisse@(ViewModel.SelectedCount > 1 ? "s" : "") pour @(ViewModel.ActiveCase.CasePrice * ViewModel.SelectedCount)€ ?</p>
+                        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                            <button class="popup-close" @onclick="ViewModel.ConfirmPurchaseAsync" style="background-color: #4CAF50;">Confirmer</button>
+                            <button class="popup-close" @onclick="ViewModel.CancelPurchase" style="background-color: #f44336;">Annuler</button>
+                        </div>
+                    </div>
+                </div>
+            }
             @if (ViewModel.ShowPopup && ViewModel.WonSkins.Count > 0)
             {
                 <div class="popup-backdrop">
