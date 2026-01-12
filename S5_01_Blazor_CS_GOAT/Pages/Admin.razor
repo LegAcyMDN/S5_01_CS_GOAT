@@ -22,11 +22,15 @@
                 <h2>🔐 Vérification 2FA requise</h2>
                 <p>Pour accéder au panneau d'administration, veuillez entrer votre code de vérification.</p>
                 
-                @if (ViewModel.CurrentUser?.TwoFA == 1)
+                @if (ViewModel.CurrentUser?.TwoFA == Shared.Enum.TwoFAmethod.None)
                 {
                     <p class="info-text">Un code a été envoyé à votre téléphone.</p>
                 }
-                else if (ViewModel.CurrentUser?.TwoFA == 2)
+                else if (ViewModel.CurrentUser?.TwoFA == Shared.Enum.TwoFAmethod.Phone)
+                {
+                    <p class="info-text">Un code a été envoyé à votre téléphone.</p>
+                }
+                else if (ViewModel.CurrentUser?.TwoFA == Shared.Enum.TwoFAmethod.Email)
                 {
                     <p class="info-text">Un code a été envoyé à votre adresse e-mail.</p>
                 }
@@ -221,15 +225,15 @@
                                         </td>
                                         <td>@($"{user.Wallet:F2}€")</td>
                                         <td>
-                                            @if (user.TwoFA == 0)
+                                            @if (user.TwoFA == Shared.Enum.TwoFAmethod.None)
                                             {
                                                 <span class="badge badge-grey">Désactivé</span>
                                             }
-                                            else if (user.TwoFA == 1)
+                                            else if (user.TwoFA == Shared.Enum.TwoFAmethod.Phone)
                                             {
                                                 <span class="badge badge-blue">SMS</span>
                                             }
-                                            else if (user.TwoFA == 2)
+                                            else if (user.TwoFA == Shared.Enum.TwoFAmethod.Email)
                                             {
                                                 <span class="badge badge-green">Email</span>
                                             }

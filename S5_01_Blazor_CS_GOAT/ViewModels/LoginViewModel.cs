@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Components;
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Login - Gère l'authentification utilisateur
+    /// ViewModel pour la page Login - Refactorisé selon le principe SRP
+    /// Responsabilité : Gérer l'interface de connexion utilisateur
     /// </summary>
     public class LoginViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly NavigationManager _navigation;
+        private readonly NavigationService _navigationService;
 
         private string _identifier = string.Empty;
         private string _password = string.Empty;
@@ -19,10 +20,10 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string _passwordError = string.Empty;
         private bool _isLoading = false;
 
-        public LoginViewModel(AuthService authService, NavigationManager navigation)
+        public LoginViewModel(AuthService authService, NavigationService navigationService)
         {
             _authService = authService;
-            _navigation = navigation;
+            _navigationService = navigationService;
         }
 
         public string Identifier
@@ -133,7 +134,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 if (result.Success)
                 {
-                    _navigation.NavigateTo("/");
+                    _navigationService.NavigateToHome();
                 }
                 else
                 {
@@ -153,9 +154,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Navigue vers la page d'inscription
         /// </summary>
-        public void NavigateToRegister()
-        {
-            _navigation.NavigateTo("/register");
-        }
+        public void NavigateToRegister() => _navigationService.NavigateToRegister();
     }
 }

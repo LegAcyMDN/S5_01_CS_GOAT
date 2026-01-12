@@ -1,4 +1,4 @@
-@using S5_01_Blazor_CS_GOAT.Models
+@using Shared.DTO
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject CaseComponentViewModel ViewModel
 
@@ -26,7 +26,7 @@
 
 @code {
     [Parameter]
-    public required Case CaseObject { get; set; }
+    public required CaseDTO CaseObject { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {

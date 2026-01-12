@@ -19,13 +19,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class ThreeDViewViewModel : ViewModelBase
     {
         private readonly IThreeDModelService<ThreeDModel> _threeDModelRepository;
-        private readonly IService<InventoryItemDetail> _inventoryItemService;
+        private readonly IService<InventoryItemDetailDTO> _inventoryItemService;
         private readonly IService<PriceHistoryDTO> _priceHistoryService;
         private readonly AuthService _authService;
         private readonly CacheService _cacheService;
         private readonly IJSRuntime _jsRuntime;
 
-        private InventoryItemDetail? _itemDetails;
+        private InventoryItemDetailDTO? _itemDetails;
         private string? _modelUrl;
         private bool _isLoading = true;
         private string _loadingMessage = string.Empty;
@@ -37,7 +37,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
         public ThreeDViewViewModel(
             IThreeDModelService<ThreeDModel> threeDModelRepository,
-            IService<InventoryItemDetail> inventoryItemService,
+            IService<InventoryItemDetailDTO> inventoryItemService,
             IService<PriceHistoryDTO> priceHistoryService,
             AuthService authService,
             CacheService cacheService,
@@ -51,7 +51,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             _jsRuntime = jsRuntime;
         }
 
-        public InventoryItemDetail? ItemDetails
+        public InventoryItemDetailDTO? ItemDetails
         {
             get => _itemDetails;
             set => SetProperty(ref _itemDetails, value);
@@ -340,4 +340,4 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
     }
-    }
+}
