@@ -105,7 +105,7 @@
                 <div class="popup-backdrop">
                     <div class="popup-modal">
                         <h3>Tu as obtenu :</h3>
-
+                        <br/>
                         <div class="popup-skins">
                             <ul class="popup-skins" style="list-style-type: none;">
                                 @foreach (var skin in ViewModel.WonSkins)
@@ -126,12 +126,15 @@
                                             : $"https://screenshots.cs.money/csmoney2/{skin.Uuid}_icon.png";
                                             <WeaponDisplayComponent WeaponSkin="@translatedSkin" ImageLink="@img" />
                                         }
+                                        <div class="itemDetails">
                                         @(skin.ItemName.ToString() ?? "null")
                                         @(skin.SkinName.ToString() ?? "null")
                                         @(skin.WearTypeName.ToString() ?? "null")
+                                        </div>
                                     </li>
                                 }
                             </ul>
+                            <br/>
                         </div>
                         @if (ViewModel.CaseOpenResult.PromoCode != null)
                         {
