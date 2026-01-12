@@ -39,6 +39,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private MultipleCaseResultDTO _caseOpenResult;
         private bool _needAuth = false;
         private bool _showConfirmPopup = false;
+        private bool _isLoadingCase = false;
 
         public CaseViewViewModel(
             IService<SkinDTO> skinRepository,
@@ -166,6 +167,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _showConfirmPopup, value);
         }
 
+        public bool IsLoadingCase
+        {
+            get => _isLoadingCase;
+            set => SetProperty(ref _isLoadingCase, value);
+        }
+
         #endregion
 
         /// <summary>
@@ -267,6 +274,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             WonSkins.Clear();
             ListWonSkinItemDetail.Clear();
 
+            // Afficher le loader
+            IsLoadingCase = true;
+
             try
             {
                 // Appel du service d'ouverture de cases
@@ -276,6 +286,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     PromoCode);
 
                 IsInvalidPromoCode = false;
+
+
+                IsLoadingCase = false;
 
                 if (IsEsthetic)
                 {
@@ -296,10 +309,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
             catch (InvalidPromoCodeException)
             {
+                IsLoadingCase = false;
                 IsInvalidPromoCode = true;
             }
             catch (CaseOpeningException ex)
             {
+                IsLoadingCase = false;
                 Console.WriteLine($"Erreur lors de l'ouverture de la caisse: {ex.Message}");
             }
         }
