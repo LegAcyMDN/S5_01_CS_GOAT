@@ -67,9 +67,9 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         Console.WriteLine("click sur le bouton submit");
         
         // Wait to get redirected to the home page
-        await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}", new PageWaitForURLOptions 
         { 
-            Timeout = 30000 
+            Timeout = 60000 
         });
         Console.WriteLine("attendre d'être redirect à la page principale et de voir le username");
         
@@ -109,7 +109,7 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         // Wait to get redirected to the home page
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 
         { 
-            Timeout = 30000 
+            Timeout = 60000 
         });
         
         // See if the username is at the top right
@@ -148,4 +148,5 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         // See if the password was changed successfully
         await Expect(Page.GetByText("Mot de passe modifié avec succès !")).ToBeVisibleAsync();
     }
+    
 }

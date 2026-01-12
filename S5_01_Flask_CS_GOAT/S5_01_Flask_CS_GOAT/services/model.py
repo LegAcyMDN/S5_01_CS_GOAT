@@ -55,3 +55,39 @@ class PriceHistory(db.Model):
         }
     def __str__(self):
         return str(self.to_dict())
+
+class Item(db.Model):
+    __tablename__ = 't_e_item_itm'
+
+    item_id = db.Column('itm_id', db.Integer, primary_key=True, autoincrement=True)
+    item_name = db.Column('itm_itemname', db.String(255), nullable=False, index=True)
+    item_model = db.Column('itm_itemmodel', db.String(255), nullable=False)
+    def_index = db.Column('itm_defindex', db.Integer, nullable=True)
+    item_type_id = db.Column('itt_id', db.Integer, nullable=False)
+
+    def to_dict(self):
+        return {
+            'itemid': self.item_id,
+            'itemname': self.item_name,
+            'itemmodel': self.item_model,
+            'defindex': self.def_index,
+            'itemtypeid': self.item_type_id
+        }
+
+    def __str__(self):
+        return str(self.to_dict())
+
+class WearType(db.Model):
+    __tablename__ = 't_e_weartype_wrt'
+
+    wear_type_id = db.Column('wrt_id', db.Integer, primary_key=True, autoincrement=True)
+    wear_type_name = db.Column('wrt_weartypename', db.String(100), nullable=False, unique=True)
+
+    def to_dict(self):
+        return {
+            'weartypeid': self.wear_type_id,
+            'weartypename': self.wear_type_name
+        }
+
+    def __str__(self):
+        return str(self.to_dict())

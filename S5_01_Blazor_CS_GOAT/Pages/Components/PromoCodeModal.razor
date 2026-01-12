@@ -1,0 +1,131 @@
+@using S5_01_Blazor_CS_GOAT.ViewModels
+
+@if (ShowCreateModal || ShowEditModal)
+{
+    <div class="modal-overlay" @onclick="OnClose">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>@(ShowCreateModal ? "➕ Créer un Code Promo" : "✏️ Modifier le Code Promo")</h2>
+                <button class="modal-close" @onclick="OnClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Code *</label>
+                    <input type="text" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.Code" 
+                           placeholder="Ex: WELCOME2024" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pourcentage de réduction (%)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountPercentage" 
+                               min="0" 
+                               max="100" />
+                    </div>
+                    <div class="form-group">
+                        <label>Montant de réduction (€)*</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.DiscountAmount" 
+                               min="0" 
+                               step="0.01" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Utilisations restantes (vide = illimité)</label>
+                    <input type="number" 
+                           class="form-control" 
+                           @bind="PromoCodeViewModel.EditingPromoCode.RemainingUses" 
+                           min="0" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date de début *</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ValidityStart" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date d'expiration</label>
+                        <input type="datetime-local" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.ExpiryDate" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ID Utilisateur (vide = tous)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.UserId" 
+                               min="0" />
+                    </div>
+                    <div class="form-group">
+                        <label>ID Case (vide = toutes)</label>
+                        <input type="number" 
+                               class="form-control" 
+                               @bind="PromoCodeViewModel.EditingPromoCode.CaseId" 
+                               min="0" />
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(PromoCodeViewModel.ErrorMessage))
+                {
+                    <div class="alert alert-error">@PromoCodeViewModel.ErrorMessage</div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="OnClose">
+                    Annuler
+                </button>
+                <button class="btn btn-primary" 
+                        @onclick="OnSave"
+                        disabled="@PromoCodeViewModel.IsProcessing">
+                    @if (PromoCodeViewModel.IsProcessing)
+                    {
+                        <span>@(ShowCreateModal ? "Création..." : "Mise à jour...")</span>
+                    }
+                    else
+                    {
+                        <span>@(ShowCreateModal ? "Créer" : "Mettre à jour")</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public PromoCodeViewModel PromoCodeViewModel { get; set; } = default!;
+
+    [Parameter]
+    public bool ShowCreateModal { get; set; }
+
+    [Parameter]
+    public bool ShowEditModal { get; set; }
+
+    private void OnClose()
+    {
+        PromoCodeViewModel.CloseModals();
+    }
+
+    private async Task OnSave()
+    {
+        if (ShowCreateModal)
+        {
+            await PromoCodeViewModel.CreatePromoCodeAsync();
+        }
+        else if (ShowEditModal)
+        {
+            await PromoCodeViewModel.UpdatePromoCodeAsync();
+        }
+    }
+}

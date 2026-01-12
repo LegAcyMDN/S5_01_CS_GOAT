@@ -1,7 +1,10 @@
 .live-feed {
     margin: 10px 10px 0 0;
     width: fit-content;
+    max-width: 110px;
     height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .select-feed {
@@ -20,7 +23,82 @@
 }
 
 .armes {
-    width: 100px;
+    width: 75px;    
+    height: auto;
     border: 1px solid white;
     margin: 1px 5px 1px 5px;    
+}
+
+.img-arme {
+    width: 100px;
+}
+
+.item-card {
+    background-color: #1a1f2e;
+    border-radius: 4px;
+    padding: 3px 4px 3px 2px;
+    margin-bottom: 5px;
+    text-align: center;
+    width: calc(100% - 5px);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    height: fit-content;
+    max-height: 95px;
+}
+
+.item-header {
+    color: #b0b0b0;
+    font-size: 0.55em;
+    font-weight: 500;
+    margin-bottom: 1px;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-image {
+    width: 70px;
+    height: auto;
+    max-height: 45px;
+    display: block;
+    margin: 2px auto;
+    object-fit: contain;
+}
+
+.item-wear {
+    color: #888;
+    font-size: 0.55em;
+    margin-top: 1px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Animation pour les nouveaux items */
+.new-item {
+    animation: slideIn 0.5s ease-out, highlight 2s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes highlight {
+    0%, 100% {
+        background-color: #1a1f2e;
+    }
+    50% {
+        background-color: #2a3f5e;
+        box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+    }
 }
