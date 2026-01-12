@@ -11,3 +11,9 @@
 .CloseHistory {
 	justify-self: center;
 }
+
+.label {
+	display: inline;
+	font-weight: bolder;
+	color: #f8a11d;
+}
