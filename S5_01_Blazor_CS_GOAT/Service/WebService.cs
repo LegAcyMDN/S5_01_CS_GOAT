@@ -4,7 +4,6 @@ using Shared.Exceptions.CaseExceptions;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using S5_01_Blazor_CS_GOAT.Models;
 
 namespace S5_01_Blazor_CS_GOAT.Service;
 
@@ -15,9 +14,9 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     public WebService(IConfiguration configuration, string endpoint)
     {
-        var apiBaseUrl = configuration["ApiBaseUrl"] 
+        var apiBaseUrl = configuration["ApiBaseUrl"]
                          ?? throw new InvalidOperationException("API Base URL not configured in appsettings");
-            
+
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(apiBaseUrl)
@@ -37,8 +36,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     public async Task<List<TEntity>?> GetAllAsync()
     {
-        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/all");
-        return response?.Result;
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
     }
 
     public async Task<List<TEntity>?> GetAllAsync(string? jwtToken)
@@ -71,23 +69,24 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<TEntity>();
     }
-    
+
+
     public async Task<List<TEntity>?> GetByCaseIdAsync(int id)
     {
-        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/bycase/{id}");
-        return response?.Result;
+         var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>($"{_endpoint}/bycase/{id}");
+        return response.Result;
     }
 
-    public async Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken) 
+    public async Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         var response = await _httpClient.PostAsJsonAsync($"{_endpoint}/open", caseOpenInfo);
-    
+
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<MultipleCaseResultDTO?>();
         }
-    
+
         var errorResponse = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
         string errorMessage = errorResponse?["message"];
 
@@ -102,10 +101,10 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
             case "Promo code is invalid.":
                 throw new InvalidPromoCodeException();
         }
-        
+
         return null;
     }
-    
+
     public async Task UpdateAsync(TEntity updatedEntity)
     {
         var idProp = typeof(TEntity).GetProperty("Id");
@@ -119,7 +118,7 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/byuser");
-        return response?.Result;
+        return response.Result;
     }
 
     public async Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken)
@@ -133,7 +132,6 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{inventoryItemId}");
     }
-    
     public async Task<ObservableCollection<TEntity>?> GetByWear(int wearId)
     {
         return await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
@@ -141,7 +139,6 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
 
     public async Task<List<TEntity>?> GetLiveFeedAsync(int count = 20)
     {
-        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>?>($"{_endpoint}/livefeed?count={count}");
-        return response?.Result;
+        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/livefeed?count={count}");
     }
 }
