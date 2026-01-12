@@ -307,6 +307,10 @@ input:checked + .slider:after {
     gap: 30px;
 }
 
+.itemDetails {
+    white-space-collapse: preserve-breaks;
+}
+
 .gambling-x.selected {
     outline: 2px solid #f99e1c;
     outline-offset: 2px;
