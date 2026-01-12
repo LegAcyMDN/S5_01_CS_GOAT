@@ -61,6 +61,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 if (!string.IsNullOrEmpty(jwtToken))
                 {
                     RandomsTransactionsDetail = await _randomTransactionRepository.GetByUserAsync(jwtToken);
+                    RandomsTransactionsDetail.Sort((x, y) => y.TransactionDate.CompareTo(x.TransactionDate));
                 }
             }
             catch (Exception ex)

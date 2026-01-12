@@ -133,6 +133,7 @@
                                         @(skin.ItemName.ToString() ?? "null")
                                         @(skin.SkinName.ToString() ?? "null")
                                         @(skin.WearTypeName.ToString() ?? "null")
+                                        @(skin.CurrentPrice == null ? "" : skin.CurrentPrice.ToString() + " €" )
                                         </div>
                                     </li>
                                 }
