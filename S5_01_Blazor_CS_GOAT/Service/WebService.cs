@@ -1,3 +1,4 @@
+using S5_01_Blazor_CS_GOAT.Models;
 using Shared.DTO.Helpers;
 using Shared.Enum;
 using Shared.Exceptions.CaseExceptions;
