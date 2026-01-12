@@ -9,7 +9,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class LiveFeedViewModel : ViewModelBase, IDisposable
     {
-        private readonly IService<RandomTransactionLiveFeedDTO> _randomTransactionService;
+        private readonly IService<LiveFeedDTO> _randomTransactionService;
         private bool _showBestOnly = false;
         private List<LiveFeedItem> _feedItems = new();
         private System.Timers.Timer? _refreshTimer;
@@ -17,7 +17,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private const int REFRESH_INTERVAL_MS = 5000; // Rafraîchir toutes les 5 secondes
         private const int MAX_ITEMS = 20; // Nombre max d'items à afficher
 
-        public LiveFeedViewModel(IService<RandomTransactionLiveFeedDTO> randomTransactionService)
+        public LiveFeedViewModel(IService<LiveFeedDTO> randomTransactionService)
         {
             _randomTransactionService = randomTransactionService;
         }
@@ -64,7 +64,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             try
             {
-                var transactions = await _randomTransactionService.GetLiveFeedAsync(50);
+                var transactions = await _randomTransactionService.GetLiveFeedAsync();
                 
                 if (transactions != null && transactions.Any())
                 {
@@ -118,7 +118,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             try
             {
-                var transactions = await _randomTransactionService.GetLiveFeedAsync(MAX_ITEMS);
+                var transactions = await _randomTransactionService.GetLiveFeedAsync();
                 
                 if (transactions != null)
                 {

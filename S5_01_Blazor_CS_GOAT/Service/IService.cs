@@ -20,5 +20,5 @@ public interface IService<TEntity>
     Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken);
     Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken);
     Task<ObservableCollection<TEntity>?> GetByWear(int wearId);
-    Task<List<TEntity>?> GetLiveFeedAsync(int count = 20);
+    Task<List<TEntity>?> GetLiveFeedAsync();
 }

@@ -80,11 +80,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Get live feed of random transactions from cases
         /// </summary>
-        /// <param name="count">Number of transactions to retrieve (default: 20)</param>
         /// <returns>List of RandomTransactionLiveFeedDTO objects</returns>
         [HttpGet("livefeed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> LiveFeed(int count)
+        public async Task<IActionResult> LiveFeed()
         {
             var queryOptions = new QueryOptions<RandomTransaction>()
                 .Before(rt => rt.CaseId != null)
@@ -95,15 +94,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                 );
 
             var transactions = await manager.GetAllAsyncNew(queryOptions);
-
-            var recentTransactions = transactions
-                .OrderByDescending(t => t.TransactionDate)
-                .Take(count)
-                .ToList();
-
-            var liveFeedDTOs = mapper.Map<IEnumerable<RandomTransactionLiveFeedDTO>>(recentTransactions);
-
-            return Ok(new GetOptions<RandomTransactionLiveFeedDTO>(Request, liveFeedDTOs));
+            var liveFeedDTOs = mapper.Map<IEnumerable<LiveFeedDTO>>(transactions);
+            return Ok(new GetOptions<LiveFeedDTO>(Request, liveFeedDTOs));
         }
     }
 }

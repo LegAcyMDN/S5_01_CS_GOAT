@@ -32,7 +32,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             IEnumerable<CaseDTO> caseDTO = mapper.Map<IEnumerable<CaseDTO>>(caseResult);
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated) return Ok(caseDTO);
+            if (!authResult.IsAuthenticated)
+                return Ok(new GetOptions<CaseDTO>(Request, caseDTO));
             IEnumerable<Favorite> favorites = await authResult.GetByUser(favoriteManager, false);
 
             foreach (CaseDTO caseDto in caseDTO)

@@ -3,13 +3,13 @@ using Shared.Interfaces;
 
 namespace Shared.DTO
 {
-    public class RandomTransactionLiveFeedDTO : IQueryableDTO
+    public class LiveFeedDTO : IQueryableDTO
     {
         public static string? DefaultSortKey => "TransactionDate";
 
         public static SortingType? DefaultSortType => SortingType.Descending;
 
-        public static int DefaultPageSize => 10;
+        public static int DefaultPageSize => 20;
 
         public static bool CanSearch => false;
 

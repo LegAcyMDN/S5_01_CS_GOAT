@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.Case, opt => opt.MapFrom(src => src.Case));
 
             // Entity → LiveFeedDTO
-            CreateMap<RandomTransaction, RandomTransactionLiveFeedDTO>()
+            CreateMap<RandomTransaction, LiveFeedDTO>()
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.Item.ItemName))
                 .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.SkinName))

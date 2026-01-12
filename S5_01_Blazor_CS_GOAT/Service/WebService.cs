@@ -45,10 +45,9 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         if (!string.IsNullOrEmpty(jwtToken))
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-            var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>($"{_endpoint}/all");
-            return response.Result;
         }
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/all");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>($"{_endpoint}/all");
+        return response.Result;
     }
 
     public async Task<TEntity?> GetByIdAsync(int id)
@@ -139,8 +138,9 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return await _httpClient.GetFromJsonAsync<ObservableCollection<TEntity>?>($"{_endpoint}/bywear/{wearId}");
     }
 
-    public async Task<List<TEntity>?> GetLiveFeedAsync(int count = 20)
+    public async Task<List<TEntity>?> GetLiveFeedAsync()
     {
-        return await _httpClient.GetFromJsonAsync<List<TEntity>?>($"{_endpoint}/livefeed?count={count}");
+        var response = await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>($"{_endpoint}/livefeed");
+        return response.Result;
     }
 }
