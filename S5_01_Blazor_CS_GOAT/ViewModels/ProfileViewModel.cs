@@ -295,7 +295,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.PostAsJsonAsync("User/change-password", PasswordModel);
+                var response = await _httpClient.PatchAsJsonAsync("User/update", PasswordModel);
                 
                 if (response.IsSuccessStatusCode)
                 {
