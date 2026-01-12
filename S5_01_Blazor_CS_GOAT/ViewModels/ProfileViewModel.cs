@@ -299,8 +299,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 
                 if (response.IsSuccessStatusCode)
                 {
+                    // Réinitialiser uniquement les champs du formulaire, pas les messages
+                    PasswordModel = new ChangePasswordModel();
+                    ConfirmPassword = string.Empty;
+                    // Afficher le message de succès
                     PasswordSuccessMessage = "Mot de passe modifié avec succès !";
-                    ResetPasswordForm();
                 }
                 else
                 {
