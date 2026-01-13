@@ -1,0 +1,122 @@
+@* Composant réutilisable de recherche et filtrage *@
+
+<div class="filter-controls">
+    <div class="search-section">
+        <div class="search-bar">
+            <input type="text" 
+                   @bind="SearchValue"
+                   @bind:event="oninput"
+                   placeholder="@SearchPlaceholder" />
+        </div>
+        
+        <div class="sort-controls">
+            <label>Trier par:</label>
+            <select @bind="SortKeyValue" class="sort-select">
+                <option value="">-- Sélectionner --</option>
+                @foreach (var prop in SortableProperties)
+                {
+                    <option value="@prop.Key">@prop.Value</option>
+                }
+            </select>
+            
+            <select @bind="SortTypeValue" class="sort-type-select">
+                <option value="asc">Ascendant ↑</option>
+                <option value="desc">Descendant ↓</option>
+            </select>
+        </div>
+    </div>
+    
+    @if (ShowFavoritesFilter)
+    {
+        <div class="favorites-filter">
+            <label>
+                <input type="checkbox" 
+                       @bind="ShowOnlyFavoritesValue" />
+                <span>Afficher uniquement les favoris</span>
+            </label>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Rechercher...";
+    
+    [Parameter]
+    public string SearchTerm { get; set; } = string.Empty;
+    
+    [Parameter]
+    public EventCallback<string> SearchTermChanged { get; set; }
+    
+    [Parameter]
+    public string? SortKey { get; set; }
+    
+    [Parameter]
+    public EventCallback<string?> SortKeyChanged { get; set; }
+    
+    [Parameter]
+    public string SortType { get; set; } = "asc";
+    
+    [Parameter]
+    public EventCallback<string> SortTypeChanged { get; set; }
+    
+    [Parameter]
+    public bool ShowOnlyFavorites { get; set; } = false;
+    
+    [Parameter]
+    public EventCallback<bool> ShowOnlyFavoritesChanged { get; set; }
+    
+    [Parameter]
+    public bool ShowFavoritesFilter { get; set; } = true;
+    
+    [Parameter]
+    public Dictionary<string, string> SortableProperties { get; set; } = new();
+    
+    private string SearchValue
+    {
+        get => SearchTerm;
+        set
+        {
+            if (SearchTerm != value)
+            {
+                SearchTermChanged.InvokeAsync(value);
+            }
+        }
+    }
+    
+    private string? SortKeyValue
+    {
+        get => SortKey;
+        set
+        {
+            if (SortKey != value)
+            {
+                SortKeyChanged.InvokeAsync(value);
+            }
+        }
+    }
+    
+    private string SortTypeValue
+    {
+        get => SortType;
+        set
+        {
+            if (SortType != value)
+            {
+                SortTypeChanged.InvokeAsync(value);
+            }
+        }
+    }
+    
+    private bool ShowOnlyFavoritesValue
+    {
+        get => ShowOnlyFavorites;
+        set
+        {
+            if (ShowOnlyFavorites != value)
+            {
+                ShowOnlyFavoritesChanged.InvokeAsync(value);
+            }
+        }
+    }
+}

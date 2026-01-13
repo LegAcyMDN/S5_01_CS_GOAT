@@ -50,6 +50,23 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return response.Result;
     }
 
+    public async Task<GetOptionsResponse<TEntity>?> GetAllWithOptionsAsync(string? jwtToken, Dictionary<string, string>? queryParams = null)
+    {
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        }
+
+        string url = $"{_endpoint}/all";
+        if (queryParams != null && queryParams.Any())
+        {
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            url = $"{url}?{queryString}";
+        }
+
+        return await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>(url);
+    }
+
     public async Task<TEntity?> GetByIdAsync(int id)
     {
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{id}");
