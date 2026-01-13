@@ -1,0 +1,111 @@
+@page "/auth-callback"
+@using S5_01_Blazor_CS_GOAT.Service
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+
+<PageTitle>Logging in...</PageTitle>
+
+<div class="auth-callback-container">
+    <div class="loading-spinner">
+        <h3>Completing Steam login...</h3>
+        <p>Please wait while we log you in.</p>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "userId")]
+    public string? UserId { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "displayName")]
+    public string? DisplayName { get; set; }
+    
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await HandleCallback();
+    }
+
+    private async Task HandleCallback()
+    {
+        try
+        {
+            // Check for errors first
+            if (!string.IsNullOrEmpty(Error))
+            {
+                Console.WriteLine($"❌ Steam login error: {Error}");
+                Navigation.NavigateTo($"/?error={Error}");
+                return;
+            }
+
+            // Validate we have all required data
+            if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(UserId))
+            {
+                Console.WriteLine("❌ Missing token or userId in callback");
+                Navigation.NavigateTo("/?error=invalid_callback");
+                return;
+            }
+
+            Console.WriteLine($"✅ Steam callback received - UserId: {UserId}, DisplayName: {DisplayName}");
+
+            // Store authentication data in localStorage (same as regular login)
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "jwtToken", Token);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userId", UserId);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "displayName", DisplayName ?? "Steam User");
+
+            Console.WriteLine("💾 Token and user data stored in localStorage");
+
+            // Load the current user data into AuthService
+            await AuthService.LoadCurrentUserAsync();
+
+            Console.WriteLine($"👤 Current user loaded: {AuthService.CurrentUser?.DisplayName}");
+
+            // IMPORTANT: Notify that user data has changed
+            AuthService.NotifyUserDataChanged();
+
+            Console.WriteLine("✅ Steam login successful, redirecting to home...");
+
+            // Small delay to ensure state is updated
+            await Task.Delay(100);
+
+            // Redirect to home page with force reload
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error in Steam callback: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Navigation.NavigateTo("/?error=callback_error");
+        }
+    }
+}
+
+<style>
+    .auth-callback-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .loading-spinner {
+        text-align: center;
+        color: white;
+    }
+
+    .loading-spinner h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .loading-spinner p {
+        color: #aaa;
+    }
+</style>

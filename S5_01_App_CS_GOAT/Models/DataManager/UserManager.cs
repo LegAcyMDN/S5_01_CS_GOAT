@@ -258,4 +258,84 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         user = await GetByPhone(identifier);
         return user;
     }
+    
+    /// <summary>
+        /// Get user by SteamID
+        /// </summary>
+        /// <param name="steamId">Steam ID (64-bit)</param>
+        /// <returns>User if found, null otherwise</returns>
+        public async Task<User?> GetBySteamIdAsync(string steamId)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(u => u.SteamId == steamId && u.DeletedOn == null);
+        }
+        
+        /// <summary>
+        /// Create or update user from Steam authentication
+        /// </summary>
+        /// <param name="steamAuthDTO">Steam authentication data</param>
+        /// <returns>The created or updated user</returns>
+        /// <summary>
+        /// Create or update user from Steam authentication
+        /// </summary>
+        public async Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO)
+        {
+            // Check if user already exists
+            var existingUser = await GetBySteamIdAsync(steamAuthDTO.SteamId);
+    
+            if (existingUser != null)
+            {
+                // Update existing user
+                existingUser.DisplayName = steamAuthDTO.Username;
+                existingUser.LastLogin = DateTime.UtcNow;
+        
+                _context.Users.Update(existingUser);
+                await _context.SaveChangesAsync();
+        
+                return existingUser;
+            }
+    
+            // Create new user with random secure credentials
+            string randomSalt = SecurityService.GenerateToken(32);
+            string randomPassword = SecurityService.GenerateToken(64);
+            string hashedPassword = SecurityService.HashAndSalt(randomPassword, randomSalt);
+    
+            var newUser = new User
+            {
+                SteamId = steamAuthDTO.SteamId,
+                Login = $"steam_{steamAuthDTO.SteamId}",
+                DisplayName = steamAuthDTO.Username,
+                Email = null,
+                Phone = null,
+                SaltPassword = randomSalt,
+                HashPassword = hashedPassword,
+                TwoFaIsPhone = false,
+                TwoFaIsEmail = false,
+                IsAdmin = false,
+                CreationDate = DateTime.UtcNow,
+                LastLogin = DateTime.UtcNow,
+                Wallet = 0.0,
+                DeletedOn = null,
+                Seed = SecurityService.GenerateSeed(16),
+                Nonce = 0
+            };
+    
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
+    
+            return newUser;
+        }
+        
+        /// <summary>
+        /// Generate a random seed for provably fair system
+        /// </summary>
+        private string GenerateSeed()
+        {
+            var bytes = new byte[16];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(bytes);
+            }
+            return Convert.ToBase64String(bytes);
+        }
 }

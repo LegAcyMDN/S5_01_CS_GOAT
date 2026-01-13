@@ -1,9 +1,13 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using AspNet.Security.OpenId;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using S5_01_App_CS_GOAT.Configuration;
 using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Services;
 
@@ -33,6 +37,15 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add this after builder.Services.AddCors
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.Always; // Use HTTPS
+});
+
+builder.Services.AddHttpClient<SteamUserService>();
+
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -40,6 +53,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -87,27 +101,40 @@ builder.Services.AddScoped<ISendingRepository, SendingManager>();
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
 builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, PromoCode, int>>();
 
-
+// JWT Secret
 string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
 if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
- .AddJwtBearer(options =>
- {
-     options.RequireHttpsMetadata = false;
-     options.SaveToken = true;
-     options.TokenValidationParameters = new TokenValidationParameters
-     {
-         ValidateIssuer = true,
-         ValidateAudience = true,
-         ValidateLifetime = true,
-         ValidateIssuerSigningKey = true,
-         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-         ValidAudience = builder.Configuration["Jwt:Audience"],
-         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-         ClockSkew = TimeSpan.Zero
-     };
- });
+// ✅ UNIFIED AUTHENTICATION CONFIGURATION
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    })
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/api/steam/login";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    })
+    .ConfigureSteamAuth(builder.Configuration)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 var app = builder.Build();
 
@@ -119,6 +146,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCookiePolicy();
 
 app.UseCors("AllowBlazorApp");
 
