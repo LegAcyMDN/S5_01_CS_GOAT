@@ -22,5 +22,8 @@ public interface IUserRepository : IDataRepository<User, int>
     Task<User?> GetByLogin(string login);
     Task<User?> GetByEmail(string email);
     Task<User?> GetByPhone(string phone);
+    
+    Task<User?> GetBySteamIdAsync(string steamId);
+    Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO);
 
 }

@@ -173,42 +173,49 @@ namespace S5_01_Blazor_CS_GOAT.Service
             {
                 var token = await GetTokenAsync();
                 var userIdString = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "userId");
-                
+        
                 if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(userIdString))
                 {
+                    Console.WriteLine("❌ No token or userId found");
                     _currentUser = null;
                     return;
                 }
 
                 if (!int.TryParse(userIdString, out int userId))
                 {
+                    Console.WriteLine("❌ Invalid userId format");
                     _currentUser = null;
                     return;
                 }
 
-                // Ajouter le token à l'en-tête
-                _httpClient.DefaultRequestHeaders.Authorization = 
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                Console.WriteLine($"🔑 Loading user {userId} with token...");
 
-                var response = await _httpClient.GetAsync($"user/details/{userId}");
+                // Create a new request message with the Authorization header
+                var request = new HttpRequestMessage(HttpMethod.Get, $"user/details/{userId}");
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(request);
+        
                 if (response.IsSuccessStatusCode)
                 {
                     _currentUser = await response.Content.ReadFromJsonAsync<UserDTO>();
-                    
+            
                     // Notify subscribers of changes
                     if (_currentUser != null)
                     {
-                        Console.WriteLine($"User data loaded: {_currentUser.DisplayName}");
+                        Console.WriteLine($"✅ User data loaded: {_currentUser.DisplayName}");
                         UserDataChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
                 else
                 {
+                    Console.WriteLine($"❌ Failed to load user: {response.StatusCode}");
                     _currentUser = null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"❌ Exception loading user: {ex.Message}");
                 _currentUser = null;
             }
         }
@@ -321,6 +328,20 @@ namespace S5_01_Blazor_CS_GOAT.Service
             
             return false;
         }
+
+
+        public async Task LoginWithSteam()
+        {
+            // Simply redirect to the API's Steam login endpoint
+            // The API will handle the OAuth flow and redirect back to /auth-callback
+            var apiBaseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/');
+            var steamLoginUrl = $"{apiBaseUrl}/api/steam/login";
+    
+            // Use JSInterop to navigate to the Steam login (full page redirect)
+            await _jsRuntime.InvokeVoidAsync("open", steamLoginUrl, "_self");
+        }
+        
+        
     }
 
     public class RegisterResult
