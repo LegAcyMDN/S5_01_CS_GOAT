@@ -11,6 +11,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     {
         private readonly IService<CaseDTO> _caseRepository;
         private readonly AuthService _authService;
+        private readonly FavoriteService _favoriteService;
 
         private List<CaseDTO> _cases = new();
         private string _searchTerm = string.Empty;
@@ -24,10 +25,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string? _sortKey = null;
         private string _sortType = "asc";
 
-        public HomeViewModel(IService<CaseDTO> caseRepository, AuthService authService)
+        public HomeViewModel(IService<CaseDTO> caseRepository, AuthService authService, FavoriteService favoriteService)
         {
             _caseRepository = caseRepository;
             _authService = authService;
+            _favoriteService = favoriteService;
+            
+            // S'abonner aux changements de favoris
+            _favoriteService.FavoriteChanged += OnFavoriteChanged;
         }
 
         /// <summary>
@@ -230,14 +235,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     queryParams.Add("sorttype", SortType);
                 }
 
-                // Ajouter le filtre favoris si nécessaire
+                // Ajouter le filtre favoris - la méthode GetAllWithFavoriteFilterAsync le gère intelligemment
                 if (ShowOnlyFavorites)
                 {
                     queryParams.Add("isfavorite", "true");
                 }
 
-                // Charger les caisses avec les options
-                var response = await _caseRepository.GetAllWithOptionsAsync(jwtToken, queryParams);
+                // Utiliser la méthode qui gère intelligemment le filtrage des favoris
+                var response = await _caseRepository.GetAllWithFavoriteFilterAsync(jwtToken, queryParams);
                 
                 if (response != null)
                 {
@@ -266,6 +271,36 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 IsLoading = false;
             }
+        }
+
+        /// <summary>
+        /// Appelé quand un favori change
+        /// </summary>
+        private async void OnFavoriteChanged(object? sender, int caseId)
+        {
+            // Si le filtre favoris est actif, recharger la liste
+            if (ShowOnlyFavorites)
+            {
+                await LoadCasesAsync();
+            }
+            else
+            {
+                // Sinon, juste mettre à jour l'état du favori dans la liste actuelle
+                var caseToUpdate = Cases.FirstOrDefault(c => c.CaseId == caseId);
+                if (caseToUpdate != null)
+                {
+                    caseToUpdate.IsFavorite = !caseToUpdate.IsFavorite;
+                    OnPropertyChanged(nameof(Cases));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Nettoyer les événements lors de la destruction
+        /// </summary>
+        public void Dispose()
+        {
+            _favoriteService.FavoriteChanged -= OnFavoriteChanged;
         }
     }
 }

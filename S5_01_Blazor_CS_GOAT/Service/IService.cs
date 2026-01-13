@@ -9,6 +9,7 @@ public interface IService<TEntity>
     Task<List<TEntity>?> GetAllAsync();
     Task<List<TEntity>?> GetAllAsync(string? jwtToken);
     Task<GetOptionsResponse<TEntity>?> GetAllWithOptionsAsync(string? jwtToken, Dictionary<string, string>? queryParams = null);
+    Task<GetOptionsResponse<TEntity>?> GetAllWithFavoriteFilterAsync(string? jwtToken, Dictionary<string, string>? queryParams = null);
     Task<TEntity?> GetByIdAsync(int id);
     Task<TEntity?> GetByIdAsync(int id, string? jwtToken);
     Task AddAsync(TEntity entity);

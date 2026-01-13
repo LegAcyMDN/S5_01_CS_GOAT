@@ -7,6 +7,9 @@ namespace S5_01_Blazor_CS_GOAT.Service
         private readonly HttpClient _httpClient;
         private readonly AuthService _authService;
 
+        // Événement déclenché quand un favori change
+        public event EventHandler<int>? FavoriteChanged;
+
         public FavoriteService(HttpClient httpClient, AuthService authService)
         {
             _httpClient = httpClient;
@@ -69,14 +72,23 @@ namespace S5_01_Blazor_CS_GOAT.Service
 
         public async Task<bool> ToggleFavoriteAsync(int caseId, bool currentState)
         {
+            bool success;
             if (currentState)
             {
-                return await RemoveFavoriteAsync(caseId);
+                success = await RemoveFavoriteAsync(caseId);
             }
             else
             {
-                return await AddFavoriteAsync(caseId);
+                success = await AddFavoriteAsync(caseId);
             }
+
+            // Notifier les abonnés du changement
+            if (success)
+            {
+                FavoriteChanged?.Invoke(this, caseId);
+            }
+
+            return success;
         }
     }
 }
