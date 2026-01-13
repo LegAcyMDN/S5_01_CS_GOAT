@@ -63,6 +63,7 @@ builder.Services.AddScoped<CaseResultMapperService>();
 builder.Services.AddScoped<HomeViewModel>();
 builder.Services.AddScoped<InventoryViewModel>();
 builder.Services.AddScoped<ProfileViewModel>();
+builder.Services.AddScoped<SteamConnectViewModel>();
 builder.Services.AddScoped<ThreeDViewViewModel>();
 builder.Services.AddScoped<CaseViewViewModel>();
 builder.Services.AddScoped<LoginViewModel>();

@@ -21,46 +21,36 @@ namespace S5_01_App_CS_GOAT.Configuration
                 {
                     OnAuthenticated = async context =>
                     {
-                        // 1. Extraire le SteamID depuis les claims
-                        var steamIdClaim = context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                        string? steamIdClaim = context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         
                         if (string.IsNullOrEmpty(steamIdClaim))
+                            return;
+                        
+                        string steamId = steamIdClaim.Replace("https://steamcommunity.com/openid/id/", "");
+                        
+                        Microsoft.AspNetCore.Http.HttpContext httpContext = context.HttpContext;
+                        bool isLinkingMode = context.Properties.Items.ContainsKey("linkUserId");
+                        
+                        if (isLinkingMode)
                         {
-                            Console.WriteLine("❌ No SteamID found in claims");
+                            context.Identity.AddClaim(new Claim("steamid", steamId));
                             return;
                         }
                         
-                        // Nettoyer le SteamID (retirer le préfixe OpenID)
-                        var steamId = steamIdClaim.Replace("https://steamcommunity.com/openid/id/", "");
-                        Console.WriteLine($"✅ Steam authentication successful for SteamID: {steamId}");
+                        SteamUserService steamService = httpContext.RequestServices.GetRequiredService<SteamUserService>();
+                        IUserRepository userRepository = httpContext.RequestServices.GetRequiredService<IUserRepository>();
                         
-                        // 2. Récupérer les services depuis le DI container
-                        var httpContext = context.HttpContext;
-                        var steamService = httpContext.RequestServices.GetRequiredService<SteamUserService>();
-                        var userRepository = httpContext.RequestServices.GetRequiredService<IUserRepository>();
-                        
-                        // 3. Appeler l'API Steam pour obtenir les détails
-                        var steamUserData = await steamService.GetSteamUserDataAsync(steamId);
+                        SteamUserData? steamUserData = await steamService.GetSteamUserDataAsync(steamId);
                         
                         if (steamUserData == null)
-                        {
-                            Console.WriteLine("❌ Failed to fetch Steam user data from API");
                             return;
-                        }
                         
-                        Console.WriteLine($"📦 Steam data retrieved: {steamUserData.Username}");
-                        
-                        // 4. Créer ou mettre à jour l'utilisateur dans la DB
-                        var user = await userRepository.GetBySteamIdAsync(steamId);
+                        User? user = await userRepository.GetBySteamIdAsync(steamId);
                         
                         if (user == null)
                         {
-                            // Créer un nouvel utilisateur avec un mot de passe aléatoire
-                            Console.WriteLine("➕ Creating new user from Steam account");
-                            
-                            // Générer un sel et un mot de passe aléatoire pour l'utilisateur OAuth
-                            string randomSalt = SecurityService.GenerateToken(32); // 32 bytes = ~43 chars en base64
-                            string randomPassword = SecurityService.GenerateToken(64); // Un mot de passe très long et aléatoire
+                            string randomSalt = SecurityService.GenerateToken(32);
+                            string randomPassword = SecurityService.GenerateToken(64);
                             string hashedPassword = SecurityService.HashAndSalt(randomPassword, randomSalt);
                             
                             user = new User
@@ -68,10 +58,10 @@ namespace S5_01_App_CS_GOAT.Configuration
                                 SteamId = steamId,
                                 Login = $"steam_{steamId}",
                                 DisplayName = steamUserData.Username,
-                                Email = null, // Steam ne partage pas l'email
-                                Phone = null, // Steam ne partage pas le téléphone
-                                SaltPassword = randomSalt, // ✅ Sel généré aléatoirement
-                                HashPassword = hashedPassword, // ✅ Hash généré aléatoirement
+                                Email = null,
+                                Phone = null,
+                                SaltPassword = randomSalt,
+                                HashPassword = hashedPassword,
                                 TwoFaIsPhone = false,
                                 TwoFaIsEmail = false,
                                 IsAdmin = false,
@@ -79,41 +69,31 @@ namespace S5_01_App_CS_GOAT.Configuration
                                 LastLogin = DateTime.UtcNow,
                                 Wallet = 0.0,
                                 DeletedOn = null,
-                                Seed = SecurityService.GenerateSeed(16), // ✅ Seed pour provably fair
+                                Seed = SecurityService.GenerateSeed(16),
                                 Nonce = 0
                             };
                             
                             await userRepository.AddAsync(user);
-                            
-                            Console.WriteLine($"✅ User created with ID: {user.UserId}");
-                            Console.WriteLine($"🔐 Random credentials generated for OAuth user");
                         }
                         else
                         {
-                            // Mettre à jour les infos (username peut changer sur Steam)
-                            Console.WriteLine($"🔄 Updating existing user ID: {user.UserId}");
-                            
-                            user.DisplayName = steamUserData.Username;
+                            if (user.Login.StartsWith("steam_"))
+                            {
+                                user.DisplayName = steamUserData.Username;
+                            }
                             user.LastLogin = DateTime.UtcNow;
-                            
                             await userRepository.UpdateAsync(user);
-                            
-                            Console.WriteLine("✅ User updated");
                         }
                         
-                        // 5. Ajouter le UserID aux claims pour l'utiliser plus tard
                         context.Identity.AddClaim(new Claim("user_id", user.UserId.ToString()));
                         context.Identity.AddClaim(new Claim("steamid", steamId));
                         context.Identity.AddClaim(new Claim("username", user.DisplayName));
-                        
-                        Console.WriteLine($"✅ Claims added for user {user.UserId}");
                     },
                     
                     OnRemoteFailure = context =>
                     {
-                        Console.WriteLine($"❌ Steam authentication failed: {context.Failure?.Message}");
                         context.HandleResponse();
-                        context.Response.Redirect($"https://localhost:7030?error=steam_auth_failed");
+                        context.Response.Redirect("https://localhost:7030?error=steam_auth_failed");
                         return Task.CompletedTask;
                     }
                 };

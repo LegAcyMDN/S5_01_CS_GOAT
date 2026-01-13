@@ -1,0 +1,132 @@
+@page "/steam-connect"
+@using S5_01_Blazor_CS_GOAT.ViewModels
+@inject SteamConnectViewModel ViewModel
+@implements IDisposable
+
+<PageTitle>Connexion Steam</PageTitle>
+
+<div class="steam-connect-container">
+    @if (ViewModel.IsLoading)
+    {
+        <div class="loading-spinner">
+            <p>Chargement...</p>
+        </div>
+    }
+    else if (ViewModel.CurrentUser == null)
+    {
+        <div class="error-message">
+            <p>Vous devez être connecté pour lier un compte Steam.</p>
+            <button class="btn-primary" @onclick="@(() => ViewModel.NavigateTo("/login"))">Se connecter</button>
+        </div>
+    }
+    else
+    {
+        <div class="steam-connect-content">
+            <h1>CONNEXION STEAM</h1>
+            
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="alert alert-danger">@ViewModel.ErrorMessage</div>
+            }
+            
+            @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+            {
+                <div class="alert alert-success">@ViewModel.SuccessMessage</div>
+            }
+
+            @if (!string.IsNullOrEmpty(ViewModel.CurrentUser.SteamId))
+            {
+                <div class="steam-linked-section">
+                    <div class="steam-status">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="currentColor" class="steam-logo">
+                            <path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2m0-2a12 12 0 0 0-12 12 12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0Z"></path>
+                            <path d="M6.5 16.5c0-1.8 1.4-3.2 3.2-3.2.5 0 1 .1 1.4.3l2.4-3.5c-.1 0-.1-.1-.2-.1-2.3 0-4.2 1.9-4.2 4.2 0 .1 0 .3.1.4L6.5 16.5m5.6-4.6c1.5 0 2.7-1.2 2.7-2.7S13.6 6.5 12.1 6.5 9.4 7.7 9.4 9.2c0 1.5 1.2 2.7 2.7 2.7m-.1-4.5c1 0 1.8.8 1.8 1.8s-.8 1.8-1.8 1.8-1.8-.8-1.8-1.8.8-1.8 1.8-1.8Z"></path>
+                        </svg>
+                        
+                        <div class="status-info">
+                            <h2>✓ Compte Steam lié</h2>
+                            <p class="steam-id">Steam ID: @ViewModel.CurrentUser.SteamId</p>
+                            <p class="status-description">Votre compte Steam est actuellement lié à votre compte CS GOAT.</p>
+                        </div>
+                    </div>
+
+                    <div class="benefits-section">
+                        <h3>Avantages de la connexion Steam</h3>
+                        <ul class="benefits-list">
+                            <li>✓ Connexion rapide et sécurisée</li>
+                            <li>✓ Synchronisation de votre inventaire Steam (à venir)</li>
+                            <li>✓ Accès aux fonctionnalités communautaires</li>
+                            <li>✓ Vérification d'identité renforcée</li>
+                        </ul>
+                    </div>
+
+                    <div class="action-section">
+                        <button class="btn-danger btn-large" @onclick="ViewModel.UnlinkSteamAsync" disabled="@ViewModel.IsSaving">
+                            @(ViewModel.IsSaving ? "Déliement en cours..." : "Délier le compte Steam")
+                        </button>
+                        <p class="warning-text">⚠️ Cette action révoquera l'accès à votre compte Steam. Vous pourrez le lier à nouveau à tout moment.</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="steam-not-linked-section">
+                    <div class="steam-logo-large">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2m0-2a12 12 0 0 0-12 12 12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0Z"></path>
+                            <path d="M6.5 16.5c0-1.8 1.4-3.2 3.2-3.2.5 0 1 .1 1.4.3l2.4-3.5c-.1 0-.1-.1-.2-.1-2.3 0-4.2 1.9-4.2 4.2 0 .1 0 .3.1.4L6.5 16.5m5.6-4.6c1.5 0 2.7-1.2 2.7-2.7S13.6 6.5 12.1 6.5 9.4 7.7 9.4 9.2c0 1.5 1.2 2.7 2.7 2.7m-.1-4.5c1 0 1.8.8 1.8 1.8s-.8 1.8-1.8 1.8-1.8-.8-1.8-1.8.8-1.8 1.8-1.8Z"></path>
+                        </svg>
+                    </div>
+
+                    <h2>Lier votre compte Steam</h2>
+                    <p class="description">
+                        Connectez votre compte Steam pour bénéficier d'une expérience améliorée et de fonctionnalités exclusives.
+                    </p>
+
+                    <div class="benefits-section">
+                        <h3>Pourquoi lier votre compte Steam ?</h3>
+                        <ul class="benefits-list">
+                            <li>🔐 Connexion rapide et sécurisée via Steam</li>
+                            <li>🎮 Synchronisation de votre inventaire (à venir)</li>
+                            <li>👥 Accès aux fonctionnalités communautaires</li>
+                            <li>✅ Vérification d'identité renforcée</li>
+                            <li>🎁 Possibilité de recevoir des bonus exclusifs</li>
+                        </ul>
+                    </div>
+
+                    <div class="action-section">
+                        <button class="btn-steam btn-large" @onclick="ViewModel.ConnectSteam">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2m0-2a12 12 0 0 0-12 12 12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0Z"></path>
+                                <path d="M6.5 16.5c0-1.8 1.4-3.2 3.2-3.2.5 0 1 .1 1.4.3l2.4-3.5c-.1 0-.1-.1-.2-.1-2.3 0-4.2 1.9-4.2 4.2 0 .1 0 .3.1.4L6.5 16.5m5.6-4.6c1.5 0 2.7-1.2 2.7-2.7S13.6 6.5 12.1 6.5 9.4 7.7 9.4 9.2c0 1.5 1.2 2.7 2.7 2.7m-.1-4.5c1 0 1.8.8 1.8 1.8s-.8 1.8-1.8 1.8-1.8-.8-1.8-1.8.8-1.8 1.8-1.8Z"></path>
+                            </svg>
+                            Se connecter avec Steam
+                        </button>
+                        <p class="info-text">Vous serez redirigé vers Steam pour autoriser la connexion.</p>
+                    </div>
+
+                    <div class="security-note">
+                        <h4>🔒 Sécurité et confidentialité</h4>
+                        <p>
+                            Nous utilisons l'authentification officielle Steam OpenID. Nous n'avons jamais accès à votre mot de passe Steam.
+                            Seules les informations publiques de votre profil Steam seront accessibles.
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+        await ViewModel.InitializeAsync();
+    }
+
+    public void Dispose()
+    {
+        ViewModel.PropertyChanged -= (s, e) => StateHasChanged();
+    }
+}

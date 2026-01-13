@@ -46,5 +46,7 @@ public class UserDTO : IQueryableDTO
 
     public bool IsSteamLogin { get; set; } // has the user link is account steam
 
+    public string? SteamId { get; set; } // Steam ID of the linked Steam account
+
     public bool IsAdmin { get; set; } = false;
 }
