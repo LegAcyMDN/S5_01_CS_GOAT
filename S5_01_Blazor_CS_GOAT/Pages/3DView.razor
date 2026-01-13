@@ -1,11 +1,89 @@
 @page "/viewModel/{InventoryItemId:int}"
 @using HomagGroup.Blazor3D.Viewers
+@using S5_01_Blazor_CS_GOAT.Service
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @using Radzen
 @using Radzen.Blazor
 @using Shared.DTO
 @implements IDisposable
 @inject ThreeDViewViewModel ViewModel
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+
+<!-- Popup de confirmation de vente -->
+@if (showConfirmationPopup)
+{
+    <div class="popup-backdrop">
+        <div class="popup-modal">
+            <h3>Confirmer la vente</h3>
+            <p class="confirmation-item-name">@confirmationItemName</p>
+            <p class="confirmation-price-text">Prix de vente: @confirmationPrice</p>
+            
+            @if (isSecondConfirmation)
+            {
+                <div class="warning-message">
+                    <span class="warning-icon">⚠️</span>
+                    <p>ATTENTION : Cette arme est dans vos favoris !</p>
+                </div>
+            }
+            
+            <p>@(isSecondConfirmation ? "Êtes-vous absolument sûr de vouloir vendre cette arme ?" : "Voulez-vous vraiment vendre cette arme ?")</p>
+            
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                <button class="popup-close" @onclick="ConfirmSell" style="background-color: #4CAF50;">Confirmer</button>
+                <button class="popup-close" @onclick="CancelSell" style="background-color: #f44336;">Annuler</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Overlay de chargement pour la vente -->
+@if (isSellingItem)
+{
+    <div class="popup-backdrop">
+        <div class="popup-modal">
+            <h3>Vente en cours...</h3>
+            <div style="display: flex; justify-content: center; padding: 20px;">
+                <div style="border: 4px solid #f3f3f3; border-top: 4px solid #f39c12; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+            </div>
+            <p style="color: rgba(255, 255, 255, 0.7);">Traitement de la transaction</p>
+        </div>
+    </div>
+    <style>
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+<!-- Popup de succès -->
+@if (showSuccessPopup)
+{
+    <div class="popup-backdrop">
+        <div class="popup-modal success-modal">
+            <div class="success-icon">✓</div>
+            <h3>Vente réussie !</h3>
+            <p class="success-item-name">@soldItemName</p>
+            <p class="success-price">+@soldPrice</p>
+            <p class="success-message">Votre portefeuille a été crédité</p>
+            <button class="popup-close" @onclick="CloseSuccessPopup" style="background-color: #4CAF50; width: 100%; margin-top: 20px;">Fermer</button>
+        </div>
+    </div>
+}
+
+<!-- Popup d'erreur -->
+@if (showErrorPopup)
+{
+    <div class="popup-backdrop">
+        <div class="popup-modal error-modal">
+            <div class="error-icon">✕</div>
+            <h3>Erreur</h3>
+            <p class="error-message-text">Une erreur est survenue lors de la vente. Veuillez réessayer.</p>
+            <button class="popup-close" @onclick="CloseErrorPopup" style="background-color: #f44336; width: 100%; margin-top: 20px;">Fermer</button>
+        </div>
+    </div>
+}
 
 <div class="page-viewermodel">
     <div class="model-viewer">
@@ -74,6 +152,10 @@
                             <div class="">Date Acquisition</div>
                             <div class="">@ViewModel.ItemDetails.AcquiredOn.ToString("dd/MM/yyyy HH'h'mm")</div>
                         </div>
+                        <div class="resume-row">
+                            <div class="">Prix</div>
+                            <div class="">@ViewModel.ItemDetails.CurrentPrice.Value €</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -83,6 +165,17 @@
                         @onclick="async () => await ViewModel.ToggleFavoriteAsync(ViewModel.ItemDetails.InventoryItemId)"
                         @onclick:stopPropagation="true">
                     @(ViewModel.ItemDetails.IsFavorite ? "★" : "☆")
+                </button>
+            </div>
+
+            <div class="sell-section">
+                <button class="btn-sell" @onclick="HandleSellClick">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    Vendre pour @ViewModel.ItemDetails.CurrentPrice.Value €
                 </button>
             </div>
         </div>
@@ -132,6 +225,16 @@
 
     private Viewer View3D1 = null!;
 
+    private bool isSellingItem = false;
+    private bool showSuccessPopup = false;
+    private bool showErrorPopup = false;
+    private bool showConfirmationPopup = false;
+    private bool isSecondConfirmation = false;
+    private string soldItemName = "";
+    private string soldPrice = "";
+    private string confirmationItemName = "";
+    private string confirmationPrice = "";
+
     public void Dispose()
     {
         View3D1.ObjectLoaded -= OnObjectLoaded;
@@ -176,5 +279,74 @@
             return decimalValue.ToString("C2");
         }
         return value?.ToString() ?? "";
+    }
+
+    private void HandleSellClick()
+    {
+        if (ViewModel.ItemDetails == null) return;
+
+        confirmationItemName = $"{ViewModel.ItemDetails.ItemName} | {ViewModel.ItemDetails.SkinName}";
+        confirmationPrice = ViewModel.ItemDetails.CurrentPrice.Value + " €";
+        isSecondConfirmation = false;
+        showConfirmationPopup = true;
+    }
+
+    private async void ConfirmSell()
+    {
+        if (ViewModel.ItemDetails == null) return;
+
+
+        if (!isSecondConfirmation && ViewModel.ItemDetails.IsFavorite)
+        {
+            isSecondConfirmation = true;
+            StateHasChanged();
+            return;
+        }
+
+        showConfirmationPopup = false;
+        
+        isSellingItem = true;
+        StateHasChanged();
+
+        var success = await ViewModel.SellItemAsync(ViewModel.ItemDetails.InventoryItemId);
+
+        isSellingItem = false;
+
+        if (success)
+        {
+            soldItemName = confirmationItemName;
+            soldPrice = confirmationPrice;
+            showSuccessPopup = true;
+        }
+        else
+        {
+            showErrorPopup = true;
+        }
+        
+        StateHasChanged();
+    }
+
+    private void CancelSell()
+    {
+        showConfirmationPopup = false;
+        isSecondConfirmation = false;
+        StateHasChanged();
+    }
+
+    private async void CloseSuccessPopup()
+    {
+        showSuccessPopup = false;
+        
+        // Recharger les données de l'utilisateur pour mettre à jour le portefeuille
+        await AuthService.LoadCurrentUserAsync();
+        
+        // Rediriger vers l'inventaire
+        NavigationManager.NavigateTo("/inventory");
+    }
+
+    private void CloseErrorPopup()
+    {
+        showErrorPopup = false;
+        StateHasChanged();
     }
 }

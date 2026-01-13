@@ -14,6 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [SetThreadPrincipal]
     public class UserController(
         IUserRepository manager,
+        ISendingRepository sendingManager,
         IMapper mapper,
         IConfiguration configuration
     ) : ControllerBase
@@ -106,7 +107,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User? existing = await manager.GetByIdAsyncNew((int)auth.AuthUserId);
+            User? existing = await manager.GetByIdAsyncNew((int)auth.AuthUserId!);
             if (existing == null)
                 return NotFound();
 
@@ -173,37 +174,30 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Verify user's phone number with code
+        /// Verify user's contact method (SMS or Email)
         /// </summary>
-        /// <param name="code">The verification code</param>
-        /// <returns>No content on success</returns>
-        [HttpHead("verifyphone")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> VerifyPhone([FromQuery] string code)
+        /// <param name="contact">The contact method to verify ("sms" or "mail")</param>
+        /// <param name="code">The verification code (optional)</param>
+        /// <returns>Status code indicating the result of the operation</returns>
+        [HttpHead("verify/{contact}")]
+        [HttpHead("verify/{contact}/{code?}")]
+        public async Task<IActionResult> VerifyPhone(string contact, string? code = null)
         {
+            if (contact != "sms" && contact != "mail")
+                return BadRequest();
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
-
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Verify user's email address with code
-        /// </summary>
-        /// <param name="code">The verification code</param>
-        /// <returns>No content on success</returns>
-        [HttpHead("verifymail")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> VerifyMail([FromQuery] string code)
-        {
-            AuthResult auth = JwtService.JwtAuth(configuration);
-            if (!auth.IsAuthenticated)
-                return Unauthorized();
-
-            throw new NotImplementedException();
+            User user = (await manager.GetByIdAsyncNew((int)auth.AuthUserId!))!;
+            int response = (contact, code) switch
+            {
+                ("sms", not null) => await sendingManager.VerifySmsAsync(user, code),
+                ("mail", not null) => await sendingManager.VerifyMailAsync(user, code),
+                ("sms", null) => await sendingManager.NewCodeSmsAsync(user),
+                ("mail", null) => await sendingManager.NewCodeMailAsync(user),
+                _ => throw new NotImplementedException()
+            };
+            return StatusCode(response);
         }
 
         /// <summary>
@@ -243,28 +237,5 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             throw new NotImplementedException();
         }
-
-        //[HttpGet("msg")]
-        //public async Task<IActionResult> TestMsg()
-        //{
-        //    AuthResult authResult = JwtService.JwtAuth(configuration);
-        //    if (!authResult.IsAuthenticated)
-        //        return Unauthorized();
-        //    User? user = await manager.GetByIdAsyncNew((int)authResult.AuthUserId);
-        //    if (user == null)
-        //        return NotFound();
-        //    Message message = new Message(configuration, user)
-        //    {
-        //        Text = "This is a test message.",
-        //        Subject = "Test Message",
-        //        Html = "<h1>This is a test message.</h1>"
-        //    };
-        //    Console.WriteLine(message);
-        //    HttpResponseMessage response = await message.SendSmsAsync();
-        //    string responseContent = await response.Content.ReadAsStringAsync();
-        //    Console.WriteLine(response);
-        //    Console.WriteLine(responseContent);
-        //    return StatusCode((int)response.StatusCode, responseContent);
-        //}
     }
 }
