@@ -183,7 +183,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpHead("verify/{contact}/{code?}")]
         public async Task<IActionResult> VerifyPhone(string contact, string? code = null)
         {
-            if (contact != "sms" && contact != "mail")
+            if (contact.ToLower() != "sms" && contact.ToLower() != "mail")
                 return BadRequest();
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)

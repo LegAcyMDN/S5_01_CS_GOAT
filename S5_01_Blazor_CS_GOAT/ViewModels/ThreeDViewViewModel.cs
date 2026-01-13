@@ -34,6 +34,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private Scene _scene = new Scene();
         private ObservableCollection<PriceHistoryDTO>? _priceHistory = new ObservableCollection<PriceHistoryDTO>();
         private bool _isLoadingPriceHistory;
+        private bool _needAuth;
 
         public ThreeDViewViewModel(
             IThreeDModelService<ThreeDModel> threeDModelRepository,
@@ -103,6 +104,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _isLoadingPriceHistory;
             set => SetProperty(ref _isLoadingPriceHistory, value);
+        }
+
+        public bool NeedAuth
+        {
+            get => _needAuth;
+            set => SetProperty(ref _needAuth, value);
         }
 
         /// <summary>
