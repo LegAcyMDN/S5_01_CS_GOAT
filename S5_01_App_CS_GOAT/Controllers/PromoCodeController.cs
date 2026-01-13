@@ -2,10 +2,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Shared.DTO;
 using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -54,12 +56,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get all promo codes (admin only)
+        /// Get all promo codes with GetOptions support (admin only)
         /// </summary>
-        /// <returns>List of all PromoCode objects</returns>
+        /// <returns>GetOptions response with PromoCodeDTO list</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -67,19 +70,26 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
-            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsyncOld();
-            return Ok(promoCodes);
+
+            var promoCodes = await manager.GetAllAsyncOld(
+                where: null,
+                includes: new[] { "Case", "User" }
+            );
+
+            var promoCodeDtos = mapper.Map<IEnumerable<PromoCodeDTO>>(promoCodes);            
+            
+            return Ok(new GetOptions<PromoCodeDTO>(Request, promoCodeDtos));
         }
 
         /// <summary>
         /// Create a new promo code (admin only)
         /// </summary>
-        /// <param name="promoCode">The PromoCode object to create</param>
+        /// <param name="promoCodeDto">The PromoCodeDTO object to create</param>
         /// <returns>The created PromoCode object</returns>
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] PromoCode promoCode)
+        public async Task<IActionResult> Create([FromBody] PromoCodeDTO promoCodeDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -88,21 +98,28 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Forbid();
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            // Mapper DTO -> Entity
+            var promoCode = mapper.Map<PromoCode>(promoCodeDto);
+            
             PromoCode createdPromoCode = await manager.AddAsync(promoCode);
-            return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdPromoCode);
+            
+            // Mapper l'entité créée vers DTO pour la réponse
+            var createdDto = mapper.Map<PromoCodeDTO>(createdPromoCode);
+            
+            return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdDto);
         }
 
         /// <summary>
         /// Update an existing promo code (admin only)
         /// </summary>
         /// <param name="id">The ID of the promo code to update</param>
-        /// <param name="updatedPromoCode">The updated PromoCode object</param>
+        /// <param name="promoCodeDto">The updated PromoCodeDTO object</param>
         /// <returns>No content on success</returns>
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(int id, [FromBody] PromoCode updatedPromoCode)
+        public async Task<IActionResult> Update(int id, [FromBody] PromoCodeDTO promoCodeDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
@@ -115,6 +132,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             PromoCode? existingPromoCode = await manager.GetByIdAsyncNew(id);
             if (existingPromoCode == null) return NotFound();
 
+            // Mapper les modifications du DTO vers l'entité existante
+            var updatedPromoCode = mapper.Map<PromoCode>(promoCodeDto);
+            
             await manager.UpdateAsync(existingPromoCode, updatedPromoCode);
             return NoContent();
         }

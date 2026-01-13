@@ -14,11 +14,13 @@ namespace S5_01_Blazor_CS_GOAT.Service
     {
         private readonly HttpClient _httpClient;
         private readonly AuthService _authService;
+        private readonly GetOptionsService _getOptionsService;
 
-        public AdminUserService(HttpClient httpClient, AuthService authService)
+        public AdminUserService(HttpClient httpClient, AuthService authService, GetOptionsService getOptionsService)
         {
             _httpClient = httpClient;
             _authService = authService;
+            _getOptionsService = getOptionsService;
         }
 
         /// <summary>
@@ -39,6 +41,28 @@ namespace S5_01_Blazor_CS_GOAT.Service
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Récupère tous les utilisateurs avec pagination, tri, filtres et recherche
+        /// </summary>
+        public async Task<GetOptionsResponse<UserDTO>?> GetAllUsersWithOptionsAsync(
+            string? searchTerm = null,
+            string? sortKey = null,
+            string? sortType = null,
+            int? pageNumber = null,
+            int? pageSize = null,
+            Dictionary<string, List<string>>? filters = null)
+        {
+            return await _getOptionsService.GetWithOptionsAsync<UserDTO>(
+                "User/all",
+                searchTerm,
+                sortKey,
+                sortType,
+                pageNumber,
+                pageSize,
+                filters
+            );
         }
 
         /// <summary>

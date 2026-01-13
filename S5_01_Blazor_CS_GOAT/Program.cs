@@ -49,7 +49,9 @@ builder.Services.AddScoped<StripeService>();
 
 // NEW: Specialized services following SRP
 builder.Services.AddScoped<NavigationService>();
+builder.Services.AddScoped<GetOptionsService>();
 builder.Services.AddScoped<AdminUserService>();
+builder.Services.AddScoped<AdminPromoCodeService>();
 builder.Services.AddScoped<TwoFactorAuthService>();
 builder.Services.AddScoped<AdminStatisticsService>();
 builder.Services.AddScoped<CaseOpeningService>();
