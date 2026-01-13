@@ -181,8 +181,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public Dictionary<string, string> SortableProperties { get; } = new()
         {
             { "CaseName", "Nom" },
-            { "CasePrice", "Prix" },
-            { "Weight", "Poids" }
+            { "CasePrice", "Prix" }
         };
 
         /// <summary>

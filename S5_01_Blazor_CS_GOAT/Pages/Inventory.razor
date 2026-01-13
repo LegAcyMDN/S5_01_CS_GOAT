@@ -2,6 +2,7 @@
 @using S5_01_Blazor_CS_GOAT.Layout
 @using S5_01_Blazor_CS_GOAT.Models
 @using S5_01_Blazor_CS_GOAT.ViewModels
+@using S5_01_Blazor_CS_GOAT.Pages.Components
 @inject InventoryViewModel ViewModel
 
 <div class="inventory-page">
@@ -19,7 +20,7 @@
             <p>Vous devez être connecté pour voir votre inventaire.</p>
         </div>
     }
-    else if (ViewModel.IsInventoryEmpty)
+    else if (ViewModel.TotalCount == 0)
     {
         <div class="inventory-content">
             <p>Votre inventaire est vide. Commencez à ouvrir des caisses pour obtenir des skins !</p>
@@ -32,22 +33,60 @@
                 <p>Total d'items : @ViewModel.TotalItemsCount</p>
             </div>
             
-            <div class="inventory-grid">
-                @foreach (var item in ViewModel.GetSortedInventoryItems())
-                {
-                    <div class="inventory-item" style="border-color: @item.RarityColor" @onclick="() => ViewModel.NavigateToItemDetail(item.InventoryItemId)">
-                        <div class="item-image">
-                            <img src="@ViewModel.GetItemImageUrl(item)" alt="@item.SkinName" />
+            <SearchFilterComponent 
+                SearchPlaceholder="Rechercher un skin, une arme..."
+                ShowSearchBar="false"
+                SortKey="@ViewModel.SortKey"
+                SortKeyChanged="@((value) => ViewModel.ChangeSortKeyAsync(value))"
+                SortType="@ViewModel.SortType"
+                SortTypeChanged="@((value) => ViewModel.ChangeSortTypeAsync(value))"
+                ShowOnlyFavorites="@ViewModel.ShowOnlyFavorites"
+                ShowOnlyFavoritesChanged="@((value) => ViewModel.ToggleFavoritesFilterAsync(value))"
+                ShowFavoritesFilter="true"
+                SortableProperties="@ViewModel.SortableProperties" />
+            
+            @if (ViewModel.FilteredCount == 0)
+            {
+                <div class="no-results-message">
+                    @if (ViewModel.ShowOnlyFavorites)
+                    {
+                        <p>⭐ Vous n'avez aucun item marqué comme favori.</p>
+                        <p class="hint">Cliquez sur l'étoile ☆ sur un item pour l'ajouter à vos favoris !</p>
+                    }
+                    else
+                    {
+                        <p>Aucun résultat ne correspond à vos critères de recherche.</p>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="inventory-grid">
+                    @foreach (var item in ViewModel.GetInventoryItems())
+                    {
+                        <div class="inventory-item" style="border-color: @item.RarityColor" @onclick="() => ViewModel.NavigateToItemDetail(item.InventoryItemId)">
+                            <div class="item-image">
+                                <img src="@ViewModel.GetItemImageUrl(item)" alt="@item.SkinName" />
+                            </div>
+                            
+                            <button class="btn-favorite @(item.IsFavorite ? "is-favorite" : "")" 
+                                    @onclick="async () => await ViewModel.ToggleFavoriteAsync(item.InventoryItemId)"
+                                    @onclick:stopPropagation="true">
+                                @(item.IsFavorite ? "★" : "☆")
+                            </button>
                         </div>
-                        
-                        <button class="btn-favorite @(item.IsFavorite ? "is-favorite" : "")" 
-                                @onclick="async () => await ViewModel.ToggleFavoriteAsync(item.InventoryItemId)"
-                                @onclick:stopPropagation="true">
-                            @(item.IsFavorite ? "★" : "☆")
-                        </button>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
+            }
+            
+            <PaginationComponent 
+                CurrentPage="@ViewModel.CurrentPage"
+                TotalPages="@ViewModel.TotalPages"
+                PageSize="@ViewModel.PageSize"
+                TotalCount="@ViewModel.TotalCount"
+                FilteredCount="@ViewModel.FilteredCount"
+                OnPageChange="@((page) => ViewModel.ChangePageAsync(page))"
+                OnPageSizeChange="@((size) => ViewModel.ChangePageSizeAsync(size))" />
         </div>
     }
     

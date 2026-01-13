@@ -51,3 +51,25 @@
     background-color: #00428c;
     border-radius: 5px;
 }
+
+.no-results-message {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #1a1d29;
+    border-radius: 8px;
+    border: 1px solid #2a2d3a;
+    margin: 20px 0;
+}
+
+.no-results-message p {
+    font-size: 18px;
+    color: #fff;
+    margin: 10px 0;
+}
+
+.no-results-message .hint {
+    font-size: 14px;
+    color: #9ca3af;
+    font-style: italic;
+    margin-top: 15px;
+}

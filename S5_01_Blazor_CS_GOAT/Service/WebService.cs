@@ -245,6 +245,20 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return response.Result;
     }
 
+    public async Task<GetOptionsResponse<TEntity>?> GetByUserWithOptionsAsync(string jwtToken, Dictionary<string, string>? queryParams = null)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+        string url = $"{_endpoint}/byuser";
+        if (queryParams != null && queryParams.Any())
+        {
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            url = $"{url}?{queryString}";
+        }
+
+        return await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>(url);
+    }
+
     public async Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken)
     {
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);

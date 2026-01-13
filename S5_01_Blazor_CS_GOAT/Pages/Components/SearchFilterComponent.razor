@@ -2,12 +2,15 @@
 
 <div class="filter-controls">
     <div class="search-section">
-        <div class="search-bar">
-            <input type="text" 
-                   @bind="SearchValue"
-                   @bind:event="oninput"
-                   placeholder="@SearchPlaceholder" />
-        </div>
+        @if (ShowSearchBar)
+        {
+            <div class="search-bar">
+                <input type="text" 
+                       @bind="SearchValue"
+                       @bind:event="oninput"
+                       placeholder="@SearchPlaceholder" />
+            </div>
+        }
         
         <div class="sort-controls">
             <label>Trier par:</label>
@@ -41,6 +44,9 @@
 @code {
     [Parameter]
     public string SearchPlaceholder { get; set; } = "Rechercher...";
+    
+    [Parameter]
+    public bool ShowSearchBar { get; set; } = true;
     
     [Parameter]
     public string SearchTerm { get; set; } = string.Empty;

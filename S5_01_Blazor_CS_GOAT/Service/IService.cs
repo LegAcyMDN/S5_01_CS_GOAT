@@ -20,6 +20,7 @@ public interface IService<TEntity>
     Task<List<TEntity>?> GetByCaseIdAsync(int id);
     Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken);
     Task<List<TEntity>?> GetByUserAsync(string jwtToken);
+    Task<GetOptionsResponse<TEntity>?> GetByUserWithOptionsAsync(string jwtToken, Dictionary<string, string>? queryParams = null);
     Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken);
     Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken);
     Task<ObservableCollection<TEntity>?> GetByWear(int wearId);
