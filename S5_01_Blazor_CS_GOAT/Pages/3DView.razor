@@ -5,6 +5,7 @@
 @using Radzen
 @using Radzen.Blazor
 @using Shared.DTO
+@using S5_01_Blazor_CS_GOAT.Layout
 @implements IDisposable
 @inject ThreeDViewViewModel ViewModel
 @inject NavigationManager NavigationManager
@@ -154,7 +155,7 @@
                         </div>
                         <div class="resume-row">
                             <div class="">Prix</div>
-                            <div class="">@ViewModel.ItemDetails.CurrentPrice.Value €</div>
+                            <div class="">@(ViewModel.ItemDetails.CurrentPrice?.ToString() ?? "N/A") €</div>
                         </div>
                     </div>
                 </div>
@@ -175,7 +176,7 @@
                         <circle cx="20" cy="21" r="1"></circle>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                     </svg>
-                    Vendre pour @ViewModel.ItemDetails.CurrentPrice.Value €
+                    Vendre pour @(ViewModel.ItemDetails.CurrentPrice ?? 0) €
                 </button>
             </div>
         </div>
@@ -217,6 +218,11 @@
     </RadzenChart>
 </div>
 
+@if (!isAuthenticated && ViewModel.NeedAuth)
+{
+    <AuthOverlay />
+}
+
 <script src="js/cacheHelper.js"></script>
 
 @code {
@@ -224,6 +230,7 @@
     public required int InventoryItemId { get; set; }
 
     private Viewer View3D1 = null!;
+    private bool isAuthenticated = false;
 
     private bool isSellingItem = false;
     private bool showSuccessPopup = false;
@@ -237,15 +244,31 @@
 
     public void Dispose()
     {
-        View3D1.ObjectLoaded -= OnObjectLoaded;
-        View3D1.JsModuleLoaded -= OnJsModuleLoaded;
+        if (!isAuthenticated)
+        {
+            ViewModel.NeedAuth = false;
+        }
+        
+        if (View3D1 != null)
+        {
+            View3D1.ObjectLoaded -= OnObjectLoaded;
+            View3D1.JsModuleLoaded -= OnJsModuleLoaded;
+        }
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
+        isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        
+        if (!isAuthenticated)
+        {
+            ViewModel.NeedAuth = true;
+            return;
+        }
+        
         ViewModel.InitializeLights();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
-        return base.OnInitializedAsync();
+        await base.OnInitializedAsync();
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
@@ -268,7 +291,7 @@
     
     private async Task OnObjectLoaded(HomagGroup.Blazor3D.Events.Object3DArgs e)
     {
-        ViewModel.OnObjectLoaded(e);
+        await ViewModel.OnObjectLoaded(e);
         StateHasChanged();
     }
 
@@ -286,7 +309,7 @@
         if (ViewModel.ItemDetails == null) return;
 
         confirmationItemName = $"{ViewModel.ItemDetails.ItemName} | {ViewModel.ItemDetails.SkinName}";
-        confirmationPrice = ViewModel.ItemDetails.CurrentPrice.Value + " €";
+        confirmationPrice = (ViewModel.ItemDetails.CurrentPrice ?? 0) + " €";
         isSecondConfirmation = false;
         showConfirmationPopup = true;
     }
@@ -294,7 +317,6 @@
     private async void ConfirmSell()
     {
         if (ViewModel.ItemDetails == null) return;
-
 
         if (!isSecondConfirmation && ViewModel.ItemDetails.IsFavorite)
         {
