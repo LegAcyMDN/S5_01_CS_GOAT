@@ -105,10 +105,11 @@ builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, Promo
 string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
 if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");
 
-// ✅ UNIFIED AUTHENTICATION CONFIGURATION
+
 builder.Services.AddAuthentication(options =>
     {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     })
