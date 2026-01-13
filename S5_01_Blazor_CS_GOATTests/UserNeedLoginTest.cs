@@ -2,6 +2,7 @@
 
 namespace S5_01_Blazor_CS_GOATTests;
 [TestClass]
+[TestCategory("User")]
 public class UserTests : TestBase
 {
     
@@ -65,11 +66,6 @@ await Page.GotoAsync($"{BaseUrl}/", new PageGotoOptions
         // Submit
         await Page.ClickAsync("button[type='submit']");
         Console.WriteLine("click sur le bouton submit");
-        
-        
-        await Page.WaitForTimeoutAsync(10000);
-
-        Console.WriteLine(await Page.ContentAsync());
         
         // Wait to get redirected to the home page
         await Page.WaitForURLAsync($"{BaseUrl}/", new PageWaitForURLOptions 

@@ -34,6 +34,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private Scene _scene = new Scene();
         private ObservableCollection<PriceHistoryDTO>? _priceHistory = new ObservableCollection<PriceHistoryDTO>();
         private bool _isLoadingPriceHistory;
+        private bool _needAuth;
 
         public ThreeDViewViewModel(
             IThreeDModelService<ThreeDModel> threeDModelRepository,
@@ -103,6 +104,12 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _isLoadingPriceHistory;
             set => SetProperty(ref _isLoadingPriceHistory, value);
+        }
+
+        public bool NeedAuth
+        {
+            get => _needAuth;
+            set => SetProperty(ref _needAuth, value);
         }
 
         /// <summary>
@@ -313,6 +320,38 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 Console.WriteLine($"Erreur lors du toggle favori: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Vend un item de l'inventaire
+        /// </summary>
+        public async Task<bool> SellItemAsync(int inventoryItemId)
+        {
+            try
+            {
+                var token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    return false;
+                }
+
+                var httpClient = new HttpClient();
+                httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+#if DEBUG
+                var response = await httpClient.DeleteAsync($"https://localhost:7009/api/inventoryitem/sell/{inventoryItemId}");
+#else
+                var response = await httpClient.DeleteAsync($"https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/inventoryitem/sell/{inventoryItemId}");
+#endif
+
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la vente: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task DrawPriceHistoryGraph()
         {
             try

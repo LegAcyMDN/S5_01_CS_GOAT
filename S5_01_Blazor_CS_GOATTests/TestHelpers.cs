@@ -41,8 +41,8 @@ public static class TestHelpers
         Console.WriteLine("la page de login s'est affiché");
         
         // Fill connexion informations
-        await page.FillAsync("[id='identifier']", "testuser123");
-        await page.FillAsync("[id='password']", "Test123#");
+        await page.FillAsync("[id='identifier']", username);
+        await page.FillAsync("[id='password']", password);
         
         // Submit
         await page.ClickAsync("button[type='submit']");

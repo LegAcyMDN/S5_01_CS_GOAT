@@ -33,6 +33,8 @@ builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp =>
     new WebService<PriceHistoryDTO>(sp.GetRequiredService<IConfiguration>(), "pricehistory"));
 builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => 
     new WebService<RandomTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
+builder.Services.AddScoped<IService<ItemTransactionDetailDTO>>(sp => 
+    new WebService<ItemTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "itemtransaction"));
 builder.Services.AddScoped<IService<LiveFeedDTO>>(sp => 
     new WebService<LiveFeedDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
 

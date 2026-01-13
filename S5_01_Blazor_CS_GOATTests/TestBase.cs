@@ -52,6 +52,49 @@ public class TestBase : PageTest
             Console.WriteLine("⏳ Waiting 30s for Azure deployment to stabilize...");
             await Task.Delay(30000);
         }
+        
+        // ... existing setup code ...
+    
+        // Monitor all API requests
+        Page.Request += (_, request) =>
+        {
+            if (request.Url.Contains("/api/"))
+            {
+                Console.WriteLine($"[API REQUEST] {request.Method} {request.Url}");
+                if (request.Method == "POST" && request.PostDataBuffer != null)
+                {
+                    try
+                    {
+                        var body = System.Text.Encoding.UTF8.GetString(request.PostDataBuffer);
+                        Console.WriteLine($"[REQUEST BODY] {body}");
+                    }
+                    catch { }
+                }
+            }
+        };
+    
+        Page.Response += async (_, response) =>
+        {
+            if (response.Url.Contains("/api/"))
+            {
+                Console.WriteLine($"[API RESPONSE] {response.Status} {response.Url}");
+                if (response.Status != 200)
+                {
+                    try
+                    {
+                        var body = await response.TextAsync();
+                        Console.WriteLine($"[RESPONSE BODY] {body}");
+                    }
+                    catch { }
+                }
+            }
+        };
+    
+        Page.RequestFailed += (_, request) =>
+        {
+            Console.WriteLine($"[REQUEST FAILED] {request.Url} - {request.Failure}");
+        };
+        
     }
 
     private static string GetEnvironment()

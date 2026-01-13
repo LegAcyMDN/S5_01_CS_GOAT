@@ -29,7 +29,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string _promoCode = "";
         private bool _isLoading = true;
         private List<List<SkinDTO>> _boughtCasesListWithSkins = new();
-        private List<InventoryItemDetailDTO> _listWonSkinItemDetail = new();
         private int _completedAnimations = 0;
         private int _totalAnimations = 0;
         private bool _isInvalidPromoCode = false;
@@ -41,6 +40,10 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _showConfirmPopup = false;
         private bool _isLoadingCase = false;
         private double _calculatedPrice = 0;
+        private int? _totalWeight = 0;
+        private Dictionary<string?, decimal> _probability = new();
+        private decimal _totalValue = 0;
+        private decimal _profit = 0;
 
         public CaseViewViewModel(
             IService<SkinDTO> skinRepository,
@@ -127,12 +130,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _completedAnimations < _totalAnimations && _totalAnimations > 0;
         }
 
-        public List<InventoryItemDetailDTO> ListWonSkinItemDetail
-        {
-            get => _listWonSkinItemDetail;
-            set => SetProperty(ref _listWonSkinItemDetail, value);
-        }
-
         public bool IsAuthenticated
         {
             get => _isAuthenticated;
@@ -180,6 +177,29 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _calculatedPrice, value);
         }
 
+        public int? TotalWeight
+        {
+            get => _totalWeight;
+            set => SetProperty(ref _totalWeight, value);
+        }
+
+        public Dictionary<string?, decimal> Probability
+        {
+            get => _probability;
+            set => SetProperty(ref _probability, value);
+        }
+
+        public decimal TotalValue
+        {
+            get => _totalValue;
+            set => SetProperty(ref _totalValue, value);
+        }
+        public decimal Profit
+        {
+            get => _profit;
+            set => SetProperty(ref _profit, value);
+        }
+
         #endregion
 
         /// <summary>
@@ -196,6 +216,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 SkinsList = await _skinRepository.GetByCaseIdAsync(caseId);
                 ActiveCase = await _caseRepository.GetByIdAsync(caseId, jwtToken);
+
+                CalcProb();
 
                 if (IsAuthenticated)
                 {
@@ -283,6 +305,30 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
         }
 
+        public void CalcProb()
+        {
+            TotalWeight = 0;
+            Probability.Clear();
+
+            foreach (var skin in SkinsList)
+            {
+                TotalWeight += skin.Weight;
+            }
+
+            foreach (var skin in SkinsList)
+            {
+                if (skin.Weight.HasValue && TotalWeight.HasValue && TotalWeight > 0)
+                {
+                    decimal prob = (decimal)skin.Weight.Value / (decimal)TotalWeight.Value * 100;
+                    Probability[skin.AnyUuid] = Math.Round(prob, 4); 
+                }
+                else
+                {
+                    Probability[skin.AnyUuid] = 0;
+                }
+            }
+        }
+
         /// <summary>
         /// Confirme l'achat après la popup de confirmation
         /// </summary>
@@ -310,7 +356,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 return;
 
             WonSkins.Clear();
-            ListWonSkinItemDetail.Clear();
+            TotalValue = 0;
+            Profit = 0;
 
             // Afficher le loader
             IsLoadingCase = true;
@@ -332,7 +379,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 {
                     // Mode avec animation - préparer les données
                     BoughtCasesListWithSkins = _resultMapperService.ConvertMultipleCaseResultsToSkinLists(CaseOpenResult);
-                    ListWonSkinItemDetail = _resultMapperService.ExtractWonSkins(CaseOpenResult);
+                    WonSkins = _resultMapperService.ExtractWonSkins(CaseOpenResult);
 
                     _totalAnimations = BoughtCasesListWithSkins.Count;
                     _completedAnimations = 0;
@@ -355,6 +402,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 IsLoadingCase = false;
                 Console.WriteLine($"Erreur lors de l'ouverture de la caisse: {ex.Message}");
             }
+
+            foreach(var skin in WonSkins)
+            {
+                if (skin.CurrentPrice != null)
+                    TotalValue += (decimal)skin.CurrentPrice;
+            }
+            Profit = Math.Round(((decimal)TotalValue - (decimal)CalculatedPrice), 2);
         }
 
         /// <summary>
@@ -380,7 +434,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             Console.WriteLine("All animations complete! Showing results...");
 
-            WonSkins = ListWonSkinItemDetail;
             ShowPopup = true;
         }
 

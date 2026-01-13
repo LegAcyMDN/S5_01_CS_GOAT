@@ -74,9 +74,16 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<ItemTransaction> itemTransactions = await authResult.GetByUser(manager, false);
-            IEnumerable<ItemTransactionDTO> itemTransactionDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(itemTransactions);
-            return Ok(itemTransactionDTO);
+            IEnumerable<ItemTransaction> itemTransactions = await authResult.GetByUser(
+                manager, 
+                false,
+                null,
+                "InventoryItem.Wear.Skin.Item.ItemType",
+                "InventoryItem.Wear.Skin.Rarity",
+                "InventoryItem.Wear.WearType"
+            );
+            IEnumerable<ItemTransactionDetailDTO> itemTransactionDetailDTO = mapper.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions);
+            return Ok(new GetOptions<ItemTransactionDetailDTO>(Request, itemTransactionDetailDTO));
         }
     }
 }

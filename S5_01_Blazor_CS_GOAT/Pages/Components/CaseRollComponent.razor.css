@@ -13,22 +13,11 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 100px;
+    height: 103px;
     width: 100%;
-}
-.raffle-roller-holder {
     overflow: hidden;
     border-radius: 2px;
     border: 1px solid #3c3759;
-}
-.raffle-roller-holder {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 100px;
-    width: 100%;
 }
 .raffle-roller-container {
     width: 9999999999999999999px;

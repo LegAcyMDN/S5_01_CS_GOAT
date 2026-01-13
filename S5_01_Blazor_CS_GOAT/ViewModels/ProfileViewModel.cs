@@ -29,6 +29,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private UpdateUserModel _updateModel = new();
         private ChangePasswordModel _passwordModel = new();
 
+        private string _verificationCode = string.Empty;
+        private bool _isVerifying = false;
+        private bool _showVerificationInput = false;
+        private string _verificationType = string.Empty;
+
         public ProfileViewModel(
             AuthService authService,
             NavigationService navigationService,
@@ -105,6 +110,30 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             get => _passwordModel;
             set => SetProperty(ref _passwordModel, value);
+        }
+
+        public string VerificationCode
+        {
+            get => _verificationCode;
+            set => SetProperty(ref _verificationCode, value);
+        }
+
+        public bool IsVerifying
+        {
+            get => _isVerifying;
+            set => SetProperty(ref _isVerifying, value);
+        }
+
+        public bool ShowVerificationInput
+        {
+            get => _showVerificationInput;
+            set => SetProperty(ref _showVerificationInput, value);
+        }
+
+        public string VerificationType
+        {
+            get => _verificationType;
+            set => SetProperty(ref _verificationType, value);
         }
 
         #endregion
@@ -225,7 +254,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
 
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                var response = await _httpClient.PutAsJsonAsync($"User/update/{CurrentUser?.UserId}", UpdateModel);
+                var response = await _httpClient.PatchAsJsonAsync($"User/update", UpdateModel);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -236,13 +265,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la sauvegarde : {errorContent}";
+                    ErrorMessage = $"Erreur lors de la sauvegarde :  {errorContent}";
                 }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Erreur lors de la sauvegarde : {ex.Message}";
-                Console.WriteLine($"Erreur SaveProfileAsync : {ex}");
+                Console.WriteLine($"Erreur SaveProfileAsync : {ex.Message}");
             }
             finally
             {
@@ -365,6 +394,144 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 ErrorMessage = $"Erreur : {ex.Message}";
                 Console.WriteLine($"Erreur LogoutAllDevicesAsync : {ex}");
             }
+        }
+
+        /// <summary>
+        /// Demande un code de vérification pour l'email
+        /// </summary>
+        public async Task RequestEmailVerificationAsync()
+        {
+            await RequestVerificationCodeAsync("mail");
+        }
+
+        /// <summary>
+        /// Demande un code de vérification pour le téléphone
+        /// </summary>
+        public async Task RequestPhoneVerificationAsync()
+        {
+            await RequestVerificationCodeAsync("sms");
+        }
+
+        /// <summary>
+        /// Demande un code de vérification
+        /// </summary>
+        private async Task RequestVerificationCodeAsync(string contactType)
+        {
+            try
+            {
+                IsVerifying = true;
+                ErrorMessage = string.Empty;
+                SuccessMessage = string.Empty;
+
+                var token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    _navigationService.NavigateToLogin();
+                    return;
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var request = new HttpRequestMessage(HttpMethod.Head, $"User/verify/{contactType}");
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    VerificationType = contactType;
+                    ShowVerificationInput = true;
+                    SuccessMessage = contactType == "mail" 
+                        ? "Un code de vérification a été envoyé à votre adresse email." 
+                        : "Un code de vérification a été envoyé par SMS.";
+                }
+                else
+                {
+                    ErrorMessage = $"Erreur lors de l'envoi du code de vérification. Code: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors de l'envoi du code : {ex.Message}";
+                Console.WriteLine($"Erreur RequestVerificationCodeAsync : {ex}");
+            }
+            finally
+            {
+                IsVerifying = false;
+            }
+        }
+
+        /// <summary>
+        /// Vérifie le code de vérification
+        /// </summary>
+        public async Task VerifyCodeAsync()
+        {
+            try
+            {
+                IsVerifying = true;
+                ErrorMessage = string.Empty;
+                SuccessMessage = string.Empty;
+
+                if (string.IsNullOrWhiteSpace(VerificationCode))
+                {
+                    ErrorMessage = "Veuillez entrer le code de vérification.";
+                    return;
+                }
+
+                var token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    _navigationService.NavigateToLogin();
+                    return;
+                }
+
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var request = new HttpRequestMessage(HttpMethod.Head, $"User/verify/{VerificationType}/{VerificationCode}");
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    SuccessMessage = VerificationType == "mail" 
+                        ? "Email vérifié avec succès !" 
+                        : "Téléphone vérifié avec succès !";
+                    
+                    ShowVerificationInput = false;
+                    VerificationCode = string.Empty;
+                    VerificationType = string.Empty;
+
+                   
+                    await LoadProfileAsync();
+                }
+                else
+                {
+                    ErrorMessage = response.StatusCode switch
+                    {
+                        System.Net.HttpStatusCode.Unauthorized => "Code de vérification invalide ou expiré.",
+                        System.Net.HttpStatusCode.Gone => "Le code de vérification a expiré. Veuillez en demander un nouveau.",
+                        _ => $"Erreur lors de la vérification. Code: {response.StatusCode}"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors de la vérification : {ex.Message}";
+                Console.WriteLine($"Erreur VerifyCodeAsync : {ex}");
+            }
+            finally
+            {
+                IsVerifying = false;
+            }
+        }
+
+        /// <summary>
+        /// Annule la vérification en cours
+        /// </summary>
+        public void CancelVerification()
+        {
+            ShowVerificationInput = false;
+            VerificationCode = string.Empty;
+            VerificationType = string.Empty;
+            ErrorMessage = string.Empty;
+            SuccessMessage = string.Empty;
         }
     }
 }
