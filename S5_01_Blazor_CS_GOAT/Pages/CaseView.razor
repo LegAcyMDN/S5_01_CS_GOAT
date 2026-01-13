@@ -186,6 +186,15 @@
                         {
                             <div class="result-promocode">Vous avez utilisé le code promo "@ViewModel.CaseOpenResult.PromoCode.Code" pour @(ViewModel.CaseOpenResult.PromoCode.DiscountPercentage)% de réduction @(ViewModel.CaseOpenResult.PromoCode.DiscountAmount == 0 ? "" : "et " + ViewModel.CaseOpenResult.PromoCode.DiscountAmount + "€ de réduction")</div>
                         }
+                        <p style="font-size:18px">Valeur totale des skins : @(ViewModel.TotalValue)€</p>
+                        <p style="font-size:18px">
+                            Vous avez effectué
+                            <span style="color: @(ViewModel.Profit > 0 ? "green" : "red"); font-weight: bold;">
+                                @Math.Abs(ViewModel.Profit)€
+                            </span>
+                            @(ViewModel.Profit > 0 ? "de profit" : "de perte")
+                        </p>
+
                         <button class="popup-close" @onclick="ViewModel.ClosePopup">OK</button>
                     </div>
                 </div>
@@ -193,9 +202,18 @@
         </div>
         <h2>Contenu de la caisse</h2>
         <div class="skins-list">
+            @if (ViewModel.IsLoading == false){
             @foreach (var skin in ViewModel.SkinsList)
             {
-                <WeaponDisplayComponent WeaponSkin="@skin" ImageLink="@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")"></WeaponDisplayComponent>
+                <div class="skin-item">
+                    <WeaponDisplayComponent WeaponSkin="@skin" ImageLink="@($"https://screenshots.cs.money/csmoney2/{skin.AnyUuid}_icon.png")"></WeaponDisplayComponent>
+                    <div class="weight-overlay">@(ViewModel.Probability[skin.AnyUuid])%</div>
+                        <div class="item-tooltip" style="background-color: @skin.RarityColor;">
+                            @(skin.ItemName ?? "null")<br />
+                            @(skin.SkinName ?? "null")<br />
+                        </div>
+                </div>
+            }
             }
         </div>
     </div>

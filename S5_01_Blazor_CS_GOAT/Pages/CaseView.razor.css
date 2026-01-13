@@ -45,6 +45,29 @@
     gap: 15px;
 }
 
+.weapon-container {
+    position: relative !important;
+}
+
+.weight-overlay {
+    position: absolute !important;
+    top: 5px !important;
+    left: 5px !important;
+    background: rgb(255 255 255 / 10%);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 10;
+}
+
+.weapon-container:hover .item-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0);
+}
+
 .display-skin {
     width: 150px;
 }
