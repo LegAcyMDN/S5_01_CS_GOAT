@@ -50,6 +50,129 @@ public class WebService<TEntity> : IService<TEntity> where TEntity : class
         return response.Result;
     }
 
+    public async Task<GetOptionsResponse<TEntity>?> GetAllWithOptionsAsync(string? jwtToken, Dictionary<string, string>? queryParams = null)
+    {
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        }
+
+        string url = $"{_endpoint}/all";
+        if (queryParams != null && queryParams.Any())
+        {
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+            url = $"{url}?{queryString}";
+        }
+
+        return await _httpClient.GetFromJsonAsync<GetOptionsResponse<TEntity>>(url);
+    }
+
+    /// <summary>
+    /// Récupère toutes les entités avec filtrage des favoris géré intelligemment
+    /// Cette méthode gère le cas spécial où le backend ne peut pas filtrer IsFavorite correctement
+    /// </summary>
+    public async Task<GetOptionsResponse<TEntity>?> GetAllWithFavoriteFilterAsync(string? jwtToken, Dictionary<string, string>? queryParams = null)
+    {
+        if (!string.IsNullOrEmpty(jwtToken))
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+        }
+
+        // Vérifier si le filtre favoris est demandé
+        bool filterByFavorites = queryParams?.ContainsKey("isfavorite") == true && 
+                                 queryParams["isfavorite"].ToLower() == "true";
+
+        if (!filterByFavorites)
+        {
+            // Pas de filtre favoris, utiliser la méthode normale
+            return await GetAllWithOptionsAsync(jwtToken, queryParams);
+        }
+
+        // Extraire les paramètres de pagination
+        int requestedPage = 1;
+        int requestedPageSize = 25;
+        
+        if (queryParams?.ContainsKey("page") == true)
+            int.TryParse(queryParams["page"], out requestedPage);
+        
+        if (queryParams?.ContainsKey("pagesize") == true)
+            int.TryParse(queryParams["pagesize"], out requestedPageSize);
+
+        // Créer une copie des paramètres sans le filtre isfavorite
+        var backendParams = queryParams?.Where(kvp => kvp.Key.ToLower() != "isfavorite")
+                                       .ToDictionary(kvp => kvp.Key, kvp => kvp.Value) 
+                           ?? new Dictionary<string, string>();
+
+        // Stratégie : Récupérer plusieurs pages jusqu'à avoir assez de favoris
+        List<TEntity> allFavorites = new();
+        int currentBackendPage = 1;
+        int totalCount = 0;
+        int maxPagesToFetch = 10; // Limite de sécurité pour éviter trop de requêtes
+        
+        while (allFavorites.Count < requestedPage * requestedPageSize && currentBackendPage <= maxPagesToFetch)
+        {
+            // Mettre à jour le numéro de page pour le backend
+            backendParams["page"] = currentBackendPage.ToString();
+            backendParams["pagesize"] = "100"; // Récupérer plus d'items par requête pour optimiser
+            
+            var response = await GetAllWithOptionsAsync(jwtToken, backendParams);
+            
+            if (response == null || response.Result == null || !response.Result.Any())
+                break;
+
+            // Garder le total count de la première requête
+            if (currentBackendPage == 1)
+                totalCount = response.TotalCount;
+
+            // Filtrer les favoris en utilisant la réflexion pour accéder à IsFavorite
+            var favorites = response.Result.Where(item =>
+            {
+                var isFavoriteProp = item?.GetType().GetProperty("IsFavorite");
+                return isFavoriteProp != null && (bool)(isFavoriteProp.GetValue(item) ?? false);
+            }).ToList();
+
+            allFavorites.AddRange(favorites);
+            
+            // Si on a reçu moins d'items que demandé, on est à la dernière page
+            if (response.Count < 100)
+                break;
+                
+            currentBackendPage++;
+        }
+
+        // Calculer la pagination sur les favoris
+        int totalFavorites = allFavorites.Count;
+        int totalPages = (int)Math.Ceiling((double)totalFavorites / requestedPageSize);
+        
+        // Extraire la page demandée
+        var pagedFavorites = allFavorites
+            .Skip((requestedPage - 1) * requestedPageSize)
+            .Take(requestedPageSize)
+            .ToList();
+
+        // Construire la réponse
+        return new GetOptionsResponse<TEntity>
+        {
+            PropertyNames = new List<string>(),
+            Result = pagedFavorites,
+            Filters = queryParams?.Where(kvp => kvp.Key.ToLower() != "page" && 
+                                               kvp.Key.ToLower() != "pagesize" &&
+                                               kvp.Key.ToLower() != "pagenumber")
+                                  .ToDictionary(kvp => kvp.Key, kvp => new List<string> { kvp.Value })
+                     ?? new Dictionary<string, List<string>>(),
+            SortKey = queryParams?.ContainsKey("sortkey") == true ? queryParams["sortkey"] : null,
+            SortType = queryParams?.ContainsKey("sorttype") == true ? queryParams["sorttype"] : null,
+            PageNumber = requestedPage,
+            PageSize = requestedPageSize,
+            Count = pagedFavorites.Count,
+            PageCount = totalPages,
+            FilteredCount = totalFavorites,
+            TotalCount = totalCount,
+            CanSearch = false,
+            DtoTypeName = typeof(TEntity).Name
+        };
+    }
+
     public async Task<TEntity?> GetByIdAsync(int id)
     {
         return await _httpClient.GetFromJsonAsync<TEntity?>($"{_endpoint}/details/{id}");

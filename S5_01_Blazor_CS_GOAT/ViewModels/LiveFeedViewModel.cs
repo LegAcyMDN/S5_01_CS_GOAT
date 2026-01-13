@@ -14,7 +14,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private List<LiveFeedItem> _feedItems = new();
         private System.Timers.Timer? _refreshTimer;
         private DateTime _lastUpdateTime = DateTime.UtcNow;
-        private const int REFRESH_INTERVAL_MS = 5000; // Rafraîchir toutes les 5 secondes
+        private const int REFRESH_INTERVAL_MS = 15000; // Rafraîchir toutes les 5 secondes
         private const int MAX_ITEMS = 20; // Nombre max d'items à afficher
 
         public LiveFeedViewModel(IService<LiveFeedDTO> randomTransactionService)

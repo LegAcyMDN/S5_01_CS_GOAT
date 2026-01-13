@@ -6,9 +6,9 @@ using Shared.DTO.Helpers;
 namespace S5_01_Blazor_CS_GOAT.Service
 {
     /// <summary>
-    /// Service d√©di√© √† l'ouverture des cases
-    /// Respecte le principe de responsabilit√© unique (SRP)
-    /// </summary>
+ /// Service dÈdiÈ ‡ l'ouverture des cases
+ /// Respecte le principe de responsabilitÈ unique (SRP)
+ /// </summary>
     public class CaseOpeningService
     {
         private readonly HttpClient _httpClient;
@@ -25,12 +25,9 @@ namespace S5_01_Blazor_CS_GOAT.Service
             _caseRepository = caseRepository;
         }
 
-        /// <summary>
-        /// Ouvre une ou plusieurs cases
-        /// </summary>
         public async Task<MultipleCaseResultDTO> OpenCasesAsync(int caseId, int quantity, string? promoCode = null)
         {
-            var caseOpeningInfo = new CaseOpenningDTO
+            CaseOpenningDTO caseOpeningInfo = new CaseOpenningDTO
             {
                 CaseId = caseId,
                 Quantity = quantity,
@@ -41,11 +38,39 @@ namespace S5_01_Blazor_CS_GOAT.Service
             string jwtToken = await _authService.GetTokenAsync();
             MultipleCaseResultDTO casesReturn = await _caseRepository.OpenCaseAsync(caseOpeningInfo, jwtToken);
 
-            // Rafra√Æchir le portefeuille de l'utilisateur
             await _authService.LoadCurrentUserAsync();
             _authService.NotifyUserDataChanged();
 
             return casesReturn;
+        }
+
+        public async Task<double> PreviewPriceAsync(int caseId, int quantity, string? promoCode = null)
+        {
+            
+            if (string.IsNullOrEmpty(promoCode))
+            {
+                CaseDTO caseInfo = await _caseRepository.GetByIdAsync(caseId, await _authService.GetTokenAsync());
+                return caseInfo.CasePrice * quantity;
+            }
+
+            string jwtToken = await _authService.GetTokenAsync();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+
+            HttpResponseMessage response = await _httpClient.GetAsync($"PromoCode/check/{promoCode}?caseId={caseId}");
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Shared.Exceptions.CaseExceptions.InvalidPromoCodeException("Code promo invalide");
+            }
+
+            CasePromoCodeDTO? promoCodeInfo = await response.Content.ReadFromJsonAsync<CasePromoCodeDTO>();
+            
+            if (promoCodeInfo == null || promoCodeInfo.FinalPrice == null)
+            {
+                throw new Shared.Exceptions.CaseExceptions.InvalidPromoCodeException("Code promo invalide");
+            }
+
+            return promoCodeInfo.FinalPrice.Value * quantity;
         }
     }
 }
