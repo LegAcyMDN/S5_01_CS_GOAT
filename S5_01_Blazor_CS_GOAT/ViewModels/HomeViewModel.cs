@@ -1,3 +1,4 @@
+using S5_01_Blazor_CS_GOAT.Models;
 using S5_01_Blazor_CS_GOAT.Service;
 using Shared.DTO;
 
@@ -10,40 +11,37 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     {
         private readonly IService<CaseDTO> _caseRepository;
         private readonly AuthService _authService;
+        private readonly FavoriteService _favoriteService;
 
         private List<CaseDTO> _cases = new();
-        private List<CaseDTO> _filteredCases = new();
         private string _searchTerm = string.Empty;
         private bool _isLoading = true;
+        private bool _showOnlyFavorites = false;
+        private int _currentPage = 1;
+        private int _pageSize = 25;
+        private int _totalPages = 1;
+        private int _totalCount = 0;
+        private int _filteredCount = 0;
+        private string? _sortKey = null;
+        private string _sortType = "asc";
 
-        public HomeViewModel(IService<CaseDTO> caseRepository, AuthService authService)
+        public HomeViewModel(IService<CaseDTO> caseRepository, AuthService authService, FavoriteService favoriteService)
         {
             _caseRepository = caseRepository;
             _authService = authService;
+            _favoriteService = favoriteService;
+            
+            // S'abonner aux changements de favoris
+            _favoriteService.FavoriteChanged += OnFavoriteChanged;
         }
 
         /// <summary>
-        /// Liste complète des caisses
+        /// Liste des caisses affichées
         /// </summary>
         public List<CaseDTO> Cases
         {
             get => _cases;
-            set
-            {
-                if (SetProperty(ref _cases, value))
-                {
-                    FilterCases();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Liste des caisses filtrées selon le terme de recherche
-        /// </summary>
-        public List<CaseDTO> FilteredCases
-        {
-            get => _filteredCases;
-            private set => SetProperty(ref _filteredCases, value);
+            set => SetProperty(ref _cases, value);
         }
 
         /// <summary>
@@ -56,7 +54,8 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 if (SetProperty(ref _searchTerm, value))
                 {
-                    FilterCases();
+                    CurrentPage = 1; // Reset to first page when searching
+                    _ = LoadCasesAsync();
                 }
             }
         }
@@ -71,14 +70,129 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Indique si aucune caisse n'est disponible
+        /// Filtre pour afficher uniquement les favoris
         /// </summary>
-        public bool HasNoCases => Cases.Count == 0;
+        public bool ShowOnlyFavorites
+        {
+            get => _showOnlyFavorites;
+            set
+            {
+                if (SetProperty(ref _showOnlyFavorites, value))
+                {
+                    CurrentPage = 1; // Reset to first page when filtering
+                    _ = LoadCasesAsync();
+                }
+            }
+        }
 
         /// <summary>
-        /// Indique si aucune caisse ne correspond à la recherche
+        /// Numéro de la page actuelle
         /// </summary>
-        public bool HasNoFilteredCases => FilteredCases.Count == 0 && !string.IsNullOrEmpty(SearchTerm);
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                if (SetProperty(ref _currentPage, value))
+                {
+                    _ = LoadCasesAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Taille de la page
+        /// </summary>
+        public int PageSize
+        {
+            get => _pageSize;
+            set
+            {
+                if (SetProperty(ref _pageSize, value))
+                {
+                    CurrentPage = 1; // Reset to first page when changing page size
+                    _ = LoadCasesAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Nombre total de pages
+        /// </summary>
+        public int TotalPages
+        {
+            get => _totalPages;
+            private set => SetProperty(ref _totalPages, value);
+        }
+
+        /// <summary>
+        /// Nombre total de caisses avant filtres
+        /// </summary>
+        public int TotalCount
+        {
+            get => _totalCount;
+            private set => SetProperty(ref _totalCount, value);
+        }
+
+        /// <summary>
+        /// Nombre de caisses après filtres
+        /// </summary>
+        public int FilteredCount
+        {
+            get => _filteredCount;
+            private set => SetProperty(ref _filteredCount, value);
+        }
+
+        /// <summary>
+        /// Clé de tri (propriété sur laquelle trier)
+        /// </summary>
+        public string? SortKey
+        {
+            get => _sortKey;
+            set
+            {
+                if (SetProperty(ref _sortKey, value))
+                {
+                    CurrentPage = 1;
+                    _ = LoadCasesAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Type de tri (asc ou desc)
+        /// </summary>
+        public string SortType
+        {
+            get => _sortType;
+            set
+            {
+                if (SetProperty(ref _sortType, value))
+                {
+                    CurrentPage = 1;
+                    _ = LoadCasesAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dictionnaire des propriétés triables (clé = nom technique, valeur = nom affiché)
+        /// </summary>
+        public Dictionary<string, string> SortableProperties { get; } = new()
+        {
+            { "CaseName", "Nom" },
+            { "CasePrice", "Prix" }
+        };
+
+        /// <summary>
+        /// Indique si aucune caisse n'est disponible
+        /// </summary>
+        public bool HasNoCases => TotalCount == 0 && !IsLoading;
+
+        /// <summary>
+        /// Indique si aucune caisse ne correspond aux filtres
+        /// </summary>
+        public bool HasNoFilteredCases => Cases.Count == 0 && !IsLoading && (ShowOnlyFavorites || !string.IsNullOrEmpty(SearchTerm));
 
         /// <summary>
         /// Initialise le ViewModel et charge les caisses
@@ -89,7 +203,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Charge toutes les caisses disponibles
+        /// Charge les caisses avec pagination, recherche et filtres
         /// </summary>
         private async Task LoadCasesAsync()
         {
@@ -100,13 +214,57 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 // Récupérer le token JWT si l'utilisateur est connecté
                 var jwtToken = await _authService.GetTokenAsync();
                 
-                // Charger les caisses avec le token pour obtenir l'état IsFavorite correct
-                Cases = await _caseRepository.GetAllAsync(jwtToken) ?? new List<CaseDTO>();
+                // Construire les paramètres de requête
+                var queryParams = new Dictionary<string, string>
+                {
+                    { "page", CurrentPage.ToString() },
+                    { "pagesize", PageSize.ToString() }
+                };
+
+                // Ajouter la recherche si nécessaire
+                if (!string.IsNullOrWhiteSpace(SearchTerm))
+                {
+                    queryParams.Add("sorttype", "search");
+                    queryParams.Add("sortkey", SearchTerm);
+                }
+                // Ajouter le tri si une clé est sélectionnée et pas de recherche
+                else if (!string.IsNullOrWhiteSpace(SortKey))
+                {
+                    queryParams.Add("sortkey", SortKey);
+                    queryParams.Add("sorttype", SortType);
+                }
+
+                // Ajouter le filtre favoris - la méthode GetAllWithFavoriteFilterAsync le gère intelligemment
+                if (ShowOnlyFavorites)
+                {
+                    queryParams.Add("isfavorite", "true");
+                }
+
+                // Utiliser la méthode qui gère intelligemment le filtrage des favoris
+                var response = await _caseRepository.GetAllWithFavoriteFilterAsync(jwtToken, queryParams);
+                
+                if (response != null)
+                {
+                    Cases = response.Result ?? new List<CaseDTO>();
+                    TotalPages = response.PageCount;
+                    TotalCount = response.TotalCount;
+                    FilteredCount = response.FilteredCount;
+                }
+                else
+                {
+                    Cases = new List<CaseDTO>();
+                    TotalPages = 1;
+                    TotalCount = 0;
+                    FilteredCount = 0;
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du chargement des caisses: {ex.Message}");
                 Cases = new List<CaseDTO>();
+                TotalPages = 1;
+                TotalCount = 0;
+                FilteredCount = 0;
             }
             finally
             {
@@ -115,20 +273,33 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Filtre les caisses selon le terme de recherche
+        /// Appelé quand un favori change
         /// </summary>
-        private void FilterCases()
+        private async void OnFavoriteChanged(object? sender, int caseId)
         {
-            if (string.IsNullOrWhiteSpace(SearchTerm))
+            // Si le filtre favoris est actif, recharger la liste
+            if (ShowOnlyFavorites)
             {
-                FilteredCases = Cases;
+                await LoadCasesAsync();
             }
-            /*else
+            else
             {
-                FilteredCases = Cases
-                    .Where(c => c.Name != null && c.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }*/
+                // Sinon, juste mettre à jour l'état du favori dans la liste actuelle
+                var caseToUpdate = Cases.FirstOrDefault(c => c.CaseId == caseId);
+                if (caseToUpdate != null)
+                {
+                    caseToUpdate.IsFavorite = !caseToUpdate.IsFavorite;
+                    OnPropertyChanged(nameof(Cases));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Nettoyer les événements lors de la destruction
+        /// </summary>
+        public void Dispose()
+        {
+            _favoriteService.FavoriteChanged -= OnFavoriteChanged;
         }
     }
 }

@@ -1,3 +1,4 @@
+using S5_01_Blazor_CS_GOAT.Models;
 using Shared.DTO.Helpers;
 using System.Collections.ObjectModel;
 
@@ -7,6 +8,8 @@ public interface IService<TEntity>
 {
     Task<List<TEntity>?> GetAllAsync();
     Task<List<TEntity>?> GetAllAsync(string? jwtToken);
+    Task<GetOptionsResponse<TEntity>?> GetAllWithOptionsAsync(string? jwtToken, Dictionary<string, string>? queryParams = null);
+    Task<GetOptionsResponse<TEntity>?> GetAllWithFavoriteFilterAsync(string? jwtToken, Dictionary<string, string>? queryParams = null);
     Task<TEntity?> GetByIdAsync(int id);
     Task<TEntity?> GetByIdAsync(int id, string? jwtToken);
     Task AddAsync(TEntity entity);
@@ -17,6 +20,7 @@ public interface IService<TEntity>
     Task<List<TEntity>?> GetByCaseIdAsync(int id);
     Task<MultipleCaseResultDTO?> OpenCaseAsync(CaseOpenningDTO caseOpenInfo, string jwtToken);
     Task<List<TEntity>?> GetByUserAsync(string jwtToken);
+    Task<GetOptionsResponse<TEntity>?> GetByUserWithOptionsAsync(string jwtToken, Dictionary<string, string>? queryParams = null);
     Task ToggleFavoriteAsync(int inventoryItemId, string jwtToken);
     Task<TEntity?> GetDetailsAsync(int inventoryItemId, string jwtToken);
     Task<ObservableCollection<TEntity>?> GetByWear(int wearId);
