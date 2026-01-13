@@ -250,3 +250,190 @@
     background-color: #00428c;
     border-radius: 5px;
 }
+
+
+.sell-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.btn-sell {
+    width: 100%;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+}
+
+.btn-sell:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+}
+
+.btn-sell:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(243, 156, 18, 0.3);
+}
+
+.btn-sell svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Popup styles (copiés de CaseView) */
+.popup-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.popup-modal {
+    background-color: #2a2836;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 300px;
+    max-width: 60%;
+    text-align: -webkit-center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.popup-modal h3 {
+    color: white;
+    font-size: 24px;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+}
+
+.popup-modal p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.popup-close {
+    margin-top: 15px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    background: #f99e1c;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.popup-close:hover {
+    background: #e08a0f;
+    transform: translateY(-2px);
+}
+
+
+.confirmation-item-name {
+    color: #f39c12;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 15px 0 10px 0;
+}
+
+.confirmation-price-text {
+    color: #2ecc71;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 10px 0;
+}
+
+.warning-message {
+    background: rgba(231, 76, 60, 0.2);
+    border: 2px solid #e74c3c;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.warning-icon {
+    font-size: 24px;
+}
+
+.warning-message p {
+    color: #e74c3c;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Popup de succès */
+.success-modal .success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(46, 204, 113, 0.4);
+}
+
+.success-modal .success-item-name {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 18px;
+    margin: 10px 0;
+    font-weight: 500;
+}
+
+.success-modal .success-price {
+    color: #2ecc71;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 15px 0;
+}
+
+.success-modal .success-message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+    margin: 15px 0 30px 0;
+}
+
+/* Popup d'erreur */
+.error-modal .error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4);
+}
+
+.error-modal .error-message-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 16px;
+}
