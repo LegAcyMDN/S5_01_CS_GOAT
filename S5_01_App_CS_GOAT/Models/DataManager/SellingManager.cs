@@ -35,7 +35,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                 .Before(i => i.User)
-                .After(i => i.Wear.WearType.PriceHistories);
+                .After(i => i.Wear.WearClass.PriceHistories);
             InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsyncNew(
                 invItemId,
                 options
@@ -64,6 +64,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 UserId = invItem.UserId,
             };
             await _itemTransactionRepository.AddAsync(itemTransaction);
+            await _inventoryItemRepository.UpdateAsync(invItem);
+            await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return StatusCodes.Status204NoContent;
         }

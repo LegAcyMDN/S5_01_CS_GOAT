@@ -81,6 +81,7 @@ builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryManager>();
 builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<ISellingRepository, SellingManager>();
+builder.Services.AddScoped<ISendingRepository, SendingManager>();
 
 // Timed services
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
