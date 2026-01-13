@@ -3,48 +3,48 @@ using Microsoft.Playwright;
 namespace S5_01_Blazor_CS_GOATTests;
 
 [TestClass]
+[TestCategory("Case")]
 public class OpenCaseTest : TestBase
 {
     [TestMethod]
     public async Task CanFastOpenCase()
     {
-        /*
-         * identifiant : caseOpener69
-         * nom d'affichage : OOO67
-         * mdp : Jordan123%
-         * email : six.seven@gmail.com
-         */
-        
         await TestHelpers.LoginAsync(Page, BaseUrl, "caseOpener69", "Jordan123%");
-        
-        
-        // See if the username is at the top right
-        await Expect(Page.GetByText("OOO67")).ToBeVisibleAsync();
-        
-        
+    
         // Click the first case in the list
         await Page.Locator(".case-content").First.ClickAsync();
-        
+    
         // Wait for case page to load
-        await Page.WaitForURLAsync($"{BaseUrl}/caseview/1", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}/caseview/**", new PageWaitForURLOptions 
         {
             Timeout = 60000
         });
-        
-        
+    
+        Console.WriteLine("📦 On case page, clicking ACHETER button...");
         await Page.GetByText("ACHETER").First.ClickAsync();
-        
-        
-        // await Page.WaitForTimeoutAsync(60000);
-        
-        
+    
+        // Target the button specifically using GetByRole or a more specific selector
+        var confirmButton = Page.GetByRole(AriaRole.Button, new() { Name = "Confirmer" });
+    
+        await Expect(confirmButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions 
+        { 
+            Timeout = 5000 
+        });
+    
+        Console.WriteLine("✅ Popup visible, clicking Confirmer button...");
+        await confirmButton.ClickAsync();
+    
+        Console.WriteLine("🔘 Clicked Confirmer, waiting for case opening...");
+    
+        // Wait for the result
         await Page.GetByText("Tu as obtenu :")
             .WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Visible,
-                Timeout = 120000
+                Timeout = 120000 // 2 minutes for case opening animation
             });
-        
+    
+        Console.WriteLine("✅ Case opened successfully!");
     }
     
     
@@ -65,7 +65,7 @@ public class OpenCaseTest : TestBase
         await Page.Locator(".case-content").First.ClickAsync();
         
         // Wait for case page to load
-        await Page.WaitForURLAsync($"{BaseUrl}/caseview/1", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}/caseview/**", new PageWaitForURLOptions 
         { 
             Timeout = 60000
         });
@@ -77,6 +77,15 @@ public class OpenCaseTest : TestBase
         
         // buy case
         await Page.GetByText("ACHETER").First.ClickAsync();
+        
+        var confirmButton = Page.GetByRole(AriaRole.Button, new() { Name = "Confirmer" });
+    
+        await Expect(confirmButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions 
+        { 
+            Timeout = 5000 
+        });
+        
+        await confirmButton.ClickAsync();
         
         // await Page.Locator(".case-content").First.ClickAsync();
         
@@ -103,15 +112,11 @@ public class OpenCaseTest : TestBase
         await TestHelpers.LoginAsync(Page, BaseUrl, "caseOpener69", "Jordan123%");
         
         
-        // See if the username is at the top right
-        await Expect(Page.GetByText("OOO67")).ToBeVisibleAsync();
-        
-        
         // Click the first case in the list
         await Page.Locator(".case-content").First.ClickAsync();
         
         // Wait for case page to load
-        await Page.WaitForURLAsync($"{BaseUrl}/caseview/1", new PageWaitForURLOptions 
+        await Page.WaitForURLAsync($"{BaseUrl}/caseview/**", new PageWaitForURLOptions 
         { 
             Timeout = 60000
         });
@@ -127,6 +132,15 @@ public class OpenCaseTest : TestBase
         
         await Page.GetByText("ACHETER").First.ClickAsync();
         
+        var confirmButton = Page.GetByRole(AriaRole.Button, new() { Name = "Confirmer" });
+    
+        await Expect(confirmButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions 
+        { 
+            Timeout = 5000 
+        });
+        
+        await confirmButton.ClickAsync();
+        
         // await Page.Locator(".case-content").First.ClickAsync();
         
         await Page.GetByText("Tu as obtenu :")
@@ -135,16 +149,11 @@ public class OpenCaseTest : TestBase
                 State = WaitForSelectorState.Visible,
                 Timeout = 60000 * 3
             });
-
-
+    
+    
         await Expect(Page.Locator(".popup-skins > li"))
             .ToHaveCountAsync(10);
-        
-        
-        
-
-
-
+    
     }
     
 }

@@ -2,6 +2,7 @@
 
 namespace S5_01_Blazor_CS_GOATTests;
 [TestClass]
+[TestCategory("User")]
 public class UserTests : TestBase
 {
     
