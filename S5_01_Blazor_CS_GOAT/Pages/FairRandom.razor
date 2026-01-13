@@ -1,6 +1,7 @@
 @page "/stats"
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @using S5_01_Blazor_CS_GOAT.Layout
+@using S5_01_Blazor_CS_GOAT.Pages.Components
 @inject FairRandomViewModel ViewModel
 
 <PageTitle>CS:GOAT - Provably Fair</PageTitle>
@@ -18,7 +19,7 @@
             <p>@ViewModel.ErrorMessage</p>
         </div>
     }
-    else if (ViewModel.FairRandomHistory.Count == 0)
+    else if (ViewModel.TotalCount == 0)
     {
         <div class="empty-message">
             <p>Aucun historique de tirage disponible. Ouvrez des caisses pour générer votre historique!</p>
@@ -29,6 +30,18 @@
         <div class="fairrandom-info">
             <p>Vérifiez l'équité de tous vos tirages. Chaque tirage utilise un système provably fair pour garantir des résultats aléatoires et transparents.</p>
         </div>
+        
+        <SearchFilterComponent 
+            SearchPlaceholder="Rechercher par hash serveur..."
+            ShowSearchBar="true"
+            SearchTerm="@ViewModel.SearchTerm"
+            SearchTermChanged="@(async (value) => await ViewModel.OnSearchTermChangedAsync(value))"
+            SortKey="@ViewModel.SortKey"
+            SortKeyChanged="@(async (value) => await ViewModel.OnSortKeyChangedAsync(value))"
+            SortType="@ViewModel.SortType"
+            SortTypeChanged="@(async (value) => await ViewModel.OnSortTypeChangedAsync(value))"
+            ShowFavoritesFilter="false"
+            SortableProperties="@ViewModel.SortableProperties" />
         
         <div class="fairrandom-table">
             <table>
@@ -44,21 +57,41 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var fairRandom in ViewModel.FairRandomHistory)
+                    @if (ViewModel.FairRandomHistory.Count == 0)
                     {
                         <tr>
-                            <td>@fairRandom.ServerSeed</td>
-                            <td>@fairRandom.ServerHash</td>
-                            <td>@fairRandom.UserSeed</td>
-                            <td>@fairRandom.UserNonce</td>
-                            <td>@fairRandom.CombinedHash</td>
-                            <td>@fairRandom.Fraction1.ToString("F6")</td>
-                            <td>@fairRandom.Fraction2.ToString("F6")</td>
+                            <td colspan="7" style="text-align: center; padding: 2rem;">
+                                Aucun résultat trouvé pour votre recherche.
+                            </td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var fairRandom in ViewModel.FairRandomHistory)
+                        {
+                            <tr>
+                                <td title="@fairRandom.ServerSeed">@fairRandom.ServerSeed</td>
+                                <td title="@fairRandom.ServerHash">@fairRandom.ServerHash</td>
+                                <td title="@fairRandom.UserSeed">@fairRandom.UserSeed</td>
+                                <td>@fairRandom.UserNonce</td>
+                                <td title="@fairRandom.CombinedHash">@fairRandom.CombinedHash</td>
+                                <td>@fairRandom.Fraction1.ToString("F6")</td>
+                                <td>@fairRandom.Fraction2.ToString("F6")</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
         </div>
+        
+        <PaginationComponent 
+            CurrentPage="@ViewModel.CurrentPage"
+            TotalPages="@ViewModel.TotalPages"
+            PageSize="@ViewModel.PageSize"
+            TotalCount="@ViewModel.TotalCount"
+            FilteredCount="@ViewModel.FilteredCount"
+            OnPageChange="@(async (page) => await ViewModel.OnPageChangedAsync(page))"
+            OnPageSizeChange="@(async (size) => await ViewModel.OnPageSizeChangedAsync(size))" />
     }
     
     <AuthOverlay />
