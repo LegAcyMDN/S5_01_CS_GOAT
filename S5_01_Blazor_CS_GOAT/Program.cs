@@ -48,6 +48,7 @@ builder.Services.AddScoped<CacheService>(sp =>
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<StripeService>();
+builder.Services.AddScoped<PayPalService>();
 
 // NEW: Specialized services following SRP
 builder.Services.AddScoped<NavigationService>();
