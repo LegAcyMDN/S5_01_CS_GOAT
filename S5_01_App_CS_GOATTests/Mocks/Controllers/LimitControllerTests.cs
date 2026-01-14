@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -120,7 +120,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsyncNew(limitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Never);
         }
 
         [TestMethod]
@@ -130,7 +130,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int limitTypeId = 1;
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsyncNew(limitKey))
+            limitRepositoryMock.Setup(r => r.GetByIdAsync(limitKey))
                                .ReturnsAsync(limit);
             limitRepositoryMock.Setup(r => r.PatchAsync(limit, It.IsAny<Dictionary<string, object>>()))
                                .Returns(Task.CompletedTask);
@@ -140,7 +140,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsyncNew(limitKey), Times.Once);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Once);
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int limitTypeId = 999;
             (int, int) nonExistingLimitKey = LimitFixture.GetLimitKey(normalUser.UserId, limitTypeId);
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsyncNew(nonExistingLimitKey))
+            limitRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingLimitKey))
                                .ReturnsAsync((Limit?)null);
 
             // When
@@ -159,7 +159,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsyncNew(nonExistingLimitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingLimitKey), Times.Never);
         }
 
         [TestMethod]
@@ -175,9 +175,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsyncNew(limitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Never);
         }
 
         #endregion
     }
 }
+
+

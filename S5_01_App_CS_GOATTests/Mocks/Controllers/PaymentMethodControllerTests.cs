@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
                                        .ReturnsAsync(paymentMethods);
 
             // When
@@ -47,9 +47,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
+            paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
         #endregion
     }
 }
+

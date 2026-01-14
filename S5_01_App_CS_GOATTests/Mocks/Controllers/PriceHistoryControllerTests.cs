@@ -8,6 +8,7 @@ using S5_01_App_CS_GOAT.Controllers;
 using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
@@ -48,7 +49,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_ReturnsOk()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(wear.WearId, "WearType.PriceHistories"))
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync(wear);
             mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
                       .Returns(priceHistoryDTOs);
@@ -58,7 +59,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            wearRepositoryMock.Verify(r => r.GetByIdAsyncOld(wear.WearId, "WearType.PriceHistories"), Times.Once);
+            wearRepositoryMock.Verify(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()), Times.Once);
         }
 
         #endregion
@@ -69,7 +70,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAIPrediction_ReturnsOk()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(wear.WearId, "WearType.PriceHistories"))
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync(wear);
             priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30, false))
                                       .ReturnsAsync(priceHistories);
@@ -88,7 +89,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAIPrediction_WearNotFound_ReturnsNotFound()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(wear.WearId, "WearType.PriceHistories"))
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync((Wear)null);
 
             // When
@@ -96,9 +97,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            wearRepositoryMock.Verify(r => r.GetByIdAsyncOld(wear.WearId, "WearType.PriceHistories"), Times.Once);
+            wearRepositoryMock.Verify(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()), Times.Once);
         }
 
         #endregion
     }
 }
+
+

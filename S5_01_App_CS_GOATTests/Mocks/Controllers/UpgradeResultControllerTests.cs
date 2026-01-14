@@ -20,7 +20,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     public class UpgradeResultControllerTests
     {
         private Mock<IMapper>? mapperMock;
-        private Mock<IDataRepository<UpgradeResult, (int,int)>>? upgradeResultRepositoryMock;
+        private Mock<IDataRepository<InventoryItem, int>>? inventoryItemRepositoryMock;
+        private Mock<IDataRepository<RandomTransaction, int>>? randomTransactionRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
         private UpgradeResultController? controller;
 
@@ -33,7 +34,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Initialize()
         {
             mapperMock = new Mock<IMapper>();
-            upgradeResultRepositoryMock = new Mock<IDataRepository<UpgradeResult, (int,int)>>();
+            inventoryItemRepositoryMock = new Mock<IDataRepository<InventoryItem, int>>();
+            randomTransactionRepositoryMock = new Mock<IDataRepository<RandomTransaction, int>>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
@@ -43,7 +45,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             controller = new UpgradeResultController(
                 mapperMock.Object,
-                upgradeResultRepositoryMock.Object,
+                inventoryItemRepositoryMock.Object,
+                randomTransactionRepositoryMock.Object,
                 configurationMock.Object
             );
         }
@@ -61,9 +64,20 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             int inventoryItemId = 1;
             JwtService.AuthentifyController(controller, normalUser);
-            upgradeResultRepositoryMock.Setup(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == inventoryItemId))
-                                       .ReturnsAsync(upgradeResults.Where(ur => ur.InventoryItemId == inventoryItemId));
-            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults))
+            var inventoryItem = new InventoryItem
+            {
+                InventoryItemId = inventoryItemId,
+                UserId = normalUser.UserId,
+                WearId = 1,
+                Float = 0.15f,
+                AcquiredOn = DateTime.Now,
+                IsFavorite = false,
+                UpgradeResults = upgradeResults.Where(ur => ur.InventoryItemId == inventoryItemId).ToList()
+            };
+
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(inventoryItemId, It.IsAny<QueryOptions<InventoryItem>>()))
+                                       .ReturnsAsync(inventoryItem);
+            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults))
                        .Returns(upgradeResultDTOs);
 
             // When
@@ -71,7 +85,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == inventoryItemId), Times.Once);
         }
 
         [TestMethod]
@@ -82,7 +95,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.InventoryItemId == 1), Times.Never);
         }
 
         [TestMethod]
@@ -90,9 +102,18 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             int transactionId = 1;
             JwtService.AuthentifyController(controller, normalUser);
-            upgradeResultRepositoryMock.Setup(r => r.GetAllAsyncOld(ur => ur.TransactionId == transactionId))
-                                       .ReturnsAsync(upgradeResults.Where(ur => ur.TransactionId == transactionId));
-            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(upgradeResults))
+            var randomTransaction = new RandomTransaction
+            {
+                TransactionId = transactionId,
+                UserId = normalUser.UserId,
+                WalletValue = 100,
+                TransactionDate = DateTime.Now,
+                UpgradeResults = upgradeResults.Where(ur => ur.TransactionId == transactionId).ToList()
+            };
+
+            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId, It.IsAny<QueryOptions<RandomTransaction>>()))
+                                           .ReturnsAsync(randomTransaction);
+            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults))
                        .Returns(upgradeResultDTOs);
 
             // When
@@ -100,7 +121,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.TransactionId == transactionId), Times.Once);
         }
 
         [TestMethod]
@@ -111,9 +131,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            upgradeResultRepositoryMock.Verify(r => r.GetAllAsyncOld(ur => ur.TransactionId == 1), Times.Never);
         }
 
         #endregion
     }
 }
+

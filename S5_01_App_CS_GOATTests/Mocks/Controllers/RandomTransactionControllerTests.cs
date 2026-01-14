@@ -63,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_AsAdmin_ReturnsOk()
         {
             JwtService.AuthentifyController(controller, admin);
-            transactionRepositoryMock.Setup(r => r.GetAllAsyncNew(null)).ReturnsAsync(transactions);
+            transactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null)).ReturnsAsync(transactions);
             mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
@@ -72,7 +72,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            transactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
+            transactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            transactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            transactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
         }
 
         [TestMethod]
@@ -96,14 +96,14 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            transactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            transactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
         }
 
         [TestMethod]
         public void GetByUser_AuthenticatedUser_ReturnsOwnTransactions()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            transactionRepositoryMock.Setup(r => r.GetAllAsyncNew(null)).ReturnsAsync(transactions);
+            transactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null)).ReturnsAsync(transactions);
             mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
@@ -112,7 +112,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            transactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
+            transactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
         [TestMethod]
@@ -123,7 +123,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            transactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            transactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
         }
 
         [TestMethod]
@@ -182,7 +182,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            transactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(1), Times.Never);
+            transactionRepositoryMock.Verify(r => r.GetByIdAsyncNew(1, It.IsAny<QueryOptions<RandomTransaction>>()), Times.Never);
         }
 
         #endregion
@@ -192,10 +192,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void LiveFeed_ReturnsDTOs()
         {
-            int count = 5;
+            // Given
+            transactionRepositoryMock.Setup(r => r.GetAllAsyncNew(It.IsAny<QueryOptions<RandomTransaction>>())).ReturnsAsync(transactions);
+            mapperMock.Setup(m => m.Map<IEnumerable<LiveFeedDTO>>(transactions))
+                       .Returns(new List<LiveFeedDTO>());
 
             // When
-            IActionResult? result = controller.LiveFeed(count).GetAwaiter().GetResult();
+            IActionResult? result = controller.LiveFeed().GetAwaiter().GetResult();
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
@@ -204,3 +207,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         #endregion
     }
 }
+
+
+
+

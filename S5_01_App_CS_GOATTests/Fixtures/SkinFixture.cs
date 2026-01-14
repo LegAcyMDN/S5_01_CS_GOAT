@@ -72,10 +72,9 @@ namespace S5_01_App_CS_GOATTests.Fixtures
             return new SkinDTO
             {
                 SkinName = "Redline",
+                ItemName = "AK-47",
                 RarityName = "Classified",
                 RarityColor = "#D32CE6",
-                BestPrice = 10.50,
-                WorstPrice = 25.00,
                 AnyUuid = "test-uuid-1",
                 Weight = 5
             };
@@ -88,20 +87,18 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 new SkinDTO
                 {
                     SkinName = "Redline",
+                    ItemName = "AK-47",
                     RarityName = "Classified",
                     RarityColor = "#D32CE6",
-                    BestPrice = 10.50,
-                    WorstPrice = 25.00,
                     AnyUuid = "test-uuid-1",
                     Weight = 5
                 },
                 new SkinDTO
                 {
                     SkinName = "Asiimov",
+                    ItemName = "AWP",
                     RarityName = "Covert",
                     RarityColor = "#EB4B4B",
-                    BestPrice = 20.00,
-                    WorstPrice = 50.00,
                     AnyUuid = "test-uuid-2",
                     Weight = 3
                 }

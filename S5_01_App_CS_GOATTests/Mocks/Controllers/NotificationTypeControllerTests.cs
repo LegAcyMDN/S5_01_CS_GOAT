@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -43,7 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
                                           .ReturnsAsync(notificationTypes);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
                       .Returns(notificationTypeDTOs);
@@ -53,9 +53,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
+            notificationTypeRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
         #endregion
     }
 }
+

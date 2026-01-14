@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -81,7 +81,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_Unauthenticated_ReturnsOkWithoutFavorites()
         {
             //Given
-            caseRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
+            caseRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
                               .ReturnsAsync(caseList);
             mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
@@ -91,7 +91,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
         [TestMethod]
@@ -99,27 +99,21 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
+            caseRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
                               .ReturnsAsync(caseList);
             mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey1))
-                                  .ReturnsAsync((Favorite?)null);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey2))
-                                  .ReturnsAsync((Favorite?)null);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey3))
-                                  .ReturnsAsync((Favorite?)null);
+            favoriteRepositoryMock.Setup(r => r.GetAllAsyncOld(null, new string[] {}))
+                                  .ReturnsAsync(new List<Favorite>());
 
             //When
             IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey1), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey2), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey3), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetAllAsyncOld(null, It.IsAny<string[]>()), Times.Once);
         }
 
         [TestMethod]
@@ -127,27 +121,21 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetAllAsyncNew(null))
+            caseRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
                               .ReturnsAsync(caseList);
             mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey1))
-                                  .ReturnsAsync(favorite);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey2))
-                                  .ReturnsAsync((Favorite?)null);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey3))
-                                  .ReturnsAsync((Favorite?)null);
+            favoriteRepositoryMock.Setup(r => r.GetAllAsyncOld(null, new string[] {}))
+                                  .ReturnsAsync(new List<Favorite> { favorite });
 
             //When
             IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey1), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey2), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey3), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetAllAsyncOld(null, It.IsAny<string[]>()), Times.Once);
         }
 
         #endregion
@@ -159,7 +147,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             int caseId = 1;
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(caseId, "CaseContents"))
+            QueryOptions<Case> options = new QueryOptions<Case>().Before(c => c.CaseContents);
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
             mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
@@ -169,7 +158,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(caseId, "CaseContents"), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()), Times.Once);
         }
 
         [TestMethod]
@@ -180,11 +169,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(caseId, "CaseContents"))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
             mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
                                   .ReturnsAsync(favorite);
 
             //When
@@ -192,8 +181,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(caseId, "CaseContents"), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
         }
 
         [TestMethod]
@@ -201,7 +190,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             int caseId = 999;
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(caseId, "CaseContents"))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync((Case?)null);
 
             //When
@@ -209,7 +198,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(caseId, "CaseContents"), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()), Times.Once);
         }
 
         [TestMethod]
@@ -220,11 +209,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(caseId, "CaseContents"))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
             mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
                                   .ReturnsAsync((Favorite?)null);
 
             //When
@@ -232,10 +221,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             //Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(caseId, "CaseContents"), Times.Once);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
+            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(caseId, It.IsAny<QueryOptions<Case>>()), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
         }
 
         #endregion
     }
 }
+

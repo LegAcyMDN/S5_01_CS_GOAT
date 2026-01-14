@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_Unauthenticated_ReturnsUnauthorized()
         {
             // Given
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
 
             // When
@@ -79,7 +79,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteRepositoryMock.Setup(r => r.AddAsync(favorite))
                                   .ReturnsAsync(favorite);
@@ -89,11 +89,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(CreatedAtActionResult));
-            favoriteRepositoryMock.Verify(r => r.PatchAsync(favorite, new Dictionary<string, object>()
-                {
-                { "UserId", normalUser.UserId },
-                { "CaseId", favorite.CaseId } }
-                ), Times.Never);
+            favoriteRepositoryMock.Verify(r => r.PatchAsync(favorite, It.IsAny<Dictionary<string, object>>()),
+                Times.Never);
         }
 
         [TestMethod]
@@ -111,20 +108,21 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
         }
 
+        [TestMethod]
         public void Create_DuplicateFavorite_ReturnsConflict()
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId))
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, favorite.CaseId);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
                                   .ReturnsAsync(favorite);
             // When
             IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
             // Then
             Assert.IsInstanceOfType(result, typeof(ConflictResult));
-            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.AddAsync(favorite), Times.Never);
         }
 
         #endregion
@@ -142,7 +140,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
             favoriteKey = FavoriteFixture.GetFavoriteKey(2, caseId);
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Never);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Never);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 
@@ -154,7 +152,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
                                   .ReturnsAsync(favorite);
             favoriteRepositoryMock.Setup(r => r.DeleteAsync(favorite))
                                   .Returns(Task.CompletedTask);
@@ -164,7 +162,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Once);
         }
 
@@ -176,7 +174,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int caseId = 999;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
             
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsyncNew(favoriteKey))
+            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey))
                                   .ReturnsAsync((Favorite?)null);
 
             // When
@@ -184,10 +182,14 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            favoriteRepositoryMock.Verify(r => r.GetByIdAsyncNew(favoriteKey), Times.Once);
+            favoriteRepositoryMock.Verify(r => r.GetByIdAsync(favoriteKey), Times.Once);
             favoriteRepositoryMock.Verify(r => r.DeleteAsync(favorite), Times.Never);
         }
 
         #endregion
     }
 }
+
+
+
+
