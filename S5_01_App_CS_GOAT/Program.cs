@@ -45,6 +45,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+
+// Add PayPalService
+builder.Services.AddScoped<PayPalService>();
+
 // Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, ReadRepository<Case>>();
 builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, ReadRepository<CaseContent, (int,int)>>();
@@ -82,6 +86,7 @@ builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<ISellingRepository, SellingManager>();
 builder.Services.AddScoped<ISendingRepository, SendingManager>();
+
 
 // Timed services
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();

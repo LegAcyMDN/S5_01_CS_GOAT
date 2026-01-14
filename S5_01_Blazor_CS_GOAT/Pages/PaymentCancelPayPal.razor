@@ -1,0 +1,17 @@
+@page "/payment/cancel"
+@inject NavigationManager Navigation
+
+<PageTitle>Paiement annulé</PageTitle>
+
+<div class="payment-result-page">
+    <h2>❌ Paiement annulé</h2>
+    <p>Vous avez annulé le paiement.</p>
+    <button @onclick="GoToWallet">Retour au portefeuille</button>
+</div>
+
+@code {
+    private void GoToWallet()
+    {
+        Navigation.NavigateTo("/wallet");
+    }
+}
