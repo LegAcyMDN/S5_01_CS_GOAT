@@ -86,6 +86,80 @@
     </div>
 }
 
+<!-- Popup de prédiction -->
+@if (showPredictionPopup)
+{
+    <div class="popup-backdrop">
+        <div class="popup-modal" style="max-width: 90%; width: 1200px;">
+            <h3>@predictionTitle</h3>
+            
+            @if (isPredicting)
+            {
+                <div style="display: flex; justify-content: center; padding: 20px;">
+                    <div style="border: 4px solid #f3f3f3; border-top: 4px solid #f39c12; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+                </div>
+                <p style="color: rgba(255, 255, 255, 0.7);">Analyse des données et génération des prédictions...</p>
+                <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.9em;">Cela peut prendre quelques instants</p>
+            }
+            else if (predictionSuccess && predictionGraphs != null)
+            {
+                <div class="success-icon">✓</div>
+                <p class="success-message">Les prédictions ont été générées avec succès !</p>
+                
+                <!-- Onglets pour choisir entre Prophet et LSTM -->
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; gap: 10px; border-bottom: 2px solid rgba(255, 255, 255, 0.1); margin-bottom: 20px;">
+                        @if (predictionGraphs.ContainsKey("prophet"))
+                        {
+                            <button @onclick='() => SelectGraphTab("prophet")' 
+                                    style="padding: 10px 20px; background-color: @(selectedGraphTab == "prophet" ? "#f39c12" : "transparent"); border: none; color: white; cursor: pointer; border-bottom: 3px solid @(selectedGraphTab == "prophet" ? "#f39c12" : "transparent");">
+                                Prophet
+                            </button>
+                        }
+                        @if (predictionGraphs.ContainsKey("lstm"))
+                        {
+                            <button @onclick='() => SelectGraphTab("lstm")' 
+                                    style="padding: 10px 20px; background-color: @(selectedGraphTab == "lstm" ? "#f39c12" : "transparent"); border: none; color: white; cursor: pointer; border-bottom: 3px solid @(selectedGraphTab == "lstm" ? "#f39c12" : "transparent");">
+                                LSTM
+                            </button>
+                        }
+                    </div>
+                    
+                    <!-- Affichage du graphique sélectionné -->
+                    <div style="text-align: center;">
+                        @if (selectedGraphTab == "prophet" && predictionGraphs.ContainsKey("prophet"))
+                        {
+                            <img src="@GetGraphUrl(predictionGraphs["prophet"])" alt="Prophet Prediction" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                        }
+                        else if (selectedGraphTab == "lstm" && predictionGraphs.ContainsKey("lstm"))
+                        {
+                            <img src="@GetGraphUrl(predictionGraphs["lstm"])" alt="LSTM Prediction" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                        }
+                    </div>
+                </div>
+                
+                <button class="popup-close" @onclick="ClosePredictionPopup" style="background-color: #4CAF50; width: 100%; margin-top: 20px;">Fermer</button>
+            }
+            else if (predictionError)
+            {
+                <div class="error-icon">✕</div>
+                <p class="error-message-text">@predictionErrorMessage</p>
+                <button class="popup-close" @onclick="ClosePredictionPopup" style="background-color: #f44336; width: 100%; margin-top: 20px;">Fermer</button>
+            }
+        </div>
+    </div>
+    
+    @if (isPredicting)
+    {
+        <style>
+            @@keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    }
+}
+
 <div class="page-viewermodel">
     <div class="model-viewer">
         @if (ViewModel.IsLoading)
@@ -216,6 +290,7 @@
         </RadzenValueAxis>
         <RadzenLegend Position="LegendPosition.Top" />
     </RadzenChart>
+    <button class="btn-predict" @onclick="HandlePredictClick" style="margin-top: 20px;">Prédire prix</button>
 </div>
 
 @if (!isAuthenticated && ViewModel.NeedAuth)
@@ -241,6 +316,15 @@
     private string soldPrice = "";
     private string confirmationItemName = "";
     private string confirmationPrice = "";
+
+    private bool showPredictionPopup = false;
+    private bool isPredicting = false;
+    private bool predictionSuccess = false;
+    private bool predictionError = false;
+    private string predictionTitle = "Prédiction des Prix";
+    private string predictionErrorMessage = "";
+    private Dictionary<string, string>? predictionGraphs = null;
+    private string selectedGraphTab = "prophet"; // "prophet" ou "lstm"
 
     public void Dispose()
     {
@@ -370,5 +454,69 @@
     {
         showErrorPopup = false;
         StateHasChanged();
+    }
+
+    private async void HandlePredictClick()
+    {
+        showPredictionPopup = true;
+        isPredicting = true;
+        predictionSuccess = false;
+        predictionError = false;
+        predictionErrorMessage = "";
+        predictionGraphs = null;
+        StateHasChanged();
+
+        try
+        {
+            var graphs = await ViewModel.PredictPriceAsync(30);
+            
+            isPredicting = false;
+            
+            if (graphs != null && graphs.Count > 0)
+            {
+                predictionGraphs = graphs;
+                predictionSuccess = true;
+                selectedGraphTab = "prophet"; // Par défaut sur Prophet
+            }
+            else
+            {
+                predictionError = true;
+                predictionErrorMessage = "Impossible de générer les prédictions. Données insuffisantes ou erreur serveur.";
+            }
+        }
+        catch (Exception ex)
+        {
+            isPredicting = false;
+            predictionError = true;
+            predictionErrorMessage = $"Erreur: {ex.Message}";
+            Console.WriteLine($"Erreur lors de la prédiction: {ex}");
+        }
+        
+        StateHasChanged();
+    }
+
+    private void ClosePredictionPopup()
+    {
+        showPredictionPopup = false;
+        isPredicting = false;
+        predictionSuccess = false;
+        predictionError = false;
+        predictionGraphs = null;
+        StateHasChanged();
+    }
+    
+    private void SelectGraphTab(string tab)
+    {
+        selectedGraphTab = tab;
+        StateHasChanged();
+    }
+    
+    private string GetGraphUrl(string filename)
+    {
+#if DEBUG
+        return $"http://localhost:5000/api/price_history/graphs/{filename}";
+#else
+        return $"https://iacsgoat-h6bkescydravhwf8.canadacentral-01.azurewebsites.net/api/price_history/graphs/{filename}";
+#endif
     }
 }

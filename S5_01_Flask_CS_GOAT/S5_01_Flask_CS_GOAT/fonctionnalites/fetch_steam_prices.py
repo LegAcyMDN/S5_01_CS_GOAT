@@ -22,9 +22,11 @@ def get_price_history(item_name, appid=APPID_CS2):
     """
     
     base_url = "https://steamcommunity.com/market/pricehistory"
+    
+
     params = {
         "appid": appid,
-        "market_hash_name": item_name,
+        "market_hash_name": item_name,  
     }
 
     cookies = {
@@ -37,7 +39,12 @@ def get_price_history(item_name, appid=APPID_CS2):
         "Accept": "application/json,text/javascript,*/*;q=0.01",
     }
 
+    debug_print(f"Fetching price history for: {item_name}")
+    
     resp = requests.get(base_url, params=params, cookies=cookies, headers=headers, timeout=30)
+    
+    debug_print(f"Request URL: {resp.url}")
+    
     resp.raise_for_status()
     return resp.json()
 
@@ -111,8 +118,6 @@ def insert_price_data(connection, item_name, price_data):
     Insert price data into the database.
     """
     cursor = connection.cursor()
-    today = date.today()
-    seven_days_ago = today - timedelta(days=7)
 
     skin_id = get_skin_id(connection, item_name)
     if not skin_id:
@@ -132,6 +137,30 @@ def insert_price_data(connection, item_name, price_data):
         debug_print(f"No wear type found in item name: {item_name}")
         return
 
+    # Récupérer la dernière date d'insertion pour cet item/wear type
+    cursor.execute(
+        """
+        SELECT MAX(prh_pricedate) 
+        FROM t_e_pricehistory_prh
+        WHERE skn_id = %s AND wrt_id = %s
+        """,
+        (skin_id, wear_type_id)
+    )
+    last_date_result = cursor.fetchone()
+    last_date = last_date_result[0] if last_date_result and last_date_result[0] else None
+    
+    if last_date:
+        # PostgreSQL retourne un datetime, on garde tel quel ou on convertit en date
+        if hasattr(last_date, 'date'):
+            cutoff_date = last_date.date()
+        else:
+            cutoff_date = last_date
+        debug_print(f"Last existing data date for this item: {cutoff_date}")
+    else:
+        # Aucune donnée existante, donc on prend tout
+        cutoff_date = None
+        debug_print(f"No existing data found. Will insert all available data from Steam.")
+
     aggregated_data = {}
 
     for date_str, price_str, volume_str in price_data:
@@ -150,8 +179,12 @@ def insert_price_data(connection, item_name, price_data):
             debug_print(f"Skipping incomplete price data: {date_str}, {price_str}, {volume_str}")
             continue
 
-        if price_date.date() < date(2025, 12, 10):
-            debug_print(f"Skipping data before December 10, 2025: {date_str}")
+        # Convertir price_date en date pour la comparaison
+        price_date_only = price_date.date()
+        
+        # Vérifier si la date est avant ou égale à la date de coupure (seulement si cutoff_date existe)
+        if cutoff_date and price_date_only <= cutoff_date:
+            debug_print(f"Skipping data before or equal to {cutoff_date}: {date_str}")
             continue
 
         try:
@@ -161,7 +194,7 @@ def insert_price_data(connection, item_name, price_data):
             debug_print(f"Skipping invalid price or volume value: {price_str}, {volume_str}")
             continue
 
-        day_key = price_date.date()
+        day_key = price_date_only
         if day_key not in aggregated_data:
             aggregated_data[day_key] = {"total_price": 0, "total_volume": 0}
 
@@ -171,6 +204,7 @@ def insert_price_data(connection, item_name, price_data):
     for day_key in aggregated_data:
         aggregated_data[day_key]["entry_count"] = aggregated_data[day_key].get("entry_count", 0) + 1
 
+    inserted_count = 0
     for day, data in aggregated_data.items():
         if data["total_volume"] > 0:
             average_price = data["total_price"] / data["total_volume"]
@@ -198,9 +232,13 @@ def insert_price_data(connection, item_name, price_data):
                 """,
                 (datetime.combine(day, datetime.min.time()), average_price, average_volume, skin_id, wear_type_id),
             )
+            inserted_count += 1
 
     connection.commit()
     cursor.close()
+    
+    debug_print(f"Inserted {inserted_count} new price entries for {item_name}")
+    return inserted_count
 
 
 def get_database_connection():

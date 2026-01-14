@@ -18,6 +18,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     /// </summary>
     public class ThreeDViewViewModel : ViewModelBase
     {
+#if DEBUG
+        private static string API_URL = "https://localhost:7009";
+        private static string FLASK_URL = "http://localhost:5555";
+#else
+        private static string API_URL = "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net";
+        private static string FLASK_URL = "https://iacsgoat-h6bkescydravhwf8.canadacentral-01.azurewebsites.net";
+#endif
+
         private readonly IThreeDModelService<ThreeDModel> _threeDModelRepository;
         private readonly IService<InventoryItemDetailDTO> _inventoryItemService;
         private readonly IService<PriceHistoryDTO> _priceHistoryService;
@@ -185,11 +193,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 LoadingMessage = "Chargement des textures...";
 
                 await _cacheService.FetchAndCacheImage(
-#if DEBUG
-                    "https://localhost:7009/api/wear/get3dmodel/" + ItemDetails.WearId,
-#else
-                    "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/wear/get3dmodel/" + ItemDetails.WearId,
-#endif
+                    $"{API_URL}/api/wear/get3dmodel/" + ItemDetails.WearId,
                     "applied_texture.png"
                 );
 
@@ -337,11 +341,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 var httpClient = new HttpClient();
                 httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
-#if DEBUG
-                var response = await httpClient.DeleteAsync($"https://localhost:7009/api/inventoryitem/sell/{inventoryItemId}");
-#else
-                var response = await httpClient.DeleteAsync($"https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net/api/inventoryitem/sell/{inventoryItemId}");
-#endif
+                var response = await httpClient.DeleteAsync($"{API_URL}/api/inventoryitem/sell/{inventoryItemId}");
 
                 return response.IsSuccessStatusCode;
             }
@@ -378,5 +378,49 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 IsLoadingPriceHistory = false;
             }
         }
+
+        /// <summary>
+        /// Prédit les prix futurs en appelant l'API Flask et recharge l'historique
+        /// </summary>
+        public async Task<Dictionary<string, string>?> PredictPriceAsync(int days = 30)
+        {
+            try
+            {
+                if (ItemDetails == null) return null;
+
+                var httpClient = new HttpClient();
+
+                var flaskUrl = $"{FLASK_URL}/api/price_history/predict_price/bywear/{ItemDetails.WearId}/{days}";
+
+                var response = await httpClient.GetAsync(flaskUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    var result = System.Text.Json.JsonSerializer.Deserialize<PredictionResult>(content);
+                    
+                    // Recharger l'historique des prix pour inclure les prédictions
+                    await DrawPriceHistoryGraph();
+                    
+                    return result?.Graphs;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la prédiction des prix: {ex.Message}");
+                return null;
+            }
+        }
+    }
+    
+    public class PredictionResult
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("message")]
+        public string? Message { get; set; }
+        
+        [System.Text.Json.Serialization.JsonPropertyName("graphs")]
+        public Dictionary<string, string>? Graphs { get; set; }
     }
 }
