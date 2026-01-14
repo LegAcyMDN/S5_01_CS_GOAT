@@ -533,5 +533,61 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             ErrorMessage = string.Empty;
             SuccessMessage = string.Empty;
         }
+
+        /// <summary>
+        /// Navigue vers la page de connexion Steam
+        /// </summary>
+        public void ConnectSteam()
+        {
+            string? apiBaseUrl = _httpClient.BaseAddress?.ToString().TrimEnd('/');
+            int userId = CurrentUser?.UserId ?? 0;
+            string steamLoginUrl = $"{apiBaseUrl}/steam/login?linkUserId={userId}";
+            _navigationService.NavigateTo(steamLoginUrl, forceLoad: true);
+        }
+
+        /// <summary>
+        /// Délie le compte Steam
+        /// </summary>
+        public async Task UnlinkSteamAsync()
+        {
+            try
+            {
+                IsSaving = true;
+                ErrorMessage = string.Empty;
+                SuccessMessage = string.Empty;
+
+                string? token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    ErrorMessage = "Session expirée. Veuillez vous reconnecter.";
+                    return;
+                }
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Patch, "steam/unlink");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    SuccessMessage = "Compte Steam délié avec succès.";
+                    await LoadProfileAsync();
+                    OnPropertyChanged(nameof(CurrentUser));
+                }
+                else
+                {
+                    ErrorMessage = $"Erreur lors du déliement du compte Steam. Code: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Erreur lors du déliement du compte Steam : {ex.Message}";
+                Console.WriteLine($"Erreur UnlinkSteamAsync : {ex}");
+            }
+            finally
+            {
+                IsSaving = false;
+            }
+        }
     }
 }

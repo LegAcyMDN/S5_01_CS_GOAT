@@ -13,15 +13,25 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _isLoading = true;
         private UserDTO? _currentUser;
         private readonly IService<RandomTransactionDetailDTO> _randomTransactionRepository;
+        private readonly IService<ItemTransactionDetailDTO> _itemTransactionRepository;
         private readonly AuthService _authService;
         private readonly HttpClient _httpClient;
         private List<RandomTransactionDetailDTO>? _randomsTransactionsDetail;
+        private List<ItemTransactionDetailDTO>? _itemTransactionsDetail;
+        private bool _isRandomTransactionsExpanded = true;
+        private bool _isItemTransactionsExpanded = true;
 
         public HashSet<int> OpenTransactionIds { get; } = new();
+        public HashSet<int> OpenItemTransactionIds { get; } = new();
 
-        public HistoryViewModel(IService<RandomTransactionDetailDTO> randomTransactionRepository, AuthService authService, HttpClient httpClient)
+        public HistoryViewModel(
+            IService<RandomTransactionDetailDTO> randomTransactionRepository, 
+            IService<ItemTransactionDetailDTO> itemTransactionRepository,
+            AuthService authService, 
+            HttpClient httpClient)
         {
             _randomTransactionRepository = randomTransactionRepository;
+            _itemTransactionRepository = itemTransactionRepository;
             _authService = authService;
             _httpClient = httpClient;
         }
@@ -36,15 +46,33 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             get => _randomsTransactionsDetail;
             set => SetProperty(ref _randomsTransactionsDetail, value);
         }
+        public List<ItemTransactionDetailDTO>? ItemTransactionsDetail
+        {
+            get => _itemTransactionsDetail;
+            set => SetProperty(ref _itemTransactionsDetail, value);
+        }
         public UserDTO? CurrentUser
         {
             get => _currentUser;
             set => SetProperty(ref _currentUser, value);
         }
 
+        public bool IsRandomTransactionsExpanded
+        {
+            get => _isRandomTransactionsExpanded;
+            set => SetProperty(ref _isRandomTransactionsExpanded, value);
+        }
+
+        public bool IsItemTransactionsExpanded
+        {
+            get => _isItemTransactionsExpanded;
+            set => SetProperty(ref _isItemTransactionsExpanded, value);
+        }
+
         public override async Task InitializeAsync()
         {
             await LoadRandomsTransactionsDataAsync();
+            await LoadItemTransactionsDataAsync();
             IsLoading = false;
             await Task.CompletedTask;
         }
@@ -66,11 +94,28 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erreur lors du chargement de l'historique: {ex.Message}");
+                Console.WriteLine($"Erreur lors du chargement de l'historique des ouvertures: {ex.Message}");
             }
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        private async Task LoadItemTransactionsDataAsync()
+        {
+            try
+            {
+                string jwtToken = await _authService.GetTokenAsync();
+                if (!string.IsNullOrEmpty(jwtToken))
+                {
+                    ItemTransactionsDetail = await _itemTransactionRepository.GetByUserAsync(jwtToken);
+                    ItemTransactionsDetail?.Sort((x, y) => y.TransactionDate.CompareTo(x.TransactionDate));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors du chargement de l'historique des ventes: {ex.Message}");
             }
         }
 
@@ -134,6 +179,28 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du chargement du detail: {ex.Message}");
+            }
+        }
+
+        public void ToggleRandomTransactionsSection()
+        {
+            IsRandomTransactionsExpanded = !IsRandomTransactionsExpanded;
+        }
+
+        public void ToggleItemTransactionsSection()
+        {
+            IsItemTransactionsExpanded = !IsItemTransactionsExpanded;
+        }
+
+        public void ToggleItemTransactionDetails(int inventoryItemId)
+        {
+            if (OpenItemTransactionIds.Contains(inventoryItemId))
+            {
+                OpenItemTransactionIds.Remove(inventoryItemId);
+            }
+            else
+            {
+                OpenItemTransactionIds.Add(inventoryItemId);
             }
         }
     }

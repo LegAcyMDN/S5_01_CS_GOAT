@@ -12,9 +12,25 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     public class SkinController(
         IMapper mapper,
-        IReadableRepository<Case, int> caseManager
+        IReadableRepository<Case, int> caseManager,
+        IReadableRepository<Skin, int> skinManager
         ) : ControllerBase
     {
+        /// <summary>
+        /// Get all skins
+        /// </summary>
+        /// <returns>List of SkinDTO objects</returns>
+        [HttpGet("all")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAll()
+        {
+            QueryOptions<Skin> options = new QueryOptions<Skin>()
+                .Before(s => s.Wears, s => s.Rarity, s => s.Item);
+            IEnumerable<Skin> skinsEntity = await skinManager.GetAllAsyncNew(options);
+            IEnumerable<SkinDTO> skins = mapper.Map<IEnumerable<SkinDTO>>(skinsEntity);
+            return Ok(new GetOptions<SkinDTO>(Request, skins));
+        }
+
         /// <summary>
         /// Get skins by case ID
         /// </summary>
@@ -26,7 +42,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> GetByCase(int caseid)
         {
             QueryOptions<Case> options = new QueryOptions<Case>()
-                .Before("CaseContents.Skin.Wears.WearType",
+                .Before("CaseContents.Skin.Wears",
                         "CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item");
             Case? _case = await caseManager.GetByIdAsyncNew(caseid, options);

@@ -32,6 +32,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private int _totalTransactions = 0;
         private double _totalRevenue = 0;
 
+        // Pagination et filtres pour Users
+        private int _currentPageUsers = 1;
+        private int _pageSizeUsers = 25;
+        private int _totalPagesUsers = 1;
+        private int _totalCountUsers = 0;
+        private int _filteredCountUsers = 0;
+        private string? _sortKeyUsers = null;
+        private string _sortTypeUsers = "asc";
+        private Dictionary<string, List<string>> _filtersUsers = new();
+
         public AdminViewModel(
             AuthService authService,
             AdminUserService adminUserService,
@@ -132,20 +142,56 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _totalRevenue, value);
         }
 
-        public List<UserDTO> FilteredUsers
+        // Propriétés de pagination Users
+        public int CurrentPageUsers
         {
-            get
-            {
-                if (AllUsers == null) return new List<UserDTO>();
-                if (string.IsNullOrWhiteSpace(SearchQuery)) return AllUsers;
-
-                return AllUsers.Where(u =>
-                    u.DisplayName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    u.Login.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                    (u.Email != null && u.Email.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
-                ).ToList();
-            }
+            get => _currentPageUsers;
+            set => SetProperty(ref _currentPageUsers, value);
         }
+
+        public int PageSizeUsers
+        {
+            get => _pageSizeUsers;
+            set => SetProperty(ref _pageSizeUsers, value);
+        }
+
+        public int TotalPagesUsers
+        {
+            get => _totalPagesUsers;
+            set => SetProperty(ref _totalPagesUsers, value);
+        }
+
+        public int TotalCountUsers
+        {
+            get => _totalCountUsers;
+            set => SetProperty(ref _totalCountUsers, value);
+        }
+
+        public int FilteredCountUsers
+        {
+            get => _filteredCountUsers;
+            set => SetProperty(ref _filteredCountUsers, value);
+        }
+
+        public string? SortKeyUsers
+        {
+            get => _sortKeyUsers;
+            set => SetProperty(ref _sortKeyUsers, value);
+        }
+
+        public string SortTypeUsers
+        {
+            get => _sortTypeUsers;
+            set => SetProperty(ref _sortTypeUsers, value);
+        }
+
+        public Dictionary<string, List<string>> FiltersUsers
+        {
+            get => _filtersUsers;
+            set => SetProperty(ref _filtersUsers, value);
+        }
+
+        public List<UserDTO> FilteredUsers => AllUsers ?? new List<UserDTO>();
 
         #endregion
 
@@ -266,19 +312,109 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Charge la liste de tous les utilisateurs via le service
+        /// Charge la liste de tous les utilisateurs via le service avec pagination
         /// </summary>
         public async Task LoadUsersAsync()
         {
             try
             {
-                AllUsers = await _adminUserService.GetAllUsersAsync();
-                TotalUsers = AllUsers?.Count ?? 0;
+                var response = await _adminUserService.GetAllUsersWithOptionsAsync(
+                    searchTerm: !string.IsNullOrWhiteSpace(SearchQuery) ? SearchQuery : null,
+                    sortKey: SortKeyUsers,
+                    sortType: SortTypeUsers,
+                    pageNumber: CurrentPageUsers,
+                    pageSize: PageSizeUsers,
+                    filters: FiltersUsers.Any() ? FiltersUsers : null
+                );
+
+                if (response != null)
+                {
+                    AllUsers = response.Result;
+                    TotalPagesUsers = response.PageCount;
+                    TotalCountUsers = response.TotalCount;
+                    FilteredCountUsers = response.FilteredCount;
+                    TotalUsers = response.TotalCount;
+                }
             }
             catch (Exception ex)
             {
                 ErrorMessage = $"Erreur lors du chargement des utilisateurs : {ex.Message}";
             }
+        }
+
+        /// <summary>
+        /// Change la page des utilisateurs
+        /// </summary>
+        public async Task ChangeUserPageAsync(int newPage)
+        {
+            if (newPage >= 1 && newPage <= TotalPagesUsers)
+            {
+                CurrentPageUsers = newPage;
+                await LoadUsersAsync();
+            }
+        }
+
+        /// <summary>
+        /// Change la taille de page des utilisateurs
+        /// </summary>
+        public async Task ChangeUserPageSizeAsync(int newPageSize)
+        {
+            PageSizeUsers = newPageSize;
+            CurrentPageUsers = 1; // Reset à la première page
+            await LoadUsersAsync();
+        }
+
+        /// <summary>
+        /// Change le tri des utilisateurs
+        /// </summary>
+        public async Task ChangeUserSortAsync(string? sortKey, string sortType = "asc")
+        {
+            SortKeyUsers = sortKey;
+            SortTypeUsers = sortType;
+            CurrentPageUsers = 1; // Reset à la première page
+            await LoadUsersAsync();
+        }
+
+        /// <summary>
+        /// Effectue une recherche sur les utilisateurs
+        /// </summary>
+        public async Task SearchUsersAsync()
+        {
+            CurrentPageUsers = 1; // Reset à la première page lors d'une recherche
+            await LoadUsersAsync();
+        }
+
+        /// <summary>
+        /// Ajoute ou modifie un filtre sur les utilisateurs
+        /// </summary>
+        public async Task AddUserFilterAsync(string filterKey, List<string> filterValues)
+        {
+            FiltersUsers[filterKey] = filterValues;
+            CurrentPageUsers = 1; // Reset à la première page
+            await LoadUsersAsync();
+        }
+
+        /// <summary>
+        /// Supprime un filtre sur les utilisateurs
+        /// </summary>
+        public async Task RemoveUserFilterAsync(string filterKey)
+        {
+            FiltersUsers.Remove(filterKey);
+            CurrentPageUsers = 1; // Reset à la première page
+            await LoadUsersAsync();
+        }
+
+        /// <summary>
+        /// Réinitialise tous les filtres des utilisateurs
+        /// </summary>
+        public async Task ResetUserFiltersAsync()
+        {
+            SearchQuery = string.Empty;
+            FiltersUsers.Clear();
+            SortKeyUsers = null;
+            SortTypeUsers = "asc";
+            CurrentPageUsers = 1;
+            await LoadUsersAsync();
         }
 
         /// <summary>

@@ -16,6 +16,8 @@ public class SkinDTO : IQueryableDTO
     public string? SearchTerm => ItemName + " | " + SkinName + " | " + RarityName;
 
 
+    public int SkinId { get; set; }
+
     public string SkinName { get; set; } = null!;
 
     public string ItemName { get; set; } = null!;

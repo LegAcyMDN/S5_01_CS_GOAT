@@ -14,46 +14,152 @@
         else
         {
             <p>Consultez l'historique de toutes vos transactions et ouvertures de caisses.</p> <br/>
-            if (ViewModel.RandomsTransactionsDetail == null)
-            {
-                <div>Transactions non charg�es</div>
-            }
-            else if (!ViewModel.RandomsTransactionsDetail.Any())
-            {
-                <div>Aucune transactions</div>
-            }
-            else
-            {
-                <ul>
-
-                    @foreach (var rt in ViewModel.RandomsTransactionsDetail)
+            
+            <div class="section-header">
+                <h2>Ouvertures de caisses</h2>
+                <div class="toggle-icon" @onclick="ViewModel.ToggleRandomTransactionsSection">
+                    @if (ViewModel.IsRandomTransactionsExpanded)
                     {
-                        <li style="border-color:@(rt.RarityColor)">
-                            <p class="label">Date d'ouverture </p>: @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
-                            <p class="label">Montant de la transaction </p> : @(Math.Round(rt.WalletValue, 2).ToString() ?? "Montant Inconnu") � <br/>
-
-                        @if (!ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
-                        {
-                            <p class="CloseHistory" @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">
-                                <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                            </p>
-                        }
-
-                        @if (ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
-                        {
-                            <div>
-                                <p class="label">Caisse </p>: @(rt.Case != null ? rt.Case.CaseName ?? "Nom de caisse Inconnu" : "Caisse Inconnue")<br/>
-                                <p class="label">Item </p>: @(rt.ItemName ?? "Item Inconnu") <br/>
-                                <p class="label">Skin </p>: <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
-                                <p class="label">Qualit� </p>: @(rt.WearName ?? "Qualit� Inconnue") <br/>
-                                <p class="CloseHistory" @onclick="async () => await ViewModel.UnloadTransactionDetailsAsync(rt.TransactionId)">
-                                    <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                                </p>
-                            </div>
-                        }
-                        </li>
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
                     }
-                </ul>
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
+                    }
+                </div>
+            </div>
+
+            @if (ViewModel.IsRandomTransactionsExpanded)
+            {
+                @if (ViewModel.RandomsTransactionsDetail == null)
+                {
+                    <div>Transactions non chargées</div>
+                }
+                else if (!ViewModel.RandomsTransactionsDetail.Any())
+                {
+                    <div>Aucune ouverture de caisse</div>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var rt in ViewModel.RandomsTransactionsDetail)
+                        {
+                            <li style="border-color:@(rt.RarityColor)">
+                                <p class="label">Date d'ouverture </p>: @(rt.TransactionDate.ToString() ?? "Date Inconnue") <br/>
+                                <p class="label">Montant de la transaction </p> : @(rt.WalletValue.ToString() ?? "Montant Inconnu") € <br/>
+
+                                @if (!ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
+                                {
+                                    <p class="CloseHistory" @onclick="async () => await ViewModel.LoadTransactionDetailsAsync(rt.TransactionId)">
+                                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                    </p>
+                                }
+
+                                @if (ViewModel.OpenTransactionIds.Contains(rt.TransactionId))
+                                {
+                                    <div>
+                                        <p class="label">Caisse </p>: @(rt.Case != null ? rt.Case.CaseName ?? "Nom de caisse Inconnu" : "Caisse Inconnue")<br/>
+                                        <p class="label">Item </p>: @(rt.ItemName ?? "Item Inconnu") <br/>
+                                        <p class="label">Skin </p>: <p style="color:@(rt.RarityColor!); display: inline;">@(rt.SkinName ?? "Skin Inconnu")</p> <br/>
+                                        <p class="label">Qualité </p>: @(rt.WearName ?? "Qualité Inconnue") <br/>
+                                        <p class="CloseHistory" @onclick="async () => await ViewModel.UnloadTransactionDetailsAsync(rt.TransactionId)">
+                                            <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                        </p>
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            }
+
+            <div class="section-header">
+                <h2>Ventes d'items</h2>
+                <div class="toggle-icon" @onclick="ViewModel.ToggleItemTransactionsSection">
+                    @if (ViewModel.IsItemTransactionsExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
+                    }
+                </div>
+            </div>
+
+            @if (ViewModel.IsItemTransactionsExpanded)
+            {
+                @if (ViewModel.ItemTransactionsDetail == null)
+                {
+                    <div>Transactions non chargées</div>
+                }
+                else if (!ViewModel.ItemTransactionsDetail.Any())
+                {
+                    <div>Aucune vente d'item</div>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var it in ViewModel.ItemTransactionsDetail)
+                        {
+                            <li>
+                                <p class="label">Date de vente </p>: @(it.TransactionDate.ToString() ?? "Date Inconnue") <br/>
+                                <p class="label">Montant crédité </p> : <span style="color: #2ecc71; font-weight: bold;">+@(it.WalletValue.ToString() ?? "Montant Inconnu") €</span> <br/>
+
+                                @if (!ViewModel.OpenItemTransactionIds.Contains(it.InventoryItemId ?? 0))
+                                {
+                                    <p class="CloseHistory" @onclick="() => ViewModel.ToggleItemTransactionDetails(it.InventoryItemId ?? 0)">
+                                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                    </p>
+                                }
+
+                                @if (ViewModel.OpenItemTransactionIds.Contains(it.InventoryItemId ?? 0))
+                                {
+                                    <div>
+                                        <p class="label">Item </p>: @(it.ItemName ?? "Item Inconnu") <br/>
+                                        <p class="label">Skin </p>: @(it.SkinName ?? "Skin Inconnu") <br/>
+                                        <p class="label">Qualité </p>: @(it.WearName ?? "Qualité Inconnue") <br/>
+                                        @if (it.CancelledOn != null)
+                                        {
+                                            <p class="label cancelled">Transaction annulée le @(it.CancelledOn.Value.ToString("dd/MM/yyyy"))</p> <br/>
+                                        }
+                                        <p class="CloseHistory" @onclick="() => ViewModel.ToggleItemTransactionDetails(it.InventoryItemId ?? 0)">
+                                            <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                                        </p>
+                                    </div>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
             }
         }
     </div>

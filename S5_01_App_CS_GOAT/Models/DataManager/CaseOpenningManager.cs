@@ -171,7 +171,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             int totalWeight = options.Sum(o => o.Weight);
             double scaled = fraction * totalWeight;
             int cumulative = 0;
-            foreach (CaseContent option in options)
+            foreach (CaseContent option in options.OrderBy(cc => cc.Weight))
             {
                 cumulative += option.Weight;
                 if (scaled < cumulative)

@@ -33,6 +33,8 @@ builder.Services.AddScoped<IService<PriceHistoryDTO>>(sp =>
     new WebService<PriceHistoryDTO>(sp.GetRequiredService<IConfiguration>(), "pricehistory"));
 builder.Services.AddScoped<IService<RandomTransactionDetailDTO>>(sp => 
     new WebService<RandomTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
+builder.Services.AddScoped<IService<ItemTransactionDetailDTO>>(sp => 
+    new WebService<ItemTransactionDetailDTO>(sp.GetRequiredService<IConfiguration>(), "itemtransaction"));
 builder.Services.AddScoped<IService<LiveFeedDTO>>(sp => 
     new WebService<LiveFeedDTO>(sp.GetRequiredService<IConfiguration>(), "randomtransaction"));
 
@@ -50,7 +52,9 @@ builder.Services.AddScoped<PayPalService>();
 
 // NEW: Specialized services following SRP
 builder.Services.AddScoped<NavigationService>();
+builder.Services.AddScoped<GetOptionsService>();
 builder.Services.AddScoped<AdminUserService>();
+builder.Services.AddScoped<AdminPromoCodeService>();
 builder.Services.AddScoped<TwoFactorAuthService>();
 builder.Services.AddScoped<AdminStatisticsService>();
 builder.Services.AddScoped<CaseOpeningService>();
@@ -60,6 +64,7 @@ builder.Services.AddScoped<CaseResultMapperService>();
 builder.Services.AddScoped<HomeViewModel>();
 builder.Services.AddScoped<InventoryViewModel>();
 builder.Services.AddScoped<ProfileViewModel>();
+builder.Services.AddScoped<SteamConnectViewModel>();
 builder.Services.AddScoped<ThreeDViewViewModel>();
 builder.Services.AddScoped<CaseViewViewModel>();
 builder.Services.AddScoped<LoginViewModel>();

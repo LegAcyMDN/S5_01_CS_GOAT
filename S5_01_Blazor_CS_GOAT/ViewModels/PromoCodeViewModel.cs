@@ -3,6 +3,7 @@ using S5_01_Blazor_CS_GOAT.Service;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Shared.DTO;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
@@ -12,11 +13,11 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
     public class PromoCodeViewModel : ViewModelBase
     {
         private readonly AuthService _authService;
-        private readonly HttpClient _httpClient;
+        private readonly AdminPromoCodeService _promoCodeService;
 
-        private List<PromoCode>? _allPromoCodes;
-        private PromoCode? _selectedPromoCode;
-        private PromoCode _editingPromoCode = new PromoCode();
+        private List<PromoCodeDTO>? _allPromoCodes;
+        private PromoCodeDTO? _selectedPromoCode;
+        private PromoCodeDTO _editingPromoCode = new PromoCodeDTO();
         private bool _isLoading = true;
         private bool _isProcessing = false;
         private string _errorMessage = string.Empty;
@@ -25,33 +26,37 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _showCreateModal = false;
         private bool _showEditModal = false;
         
-        // Filtres
-        private string _filterType = "all"; // all, user, case, global
-        private DateTime? _filterDateFrom;
-        private DateTime? _filterDateTo;
-        private string _sortBy = "code"; // code, validityStart, expiryDate, discountPercentage, discountAmount
+        // Pagination et filtres
+        private int _currentPage = 1;
+        private int _pageSize = 25;
+        private int _totalPages = 1;
+        private int _totalCount = 0;
+        private int _filteredCount = 0;
+        private string? _sortKey = null;
+        private string _sortType = "asc";
+        private Dictionary<string, List<string>> _filters = new();
 
-        public PromoCodeViewModel(AuthService authService, HttpClient httpClient)
+        public PromoCodeViewModel(AuthService authService, AdminPromoCodeService promoCodeService)
         {
             _authService = authService;
-            _httpClient = httpClient;
+            _promoCodeService = promoCodeService;
         }
 
         #region Properties
 
-        public List<PromoCode>? AllPromoCodes
+        public List<PromoCodeDTO>? AllPromoCodes
         {
             get => _allPromoCodes;
             set => SetProperty(ref _allPromoCodes, value);
         }
 
-        public PromoCode? SelectedPromoCode
+        public PromoCodeDTO? SelectedPromoCode
         {
             get => _selectedPromoCode;
             set => SetProperty(ref _selectedPromoCode, value);
         }
 
-        public PromoCode EditingPromoCode
+        public PromoCodeDTO EditingPromoCode
         {
             get => _editingPromoCode;
             set => SetProperty(ref _editingPromoCode, value);
@@ -99,34 +104,59 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _showEditModal, value);
         }
 
-        public string FilterType
+        // Propriétés de pagination
+        public int CurrentPage
         {
-            get => _filterType;
-            set => SetProperty(ref _filterType, value);
+            get => _currentPage;
+            set => SetProperty(ref _currentPage, value);
         }
 
-        public DateTime? FilterDateFrom
+        public int PageSize
         {
-            get => _filterDateFrom;
-            set => SetProperty(ref _filterDateFrom, value);
+            get => _pageSize;
+            set => SetProperty(ref _pageSize, value);
         }
 
-        public DateTime? FilterDateTo
+        public int TotalPages
         {
-            get => _filterDateTo;
-            set => SetProperty(ref _filterDateTo, value);
+            get => _totalPages;
+            set => SetProperty(ref _totalPages, value);
         }
 
-        public string SortBy
+        public int TotalCount
         {
-            get => _sortBy;
-            set => SetProperty(ref _sortBy, value);
+            get => _totalCount;
+            set => SetProperty(ref _totalCount, value);
+        }
+
+        public int FilteredCount
+        {
+            get => _filteredCount;
+            set => SetProperty(ref _filteredCount, value);
+        }
+
+        public string? SortKey
+        {
+            get => _sortKey;
+            set => SetProperty(ref _sortKey, value);
+        }
+
+        public string SortType
+        {
+            get => _sortType;
+            set => SetProperty(ref _sortType, value);
+        }
+
+        public Dictionary<string, List<string>> Filters
+        {
+            get => _filters;
+            set => SetProperty(ref _filters, value);
         }
 
         /// <summary>
         /// Calcule la prochaine date de rafraîchissement pour un code promo
         /// </summary>
-        public DateTime? GetNextRefresh(PromoCode promo)
+        public DateTime? GetNextRefresh(PromoCodeDTO promo)
         {
             if (promo.RefreshDelay == null || promo.ExpiryDate == null) return null;
             return promo.ExpiryDate.Value.Add(promo.RefreshDelay.Value);
@@ -135,7 +165,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Vérifie si un code promo est expiré
         /// </summary>
-        public bool IsExpired(PromoCode promo)
+        public bool IsExpired(PromoCodeDTO promo)
         {
             return promo.ExpiryDate.HasValue && DateTime.Now > promo.ExpiryDate.Value;
         }
@@ -143,7 +173,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Vérifie si un code promo est prêt à être rafraîchi
         /// </summary>
-        public bool IsDueForRefresh(PromoCode promo)
+        public bool IsDueForRefresh(PromoCodeDTO promo)
         {
             if (!IsExpired(promo)) return false;
             if (promo.RefreshDelay == null) return false;
@@ -154,7 +184,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Vérifie si un code promo sera automatiquement supprimé
         /// </summary>
-        public bool WillBeDeleted(PromoCode promo)
+        public bool WillBeDeleted(PromoCodeDTO promo)
         {
             if (promo.RefreshDelay != null) return false;
             return IsExpired(promo) || promo.RemainingUses == 0;
@@ -163,7 +193,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Obtient le statut d'un code promo avec sa description
         /// </summary>
-        public (string Status, string Description, string CssClass) GetPromoStatus(PromoCode promo)
+        public (string Status, string Description, string CssClass) GetPromoStatus(PromoCodeDTO promo)
         {
             var isNotStarted = promo.ValidityStart > DateTime.Now;
             var isExpired = IsExpired(promo);
@@ -203,60 +233,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             return ("✅ Actif", "Code promo actif et utilisable", "status-active");
         }
 
-        public List<PromoCode> FilteredAndSortedPromoCodes
-        {
-            get
-            {
-                if (AllPromoCodes == null) return new List<PromoCode>();
-
-                var filtered = AllPromoCodes.AsEnumerable();
-
-                // Filtrer par recherche
-                if (!string.IsNullOrWhiteSpace(SearchQuery))
-                {
-                    filtered = filtered.Where(p =>
-                        p.Code.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase) ||
-                        (p.UserLogin != null && p.UserLogin.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase)) ||
-                        (p.CaseName != null && p.CaseName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase))
-                    );
-                }
-
-                // Filtrer par type
-                if (FilterType != "all")
-                {
-                    filtered = FilterType switch
-                    {
-                        "user" => filtered.Where(p => p.UserId != null),
-                        "case" => filtered.Where(p => p.CaseId != null),
-                        "global" => filtered.Where(p => p.UserId == null && p.CaseId == null),
-                        _ => filtered
-                    };
-                }
-
-                // Filtrer par date
-                if (FilterDateFrom.HasValue)
-                {
-                    filtered = filtered.Where(p => p.ValidityStart >= FilterDateFrom.Value);
-                }
-                if (FilterDateTo.HasValue)
-                {
-                    filtered = filtered.Where(p => !p.ExpiryDate.HasValue || p.ExpiryDate.Value <= FilterDateTo.Value);
-                }
-
-                // Trier
-                filtered = SortBy switch
-                {
-                    "validityStart" => filtered.OrderBy(p => p.ValidityStart),
-                    "expiryDate" => filtered.OrderBy(p => p.ExpiryDate ?? DateTime.MaxValue),
-                    "discountPercentage" => filtered.OrderByDescending(p => p.DiscountPercentage ?? 0),
-                    "discountAmount" => filtered.OrderByDescending(p => p.DiscountAmount ?? 0),
-                    _ => filtered.OrderBy(p => p.Code)
-                };
-
-                return filtered.ToList();
-            }
-        }
-
         #endregion
 
         public override async Task InitializeAsync()
@@ -265,7 +241,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
-        /// Charge tous les codes promos
+        /// Charge tous les codes promos avec pagination
         /// </summary>
         public async Task LoadPromoCodesAsync()
         {
@@ -274,19 +250,25 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
+                var response = await _promoCodeService.GetAllPromoCodesWithOptionsAsync(
+                    searchTerm: !string.IsNullOrWhiteSpace(SearchQuery) ? SearchQuery : null,
+                    sortKey: SortKey,
+                    sortType: SortType,
+                    pageNumber: CurrentPage,
+                    pageSize: PageSize,
+                    filters: Filters.Any() ? Filters : null
+                );
 
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.GetAsync("PromoCode/all");
-                if (response.IsSuccessStatusCode)
+                if (response != null)
                 {
-                    AllPromoCodes = await response.Content.ReadFromJsonAsync<List<PromoCode>>();
+                    AllPromoCodes = response.Result;
+                    TotalPages = response.PageCount;
+                    TotalCount = response.TotalCount;
+                    FilteredCount = response.FilteredCount;
                 }
                 else
                 {
-                    ErrorMessage = $"Erreur lors du chargement des codes promos : {response.StatusCode}";
+                    ErrorMessage = "Erreur lors du chargement des codes promos.";
                 }
             }
             catch (Exception ex)
@@ -300,11 +282,86 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         }
 
         /// <summary>
+        /// Change la page
+        /// </summary>
+        public async Task ChangePageAsync(int newPage)
+        {
+            if (newPage >= 1 && newPage <= TotalPages)
+            {
+                CurrentPage = newPage;
+                await LoadPromoCodesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Change la taille de page
+        /// </summary>
+        public async Task ChangePageSizeAsync(int newPageSize)
+        {
+            PageSize = newPageSize;
+            CurrentPage = 1; // Reset à la première page
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
+        /// Change le tri
+        /// </summary>
+        public async Task ChangeSortAsync(string? sortKey, string sortType = "asc")
+        {
+            SortKey = sortKey;
+            SortType = sortType;
+            CurrentPage = 1; // Reset à la première page
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
+        /// Effectue une recherche
+        /// </summary>
+        public async Task SearchAsync()
+        {
+            CurrentPage = 1; // Reset à la première page lors d'une recherche
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
+        /// Ajoute ou modifie un filtre
+        /// </summary>
+        public async Task AddFilterAsync(string filterKey, List<string> filterValues)
+        {
+            Filters[filterKey] = filterValues;
+            CurrentPage = 1; // Reset à la première page
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
+        /// Supprime un filtre
+        /// </summary>
+        public async Task RemoveFilterAsync(string filterKey)
+        {
+            Filters.Remove(filterKey);
+            CurrentPage = 1; // Reset à la première page
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
+        /// Réinitialise tous les filtres
+        /// </summary>
+        public async Task ResetFiltersAsync()
+        {
+            SearchQuery = string.Empty;
+            Filters.Clear();
+            SortKey = null;
+            SortType = "asc";
+            CurrentPage = 1;
+            await LoadPromoCodesAsync();
+        }
+
+        /// <summary>
         /// Ouvre le modal de création
         /// </summary>
         public void OpenCreateModal()
         {
-            EditingPromoCode = new PromoCode
+            EditingPromoCode = new PromoCodeDTO
             {
                 ValidityStart = DateTime.Now,
                 Code = string.Empty
@@ -317,9 +374,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Ouvre le modal d'édition
         /// </summary>
-        public void OpenEditModal(PromoCode promoCode)
+        public void OpenEditModal(PromoCodeDTO promoCode)
         {
-            EditingPromoCode = new PromoCode
+            EditingPromoCode = new PromoCodeDTO
             {
                 PromoCodeId = promoCode.PromoCodeId,
                 Code = promoCode.Code,
@@ -362,13 +419,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.PostAsJsonAsync("PromoCode/create", EditingPromoCode);
-                if (response.IsSuccessStatusCode)
+                bool success = await _promoCodeService.CreatePromoCodeAsync(EditingPromoCode);
+                
+                if (success)
                 {
                     SuccessMessage = "Code promo créé avec succès.";
                     ShowCreateModal = false;
@@ -376,8 +429,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la création : {errorContent}";
+                    ErrorMessage = "Erreur lors de la création du code promo.";
                 }
             }
             catch (Exception ex)
@@ -408,13 +460,9 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                     return;
                 }
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.PutAsJsonAsync($"PromoCode/update/{EditingPromoCode.PromoCodeId}", EditingPromoCode);
-                if (response.IsSuccessStatusCode)
+                bool success = await _promoCodeService.UpdatePromoCodeAsync(EditingPromoCode);
+                
+                if (success)
                 {
                     SuccessMessage = "Code promo mis à jour avec succès.";
                     ShowEditModal = false;
@@ -422,8 +470,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la mise à jour : {errorContent}";
+                    ErrorMessage = "Erreur lors de la mise à jour du code promo.";
                 }
             }
             catch (Exception ex)
@@ -447,21 +494,16 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 ErrorMessage = string.Empty;
                 SuccessMessage = string.Empty;
 
-                var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token)) return;
-
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                var response = await _httpClient.DeleteAsync($"PromoCode/delete/{promoCodeId}");
-                if (response.IsSuccessStatusCode)
+                bool success = await _promoCodeService.DeletePromoCodeAsync(promoCodeId);
+                
+                if (success)
                 {
                     SuccessMessage = "Code promo supprimé avec succès.";
                     await LoadPromoCodesAsync();
                 }
                 else
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    ErrorMessage = $"Erreur lors de la suppression : {errorContent}";
+                    ErrorMessage = "Erreur lors de la suppression du code promo.";
                 }
             }
             catch (Exception ex)
@@ -482,18 +524,6 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             ShowCreateModal = false;
             ShowEditModal = false;
             ErrorMessage = string.Empty;
-        }
-
-        /// <summary>
-        /// Réinitialise les filtres
-        /// </summary>
-        public void ResetFilters()
-        {
-            SearchQuery = string.Empty;
-            FilterType = "all";
-            FilterDateFrom = null;
-            FilterDateTo = null;
-            SortBy = "code";
         }
     }
 }

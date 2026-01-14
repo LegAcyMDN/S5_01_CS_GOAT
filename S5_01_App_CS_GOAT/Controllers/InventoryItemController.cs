@@ -5,6 +5,7 @@ using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -13,6 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [SetThreadPrincipal]
     public class InventoryItemController(
         IDataRepository<InventoryItem, int> manager,
+        IUpgradeRepository upgradeService,
         ISellingRepository sellingService,
         IMapper mapper,
         IConfiguration configuration
@@ -66,16 +68,24 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Upgrade an inventory item
         /// </summary>
-        [HttpPost("upgrade")]
+        [HttpPost("upgrade/")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Upgrade()
+        public async Task<IActionResult> Upgrade([FromBody] UpgradeInputDTO dto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            throw new NotImplementedException();
+            try
+            {
+                UpgradeOutputDTO output = await upgradeService.UpgradeAsync(dto, authResult.AuthUserId!.Value);
+                return Ok(output);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>

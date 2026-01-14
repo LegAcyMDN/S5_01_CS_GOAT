@@ -1,0 +1,143 @@
+@* Composant de recherche et filtres pour les tableaux d'administration *@
+
+<div class="admin-search-filter">
+    <!-- Section Recherche et Tri -->
+    <div class="search-section">
+        <div class="search-box">
+            <input type="text" 
+                   class="search-input" 
+                   @bind="SearchValue"
+                   @bind:event="oninput"
+                   @onkeyup="@(async (e) => { if (e.Key == "Enter") await OnSearchAsync(); })"
+                   placeholder="@SearchPlaceholder" />
+            <button class="btn-search" @onclick="OnSearchAsync" title="Rechercher">🔍</button>
+        </div>
+
+        <div class="sort-controls">
+            <label>Trier par:</label>
+            <select @bind="SortKeyValue" class="sort-select">
+                <option value="">-- Par défaut --</option>
+                @foreach (var prop in SortableProperties)
+                {
+                    <option value="@prop.Key">@prop.Value</option>
+                }
+            </select>
+            
+            <select @bind="SortTypeValue" class="sort-type-select">
+                <option value="asc">Ascendant ↑</option>
+                <option value="desc">Descendant ↓</option>
+            </select>
+            
+            <button class="btn btn-secondary btn-apply" @onclick="OnApplySortAsync">Appliquer</button>
+        </div>
+
+        <div class="action-buttons">
+            @if (HasFilters)
+            {
+                <button class="btn btn-filter @(showFilters ? "active" : "")" 
+                        @onclick="ToggleFilters"
+                        title="@(showFilters ? "Masquer les filtres" : "Afficher les filtres")">
+                    <span class="filter-icon">🔽</span> Filtres
+                    @if (ActiveFiltersCount > 0)
+                    {
+                        <span class="filter-badge">@ActiveFiltersCount</span>
+                    }
+                </button>
+            }
+            
+            <button class="btn btn-reset" @onclick="OnResetAsync" title="Réinitialiser">
+                🔄 Réinitialiser
+            </button>
+        </div>
+    </div>
+
+    <!-- Section Filtres (collapsable) -->
+    @if (showFilters && HasFilters)
+    {
+        <div class="filters-section">
+            <div class="filters-header">
+                <h4>Filtres avancés</h4>
+            </div>
+            <div class="filters-content">
+                @FilterContent
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Rechercher...";
+    
+    [Parameter]
+    public string SearchTerm { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string? SortKey { get; set; }
+    
+    [Parameter]
+    public string SortType { get; set; } = "asc";
+    
+    [Parameter]
+    public Dictionary<string, string> SortableProperties { get; set; } = new();
+    
+    [Parameter]
+    public EventCallback OnSearch { get; set; }
+    
+    [Parameter]
+    public EventCallback<(string? sortKey, string sortType)> OnApplySort { get; set; }
+    
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+
+    [Parameter]
+    public RenderFragment? FilterContent { get; set; }
+
+    [Parameter]
+    public bool HasFilters { get; set; } = false;
+
+    [Parameter]
+    public int ActiveFiltersCount { get; set; } = 0;
+
+    private bool showFilters = false;
+    
+    private string SearchValue
+    {
+        get => SearchTerm;
+        set => SearchTerm = value;
+    }
+    
+    private string? SortKeyValue { get; set; }
+    
+    private string SortTypeValue { get; set; } = "asc";
+
+    protected override void OnParametersSet()
+    {
+        SortKeyValue = SortKey;
+        SortTypeValue = SortType;
+    }
+
+    private async Task OnSearchAsync()
+    {
+        await OnSearch.InvokeAsync();
+    }
+
+    private async Task OnApplySortAsync()
+    {
+        await OnApplySort.InvokeAsync((SortKeyValue, SortTypeValue));
+    }
+
+    private async Task OnResetAsync()
+    {
+        SearchValue = string.Empty;
+        SortKeyValue = null;
+        SortTypeValue = "asc";
+        showFilters = false;
+        await OnReset.InvokeAsync();
+    }
+
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+    }
+}

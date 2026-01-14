@@ -155,5 +155,14 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// Navigue vers la page d'inscription
         /// </summary>
         public void NavigateToRegister() => _navigationService.NavigateToRegister();
+        
+        
+        
+        public void LoginWithSteam()
+        {
+            // Redirige vers votre endpoint d'authentification Steam
+            var steamLoginUrl = "https://localhost:7009/api/steam/login";
+            _navigationService.NavigateTo(steamLoginUrl, forceLoad: true);
+        }
     }
 }
