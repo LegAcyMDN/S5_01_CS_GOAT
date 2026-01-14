@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PayPalCheckoutSdk.Core;
+using PayPalHttp;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -29,9 +31,6 @@ namespace S5_01_App_CS_GOAT.Controllers
             _configuration = configuration;
         }
 
-        /// <summary>
-        /// Create a PayPal order to recharge wallet
-        /// </summary>
         [HttpPost("create-order")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -208,5 +207,146 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             return Ok();
         }
+        
+/// <summary>
+/// Request automatic PayPal withdrawal
+/// </summary>
+[HttpPost("withdraw")]
+[Authorize]
+[ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<IActionResult> WithdrawFunds([FromBody] WithdrawalRequestDTO request)
+{
+    Console.WriteLine("=== PAYPAL WITHDRAWAL STARTED ===");
+    
+    var auth = JwtService.JwtAuth(_configuration);
+    if (!auth.IsAuthenticated)
+    {
+        Console.WriteLine("❌ Unauthorized");
+        return Unauthorized();
     }
+
+    var userId = (int)auth.AuthUserId;
+    Console.WriteLine($"User ID: {userId}");
+
+    // Validate
+    if (request.Amount < 10)
+    {
+        Console.WriteLine($"❌ Amount too low: {request.Amount}");
+        return BadRequest(new { error = "Minimum withdrawal is €10" });
+    }
+
+    if (request.Amount > 5000)
+    {
+        Console.WriteLine($"❌ Amount too high: {request.Amount}");
+        return BadRequest(new { error = "Maximum withdrawal is €5000" });
+    }
+
+    if (string.IsNullOrEmpty(request.PayPalEmail) || !request.PayPalEmail.Contains("@"))
+    {
+        Console.WriteLine($"❌ Invalid PayPal email: {request.PayPalEmail}");
+        return BadRequest(new { error = "Valid PayPal email required" });
+    }
+
+    try
+    {
+        // Get user
+        Console.WriteLine($"Fetching user {userId}...");
+        var user = await _userRepository.GetByIdAsyncNew(userId);
+        if (user == null)
+        {
+            Console.WriteLine($"❌ User {userId} not found!");
+            return NotFound("User not found");
+        }
+
+        // Check balance
+        if (user.Wallet < (double)request.Amount)
+        {
+            Console.WriteLine($"❌ Insufficient funds: wallet={user.Wallet}, requested={request.Amount}");
+            return BadRequest(new { 
+                error = "Insufficient funds", 
+                currentBalance = user.Wallet,
+                requested = request.Amount 
+            });
+        }
+
+        Console.WriteLine($"Current wallet: €{user.Wallet}");
+        Console.WriteLine($"Processing withdrawal: €{request.Amount} to {request.PayPalEmail}");
+
+        // Create PayPal payout FIRST (if this fails, wallet won't be changed)
+        var payoutResponse = await _payPalService.CreatePayoutAsync(
+            request.Amount, 
+            userId, 
+            request.PayPalEmail);
+
+        Console.WriteLine($"✅ PayPal payout created: {payoutResponse.PayoutBatchId}");
+        Console.WriteLine($"Payout status: {payoutResponse.Status}");
+
+        // Deduct from wallet only after successful payout
+        var oldWallet = user.Wallet;
+        user.Wallet -= (double)request.Amount;
+        await _userRepository.UpdateAsync(user);
+        Console.WriteLine($"✅ Wallet updated: €{oldWallet} → €{user.Wallet}");
+
+        // Create transaction record
+        Console.WriteLine("Creating transaction record...");
+        var transaction = new MoneyTransaction  
+        {
+            UserId = userId,      
+            WalletValue = -(double)request.Amount, // Negative for withdrawal
+            TransactionDate = DateTime.UtcNow,      
+            PaymentMethodId = 3, // PayPal
+            CancelledOn = null,
+            NotificationId = null
+        }; 
+    
+        await _transactionRepository.AddAsync(transaction);
+        Console.WriteLine($"✅ Transaction created: ID={transaction.TransactionId}");
+        
+        Console.WriteLine($"✅✅✅ WITHDRAWAL COMPLETED");
+        Console.WriteLine($"User {userId}: €{oldWallet} → €{user.Wallet}");
+        Console.WriteLine($"Sent €{request.Amount} to {request.PayPalEmail}");
+        Console.WriteLine("=== PAYPAL WITHDRAWAL ENDED ===");
+
+        return Ok(new
+        {
+            success = true,
+            message = "Withdrawal processed successfully. Money will be sent to your PayPal account.",
+            amount = request.Amount,
+            oldBalance = oldWallet,
+            newBalance = user.Wallet,
+            paypalEmail = request.PayPalEmail,
+            payoutBatchId = payoutResponse.PayoutBatchId,
+            payoutStatus = payoutResponse.Status,
+            transactionId = transaction.TransactionId
+        });
+    }
+    catch (HttpException ex)
+    {
+        Console.WriteLine($"❌ PayPal API Error: {ex.Message}");
+        Console.WriteLine($"Status Code: {ex.StatusCode}");
+        return BadRequest(new { error = "PayPal withdrawal failed", details = ex.Message, statusCode = ex.StatusCode });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Withdrawal failed: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        return BadRequest(new { error = "Withdrawal failed", details = ex.Message });
+    }
+}
+
+public class WithdrawalRequestDTO
+{
+    public decimal Amount { get; set; }
+    public string PayPalEmail { get; set; } = null!;
+}
+}
+
+// Helper classes for payout deserialization
+
+public class WithdrawalRequestDTO
+{
+    public decimal Amount { get; set; }
+    public string PayPalEmail { get; set; } = null!;
+}
 }

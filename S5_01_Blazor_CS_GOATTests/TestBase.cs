@@ -66,7 +66,7 @@ public class TestBase : PageTest
                     try
                     {
                         var body = System.Text.Encoding.UTF8.GetString(request.PostDataBuffer);
-                        Console.WriteLine($"[REQUEST BODY] {body}");
+                        // Console.WriteLine($"[REQUEST BODY] {body}");
                     }
                     catch { }
                 }
