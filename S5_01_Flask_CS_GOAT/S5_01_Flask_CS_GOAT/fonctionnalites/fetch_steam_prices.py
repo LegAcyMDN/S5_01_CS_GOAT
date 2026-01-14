@@ -137,28 +137,25 @@ def insert_price_data(connection, item_name, price_data):
         debug_print(f"No wear type found in item name: {item_name}")
         return
 
-    # Récupérer la dernière date d'insertion pour cet item/wear type
+ 
     cursor.execute(
         """
         SELECT MAX(prh_pricedate) 
         FROM t_e_pricehistory_prh
-        WHERE skn_id = %s AND wrt_id = %s
+        WHERE skn_id = %s AND wrt_id = %s AND prh_guessdate IS NULL
         """,
         (skin_id, wear_type_id)
     )
     last_date_result = cursor.fetchone()
-    last_date = last_date_result[0] if last_date_result and last_date_result[0] else None
+    last_datetime = last_date_result[0] if last_date_result and last_date_result[0] else None
     
-    if last_date:
-        # PostgreSQL retourne un datetime, on garde tel quel ou on convertit en date
-        if hasattr(last_date, 'date'):
-            cutoff_date = last_date.date()
-        else:
-            cutoff_date = last_date
-        debug_print(f"Last existing data date for this item: {cutoff_date}")
+    if last_datetime:
+        # Garder le datetime complet pour une comparaison précise
+        cutoff_datetime = last_datetime
+        debug_print(f"Last existing data datetime for this item: {cutoff_datetime}")
     else:
         # Aucune donnée existante, donc on prend tout
-        cutoff_date = None
+        cutoff_datetime = None
         debug_print(f"No existing data found. Will insert all available data from Steam.")
 
     aggregated_data = {}
@@ -179,12 +176,9 @@ def insert_price_data(connection, item_name, price_data):
             debug_print(f"Skipping incomplete price data: {date_str}, {price_str}, {volume_str}")
             continue
 
-        # Convertir price_date en date pour la comparaison
-        price_date_only = price_date.date()
-        
-        # Vérifier si la date est avant ou égale à la date de coupure (seulement si cutoff_date existe)
-        if cutoff_date and price_date_only <= cutoff_date:
-            debug_print(f"Skipping data before or equal to {cutoff_date}: {date_str}")
+        # Vérifier si le datetime est avant le dernier datetime en DB
+        if cutoff_datetime and price_date < cutoff_datetime:
+            debug_print(f"Skipping data before {cutoff_datetime}: {date_str}")
             continue
 
         try:
@@ -194,15 +188,14 @@ def insert_price_data(connection, item_name, price_data):
             debug_print(f"Skipping invalid price or volume value: {price_str}, {volume_str}")
             continue
 
-        day_key = price_date_only
+        # Utiliser la date seulement pour l'agrégation par jour
+        day_key = price_date.date()
         if day_key not in aggregated_data:
-            aggregated_data[day_key] = {"total_price": 0, "total_volume": 0}
+            aggregated_data[day_key] = {"total_price": 0, "total_volume": 0, "entry_count": 0}
 
         aggregated_data[day_key]["total_price"] += price_value * volume
         aggregated_data[day_key]["total_volume"] += volume
-
-    for day_key in aggregated_data:
-        aggregated_data[day_key]["entry_count"] = aggregated_data[day_key].get("entry_count", 0) + 1
+        aggregated_data[day_key]["entry_count"] += 1
 
     inserted_count = 0
     for day, data in aggregated_data.items():

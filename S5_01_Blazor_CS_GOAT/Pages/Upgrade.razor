@@ -4,20 +4,190 @@
 @inject UpgradeViewModel ViewModel
 
 <div class="upgrade-page">
-    <h1>Améliorer vos skins</h1>
-    <div class="upgrade-content">
-        @if (ViewModel.IsLoading)
-        {
-            <p>Chargement...</p>
-        }
-        else
-        {
-            <p>Ici vous pourrez améliorer vos skins pour obtenir des versions de meilleure qualité.</p>
-            <!-- Votre contenu de page ici -->
-        }
-    </div>
+    <h1 class="page-title">Amelioration de Skins</h1>
     
-    <AuthOverlay />
+    @if (ViewModel.IsLoading)
+    {
+        <div class="loading-container">
+            <p>Chargement...</p>
+        </div>
+    }
+    else if (!ViewModel.IsAuthenticated)
+    {
+        <AuthOverlay />
+    }
+    else
+    {
+        <div class="upgrade-container">
+            @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+            {
+                <div class="message error-message">
+                    @ViewModel.ErrorMessage
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(ViewModel.SuccessMessage))
+            {
+                <div class="message success-message">
+                    @ViewModel.SuccessMessage
+                </div>
+            }
+
+            <div class="upgrade-content">
+                <div class="left-panel">
+                    <div class="section target-skin-section">
+                        <div class="section-header">
+                            <h2>Choisir le skin cible</h2>
+                            <label class="favorites-toggle">
+                                <input type="checkbox" 
+                                       @bind="ViewModel.ShowFavoritesOnly" />
+                                <span>Favoris uniquement</span>
+                            </label>
+                        </div>
+                        
+                        <div class="skins-grid">
+                            @if (ViewModel.AvailableSkins != null && ViewModel.AvailableSkins.Any())
+                            {
+                                @foreach (var skin in ViewModel.AvailableSkins)
+                                {
+                                    <div class="skin-card @(ViewModel.SelectedTargetSkin?.SkinId == skin.SkinId ? "selected" : "")"
+                                         @onclick="() => ViewModel.SelectedTargetSkin = skin">
+                                        <img src="@ViewModel.GetSkinImageUrl(skin)" 
+                                             alt="@skin.ItemName @skin.SkinName" 
+                                             class="skin-image" />
+                                        <div class="skin-info">
+                                            <span class="skin-name">@skin.ItemName | @skin.SkinName</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="no-items">Aucun skin disponible</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="section inventory-section">
+                        <div class="section-header">
+                            <h2>Votre inventaire</h2>
+                            <span class="selected-count">@ViewModel.SelectedItems.Count selectionne(s)</span>
+                        </div>
+                        
+                        <div class="inventory-grid">
+                            @if (ViewModel.UserInventory != null && ViewModel.UserInventory.Any())
+                            {
+                                @foreach (var item in ViewModel.UserInventory)
+                                {
+                                    <div class="inventory-item @(ViewModel.IsItemSelected(item) ? "selected" : "")"
+                                         style="border-color: @item.RarityColor"
+                                         @onclick="() => ViewModel.ToggleItemSelection(item)">
+                                        <img src="@ViewModel.GetItemImageUrl(item)" 
+                                             alt="Item" 
+                                             class="item-image" />
+                                        @if (ViewModel.IsItemSelected(item))
+                                        {
+                                            <div class="selected-indicator">✓</div>
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="no-items">Votre inventaire est vide</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <div class="section upgrade-summary">
+                        <h2>Recapitulatif</h2>
+                        
+                        <div class="summary-item">
+                            <span class="label">Objets selectionnes:</span>
+                            <span class="value">@ViewModel.SelectedItems.Count</span>
+                        </div>
+
+                        @if (ViewModel.PreviewResult != null)
+                        {
+                            <div class="preview-section">
+                                <h3>Apercu</h3>
+                                
+                                <div class="probability-display">
+                                    <div class="prob-item success">
+                                        <span class="prob-label">Chance de succes:</span>
+                                        <span class="prob-value">@((ViewModel.PreviewResult.SuccessProbability * 100).ToString("F2"))%</span>
+                                    </div>
+                                    <div class="prob-item fail">
+                                        <span class="prob-label">Chance d'echec:</span>
+                                        <span class="prob-value">@((ViewModel.PreviewResult.FailProbability * 100).ToString("F2"))%</span>
+                                    </div>
+                                </div>
+
+                                <div class="items-status">
+                                    <h4>Etat des objets:</h4>
+                                    @foreach (var outputItem in ViewModel.PreviewResult.Items)
+                                    {
+                                        <div class="item-result">
+                                            <div class="item-result-header">
+                                                <img src="@ViewModel.GetItemImageUrl(outputItem.InventoryItem)" 
+                                                     alt="Item" 
+                                                     class="mini-item-image" />
+                                            </div>
+                                            <div class="item-probabilities">
+                                                <div class="mini-prob intact">
+                                                    <span>Intact: @((outputItem.UpgradeResult.ProbIntact * 100).ToString("F1"))%</span>
+                                                </div>
+                                                <div class="mini-prob degrade">
+                                                    <span>Degrade: @((outputItem.UpgradeResult.ProbDegrade * 100).ToString("F1"))%</span>
+                                                </div>
+                                                <div class="mini-prob destroy">
+                                                    <span>Detruit: @((outputItem.UpgradeResult.PropDestroy * 100).ToString("F1"))%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <div class="action-buttons">
+                            <button class="btn btn-upgrade" 
+                                    @onclick="ViewModel.ExecuteUpgradeAsync"
+                                    disabled="@(!ViewModel.CanUpgrade)">
+                                @if (ViewModel.IsProcessing)
+                                {
+                                    <span>Amelioration en cours...</span>
+                                }
+                                else
+                                {
+                                    <span>Ameliorer</span>
+                                }
+                            </button>
+                            
+                            <button class="btn btn-clear" 
+                                    @onclick="ViewModel.ClearSelection"
+                                    disabled="@ViewModel.IsProcessing">
+                                Reinitialiser
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>Comment ca marche?</h3>
+                        <ul>
+                            <li>Selectionnez le skin que vous souhaitez obtenir</li>
+                            <li>Choisissez les objets de votre inventaire a consommer</li>
+                            <li>Le systeme utilise Provably Fair pour garantir l'equite</li>
+                            <li>Plus vous selectionnez d'objets, meilleures sont vos chances</li>
+                            <li>Les objets peuvent rester intacts, se degrader ou etre detruits</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {

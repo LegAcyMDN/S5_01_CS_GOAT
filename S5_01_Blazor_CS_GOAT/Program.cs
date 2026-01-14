@@ -19,6 +19,8 @@ builder.Services.AddScoped<IService<SkinDTO>>(sp =>
     new WebService<SkinDTO>(sp.GetRequiredService<IConfiguration>(), "skin"));
 builder.Services.AddScoped<IService<UserDTO>>(sp => 
     new WebService<UserDTO>(sp.GetRequiredService<IConfiguration>(), "user"));
+builder.Services.AddScoped<IService<InventoryItemDTO>>(sp => 
+    new WebService<InventoryItemDTO>(sp.GetRequiredService<IConfiguration>(), "inventoryitem"));
 builder.Services.AddScoped<IService<InventoryItemDetailDTO>>(sp => 
     new WebService<InventoryItemDetailDTO>(sp.GetRequiredService<IConfiguration>(), "inventoryitem"));
 builder.Services.AddScoped<IThreeDModelService<ThreeDModel>>(sp => 
@@ -49,6 +51,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<StripeService>();
 builder.Services.AddScoped<PayPalService>();
+builder.Services.AddScoped<UpgradeService>();
 
 // NEW: Specialized services following SRP
 builder.Services.AddScoped<NavigationService>();
