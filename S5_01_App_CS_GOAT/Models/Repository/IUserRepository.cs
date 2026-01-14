@@ -29,4 +29,5 @@ public interface IUserRepository : IDataRepository<User, int>
     Task<User?> GetBySteamIdAsync(string steamId);
     Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO);
 
+    Task<object?> ExportUserDataAsync(int userId);
 }

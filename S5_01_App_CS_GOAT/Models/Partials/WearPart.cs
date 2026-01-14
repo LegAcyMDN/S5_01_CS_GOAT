@@ -7,9 +7,10 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
         public IEnumerable<PriceHistory> PriceHistories(bool allowGuess)
         {
-            return allowGuess
-                ? this.WearClass.PriceHistories
-                : this.WearClass.PriceHistories.Where(p => p.GuessDate == null);
+            return (allowGuess
+                ? this.WearClass?.PriceHistories
+                : this.WearClass?.PriceHistories.Where(p => p.GuessDate == null))
+                ?? Enumerable.Empty<PriceHistory>();
         }
 
         public PriceHistory? LastPrice(bool allowGuess)

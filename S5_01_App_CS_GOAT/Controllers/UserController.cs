@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
+using Shared.DTO.Helpers;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -223,23 +225,32 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Export user data (GDPR compliance)
         /// </summary>
-        /// <param name="id">The ID of the user</param>
+        /// <param name="userId">The ID of the user</param>
         /// <returns>No content on success</returns>
-        [HttpHead("exportdata")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [HttpGet("exportdata/{userId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> ExportData([FromQuery] int id)
+        public async Task<IActionResult> ExportData(int userId)
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
-            if (!auth.IsAdmin && auth.AuthUserId != id)
+            if (!auth.IsAdmin && auth.AuthUserId != userId)
                 return Forbid();
 
-            User? user = await manager.GetByIdAsyncNew(id);
+            User? user = await manager.GetByIdAsyncNew(userId);
             if (user == null) return NotFound();
 
-            throw new NotImplementedException();
+            try
+            {
+                object? data = await manager.ExportUserDataAsync(user.UserId);
+                if (data == null) return NotFound();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>

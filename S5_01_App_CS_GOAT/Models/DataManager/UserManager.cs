@@ -7,18 +7,17 @@ using S5_01_App_CS_GOAT.Services;
 using Shared.DTO;
 using Shared.DTO.Helpers;
 using Shared.Enum;
+using System.Dynamic;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
 public class UserManager : CrudRepository<User, int>, IUserRepository
 {
-    protected readonly CSGOATDbContext _context;
     protected readonly IConfiguration _configuration;
     protected readonly IMapper _mapper;
 
     public UserManager(CSGOATDbContext context, IMapper mapper, IConfiguration configuration) : base(context)
     {
-        _context = context;
         _mapper = mapper;
         _configuration = configuration;
     }
@@ -404,5 +403,66 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         _context.Set<Token>().Remove(token);
         await _context.SaveChangesAsync();
         return new Tuple<int, string?>(StatusCodes.Status200OK, newPassword);
+    }
+
+    public async Task<object?> ExportUserDataAsync(int userId)
+    {
+        QueryOptions<User> userOptions = new QueryOptions<User>()
+            .Before("NotificationSettings.NotificationType",
+                "Limits.LimitType", "Bans.BanType")
+            .Before(u => u.Favorites);
+        User? user = await GetByIdAsyncNew(userId, userOptions);
+        if (user == null) return null;
+
+        dynamic exportUser = new ExpandoObject();
+        var exportUserDict = (IDictionary<string, object>)exportUser;
+        foreach (var prop in user.GetType().GetProperties())
+        {
+            var propertyType = prop.PropertyType;
+            if (typeof(System.Collections.IEnumerable).IsAssignableFrom(propertyType) && propertyType != typeof(string))
+                continue; // Skip navigation properties (IEnumerable, ICollection, complex types)
+            if (propertyType.Namespace?.StartsWith(typeof(User).Namespace) ?? false)
+                continue; // Skip custom entities / navigation properties (EF models)
+
+            exportUserDict[prop.Name] = prop.GetValue(user);
+        }
+        exportUser.SaltPassword = null;
+        exportUser.HashPassword = null;
+
+        List<InventoryItem> inventoryItems = await _context.Set<InventoryItem>()
+            .Include(ii => ii.Wear).ThenInclude(w => w.WearType)
+            .Include(ii => ii.Wear).ThenInclude(w => w.Skin).ThenInclude(s => s.Rarity)
+            .Include(ii => ii.Wear).ThenInclude(w => w.Skin).ThenInclude(s => s.Item).ThenInclude(i => i.ItemType)
+            .Where(ii => ii.UserId == userId).ToListAsync();
+        List<RandomTransaction> randTrans = await _context.Set<RandomTransaction>()
+            .Where(rt => rt.UserId == userId).Include(rt => rt.FairRandom).ToListAsync();
+        List<ItemTransaction> itemTrans = await _context.Set<ItemTransaction>()
+            .Where(it => !randTrans.Select(randTrans => randTrans.TransactionId).Contains(it.TransactionId)
+                && it.UserId == userId).ToListAsync();
+        List<MoneyTransaction> moneyTrans = await _context.Set<MoneyTransaction>()
+            .Where(mt => mt.UserId == userId).ToListAsync();
+        List<UpgradeResult> upgradeResults = await _context.Set<UpgradeResult>()
+            .Where(ur => inventoryItems.Select(ii => ii.InventoryItemId).Contains(ur.InventoryItemId))
+            .Include(ur => ur.FairRandom).ToListAsync();
+
+        exportUser.NotificationSettings = _mapper.Map<List<NotificationSettingDTO>>(user.NotificationSettings);
+        exportUser.Limits = _mapper.Map<List<LimitDTO>>(user.Limits);
+        exportUser.Bans = _mapper.Map<List<BanDTO>>(user.Bans);
+        exportUser.Favorites = user.Favorites.Select(f => f.CaseId).ToList();
+        exportUser.InventoryItems = _mapper.Map<List<InventoryItemDTO>>(inventoryItems);
+        exportUser.ItemTransactions = _mapper.Map<List<ItemTransactionDTO>>(itemTrans);
+        exportUser.MoneyTransactions = _mapper.Map<List<MoneyTransactionDTO>>(moneyTrans);
+        exportUser.UpgradeResults = _mapper.Map<List<UpgradeResultDTO>>(upgradeResults);
+        exportUser.RandomTransactions = randTrans.Select(rt => new {
+            rt.TransactionId,
+            rt.InventoryItemId,
+            rt.TransactionDate,
+            rt.WalletValue,
+            rt.CancelledOn,
+            rt.CaseId,
+            FairRandom = _mapper.Map<FairRandomDTO>(rt.FairRandom)
+        }).ToList();
+
+        return exportUser;
     }
 }
