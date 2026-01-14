@@ -53,9 +53,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> Get(int id)
         {
             QueryOptions<Case> options = new QueryOptions<Case>()
-                .Before("CaseContents.Skin.Wears.WearType",
-                        "CaseContents.Skin.Rarity",
-                        "CaseContents.Skin.Item.ItemType");
+                .Before(c => c.CaseContents);
             Case? result = await manager.GetByIdAsyncNew(id, options);
             if (result == null) return NotFound();
             CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);

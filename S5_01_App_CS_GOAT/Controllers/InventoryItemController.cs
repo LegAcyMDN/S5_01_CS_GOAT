@@ -77,15 +77,15 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            try
-            {
+            /*try
+            {*/
                 UpgradeOutputDTO output = await upgradeService.UpgradeAsync(dto, authResult.AuthUserId!.Value);
                 return Ok(output);
-            }
+            /*}
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
-            }
+            }*/
         }
 
         /// <summary>

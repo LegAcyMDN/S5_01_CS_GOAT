@@ -58,23 +58,30 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return newFairRandom;
         }
 
-        public async Task<FairRandom> Resolve(User user, FairRandom? random, bool requestUnresolved = true)
+        public async Task<FairRandom> Resolve(User user, FairRandom? oldRandom, bool requestUnresolved = true)
         {
+            FairRandom? newRandom = null;
             if (
-                random == null
-                || (random.IsResolved
+                oldRandom == null
+                || (oldRandom.IsResolved
                 && requestUnresolved)
-            ) random = await this.Init(user, requestUnresolved, random);
-            if (!requestUnresolved && random.IsResolved) return random;
-            random.UserSeed = user.Seed;
-            random.UserNonce = user.Nonce;
-            random.Compute();
-            random.UserId = null;
+            )
+            {
+                if (oldRandom != null && !requestUnresolved && oldRandom.IsResolved) return oldRandom;
+                else newRandom = await this.Init(user, requestUnresolved, oldRandom);
+            }
+            else newRandom = oldRandom;
+            if (!requestUnresolved && newRandom.IsResolved) return newRandom;
+            newRandom.UserSeed = user.Seed;
+            newRandom.UserNonce = user.Nonce;
+            newRandom.Compute();
+            newRandom.UserId = null;
             user.Nonce += 1;
-            _context.Set<FairRandom>().Update(random);
+            await _context.SaveChangesAsync();
+            _context.Set<FairRandom>().Update(newRandom);
             _context.Set<User>().Update(user);
             await _context.SaveChangesAsync();
-            return random;
+            return newRandom;
         }
     }
 }

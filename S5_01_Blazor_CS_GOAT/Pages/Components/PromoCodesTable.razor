@@ -13,60 +13,11 @@
         </div>
     </div>
 
-    <!-- Composant de recherche et filtres -->
-    <AdminSearchFilter 
-        SearchPlaceholder="Rechercher un code..."
-        SearchTerm="@PromoCodeViewModel.SearchQuery"
-        SortKey="@PromoCodeViewModel.SortKey"
-        SortType="@PromoCodeViewModel.SortType"
-        SortableProperties="@promoCodeSortableProperties"
-        HasFilters="true"
-        ActiveFiltersCount="@GetActiveFiltersCount()"
-        OnSearch="@(() => PromoCodeViewModel.SearchAsync())"
-        OnApplySort="@(async (args) => await PromoCodeViewModel.ChangeSortAsync(args.sortKey, args.sortType))"
-        OnReset="@(() => PromoCodeViewModel.ResetFiltersAsync())">
-        <FilterContent>
-            <div class="filter-group">
-                <label>Type de code</label>
-                <select @onchange="@(async (e) => await OnTypeFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="global">Global</option>
-                    <option value="user">Utilisateur spécifique</option>
-                    <option value="case">Case spécifique</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Statut</label>
-                <select @onchange="@(async (e) => await OnStatusFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="active">Actif</option>
-                    <option value="expired">Expiré</option>
-                    <option value="pending">En attente</option>
-                    <option value="depleted">Épuisé</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Utilisations</label>
-                <select @onchange="@(async (e) => await OnUsesFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="unlimited">Illimité</option>
-                    <option value="limited">Limité</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Type de réduction</label>
-                <select @onchange="@(async (e) => await OnDiscountTypeFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="percentage">Pourcentage</option>
-                    <option value="amount">Montant fixe</option>
-                    <option value="both">Les deux</option>
-                </select>
-            </div>
-        </FilterContent>
-    </AdminSearchFilter>
+    <!-- Nouveau composant de filtres -->
+    <PromoCodesTableFilter @ref="filterComponent"
+        OnSearchTermChanged="@HandleSearchTermChanged"
+        OnApplyFiltersAndSort="@HandleApplyFiltersAndSort"
+        OnReset="@HandleReset" />
 
     @if (PromoCodeViewModel.IsLoading)
     {
@@ -95,9 +46,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (PromoCodeViewModel.AllPromoCodes != null && PromoCodeViewModel.AllPromoCodes.Any())
+                    @if (filteredPromoCodes != null && filteredPromoCodes.Any())
                     {
-                        @foreach (var promo in PromoCodeViewModel.AllPromoCodes)
+                        @foreach (var promo in filteredPromoCodes)
                         {
                             var status = PromoCodeViewModel.GetPromoStatus(promo);
                             var nextRefresh = PromoCodeViewModel.GetNextRefresh(promo);
@@ -235,84 +186,71 @@
     [Parameter]
     public PromoCodeViewModel PromoCodeViewModel { get; set; } = default!;
 
-    private Dictionary<string, string> promoCodeSortableProperties = new()
-    {
-        { "code", "Code" },
-        { "validitystart", "Date de début" },
-        { "expirydate", "Date d'expiration" },
-        { "discountpercentage", "% Réduction" },
-        { "discountamount", "Montant" },
-        { "remaininguses", "Utilisations restantes" }
-    };
+    private PromoCodesTableFilter? filterComponent;
+    private List<PromoCodeDTO>? filteredPromoCodes;
 
-    private int GetActiveFiltersCount()
+    protected override void OnParametersSet()
     {
-        return PromoCodeViewModel.Filters?.Count ?? 0;
+        ApplyClientSideFilters();
     }
 
-    private async Task OnTypeFilterChanged(string? value)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (string.IsNullOrEmpty(value))
+        if (firstRender)
         {
-            await PromoCodeViewModel.RemoveFilterAsync("userid");
-            await PromoCodeViewModel.RemoveFilterAsync("caseid");
-        }
-        else if (value == "global")
-        {
-            // Filtrer les codes sans userId ni caseId (à implémenter côté backend si nécessaire)
-            await PromoCodeViewModel.RemoveFilterAsync("userid");
-            await PromoCodeViewModel.RemoveFilterAsync("caseid");
-        }
-        else if (value == "user")
-        {
-            // Filtrer les codes avec userId (logique à adapter)
-            await PromoCodeViewModel.AddFilterAsync("userid", new List<string> { "notnull" });
-        }
-        else if (value == "case")
-        {
-            // Filtrer les codes avec caseId (logique à adapter)
-            await PromoCodeViewModel.AddFilterAsync("caseid", new List<string> { "notnull" });
+            // Appliquer les filtres après le premier rendu quand filterComponent est initialisé
+            ApplyClientSideFilters();
+            StateHasChanged();
         }
     }
 
-    private async Task OnStatusFilterChanged(string? value)
+    private void ApplyClientSideFilters()
     {
-        if (string.IsNullOrEmpty(value))
+        if (PromoCodeViewModel.AllPromoCodes != null && filterComponent != null)
         {
-            await PromoCodeViewModel.RemoveFilterAsync("status");
+            filteredPromoCodes = filterComponent.FilterPromoCodesClientSide(PromoCodeViewModel.AllPromoCodes);
         }
         else
         {
-            await PromoCodeViewModel.AddFilterAsync("status", new List<string> { value });
+            filteredPromoCodes = PromoCodeViewModel.AllPromoCodes;
         }
     }
 
-    private async Task OnUsesFilterChanged(string? value)
+    private async Task HandleSearchTermChanged(string searchTerm)
     {
-        if (string.IsNullOrEmpty(value))
+        PromoCodeViewModel.SearchQuery = searchTerm;
+        await PromoCodeViewModel.SearchAsync();
+        // Forcer le rafraîchissement pour appliquer les filtres client
+        await InvokeAsync(() =>
         {
-            await PromoCodeViewModel.RemoveFilterAsync("remaininguses");
-        }
-        else if (value == "unlimited")
-        {
-            await PromoCodeViewModel.AddFilterAsync("remaininguses", new List<string> { "null" });
-        }
-        else if (value == "limited")
-        {
-            await PromoCodeViewModel.AddFilterAsync("remaininguses", new List<string> { "notnull" });
-        }
+            ApplyClientSideFilters();
+            StateHasChanged();
+        });
     }
 
-    private async Task OnDiscountTypeFilterChanged(string? value)
+    private async Task HandleApplyFiltersAndSort((string? sortKey, string sortType, Dictionary<string, List<string>> filters) args)
     {
-        if (string.IsNullOrEmpty(value))
+        PromoCodeViewModel.SortKey = args.sortKey;
+        PromoCodeViewModel.SortType = args.sortType;
+        PromoCodeViewModel.Filters = args.filters;
+        await PromoCodeViewModel.LoadPromoCodesAsync();
+        // Forcer le rafraîchissement pour appliquer les filtres client
+        await InvokeAsync(() =>
         {
-            await PromoCodeViewModel.RemoveFilterAsync("discounttype");
-        }
-        else
+            ApplyClientSideFilters();
+            StateHasChanged();
+        });
+    }
+
+    private async Task HandleReset()
+    {
+        await PromoCodeViewModel.ResetFiltersAsync();
+        // Forcer le rafraîchissement pour appliquer les filtres client
+        await InvokeAsync(() =>
         {
-            await PromoCodeViewModel.AddFilterAsync("discounttype", new List<string> { value });
-        }
+            ApplyClientSideFilters();
+            StateHasChanged();
+        });
     }
 
     private async Task ConfirmDeletePromoCode(int promoCodeId, string code)
@@ -320,6 +258,7 @@
         if (await JSRuntime.InvokeAsync<bool>("confirm", $"Êtes-vous sûr de vouloir supprimer le code promo '{code}' ? Cette action est irréversible."))
         {
             await PromoCodeViewModel.DeletePromoCodeAsync(promoCodeId);
+            ApplyClientSideFilters();
         }
     }
 
