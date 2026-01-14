@@ -1,5 +1,6 @@
 """ The flask application package. """
 from flask import Flask
+from flask_cors import CORS
 from dotenv import load_dotenv
 import os
 
@@ -13,6 +14,22 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Configure CORS to allow requests from Blazor
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://localhost:7030",  # Blazor HTTPS en développement
+            "http://localhost:5028",   # Blazor HTTP en développement
+            "https://localhost:44328", # Blazor IIS Express
+            "http://localhost:50491",  # Blazor IIS Express HTTP
+            "https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net",  # Production
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
 # Configure the app for PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")

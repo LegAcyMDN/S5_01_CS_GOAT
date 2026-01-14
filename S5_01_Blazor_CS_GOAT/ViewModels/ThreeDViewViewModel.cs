@@ -391,18 +391,42 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 var httpClient = new HttpClient();
 
                 var flaskUrl = $"{FLASK_URL}/api/price_history/predict_price/bywear/{ItemDetails.WearId}/{days}";
+                Console.WriteLine($"Calling Flask API: {flaskUrl}");
 
                 var response = await httpClient.GetAsync(flaskUrl);
+                Console.WriteLine($"Flask response status: {response.StatusCode}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    var result = System.Text.Json.JsonSerializer.Deserialize<PredictionResult>(content);
+                    Console.WriteLine($"Flask response content: {content}");
+                    
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    
+                    var result = System.Text.Json.JsonSerializer.Deserialize<PredictionResult>(content, options);
+                    
+                    Console.WriteLine($"Deserialized result - Message: {result?.Message}, Graphs count: {result?.Graphs?.Count ?? 0}");
+                    
+                    if (result?.Graphs != null)
+                    {
+                        foreach (var graph in result.Graphs)
+                        {
+                            Console.WriteLine($"Graph key: {graph.Key}, value: {graph.Value}");
+                        }
+                    }
                     
                     // Recharger l'historique des prix pour inclure les prédictions
                     await DrawPriceHistoryGraph();
                     
                     return result?.Graphs;
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Flask API error: {response.StatusCode} - {errorContent}");
                 }
 
                 return null;
@@ -410,6 +434,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors de la prédiction des prix: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return null;
             }
         }

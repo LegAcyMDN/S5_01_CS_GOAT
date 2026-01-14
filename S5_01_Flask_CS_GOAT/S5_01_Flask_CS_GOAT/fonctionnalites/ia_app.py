@@ -267,8 +267,10 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
             } for ph in price_history])
             
             df = df.sort_values('ds')
+
             df_train = df[df['ds'] >= cutoff_date].copy()
             df_train = df_train.reset_index(drop=True)
+            print(f"After fetch, data points: {len(df_train)}")
             
             # Vérifier à nouveau si on a assez de données
             if len(df_train) < 14:
@@ -394,23 +396,28 @@ def draw_debug_graph(df_train: pd.DataFrame, forecast: pd.DataFrame, skin_id: in
     
     df_recent = df_train[df_train['ds'] >= cutoff_date].copy()
     
-    df_real = df_recent[df_recent['ds'] <= last_real_date]
-    df_gap = df_recent[df_recent['ds'] > last_real_date]
+    # Toutes les données sont réelles (pas de prédictions dans df_train)
+    df_real = df_recent
     
     fig, ax = plt.subplots(figsize=(16, 8), dpi=100)
     
     ax.plot(df_real['ds'], df_real['y'], 'o-', color='#1f77b4', label='Historical Data', 
             linewidth=2.5, markersize=6, alpha=0.8)
     
-    if len(df_gap) > 0:
-        last_real_price = df_real['y'].iloc[-1]
-        last_real_date_val = df_real['ds'].iloc[-1]
+    # Vérifier s'il y a un gap entre la dernière donnée historique et aujourd'hui
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    last_real_date_val = df_real['ds'].iloc[-1]
+    last_real_price = df_real['y'].iloc[-1]
+    
+    # Si la dernière donnée est antérieure à aujourd'hui, tracer le gap
+    if last_real_date_val < today:
         first_pred_date = forecast['ds'].iloc[0]
         first_pred_price = forecast['yhat'].iloc[0]
         
+        # Tracer le gap en gris depuis la dernière donnée jusqu'à la première prédiction
         ax.plot([last_real_date_val, first_pred_date], 
                 [last_real_price, first_pred_price], 
-                '--', color='gray', linewidth=1.5, alpha=0.5, label='Gap')
+                '--', color='gray', linewidth=2, alpha=0.6, label='Data Gap')
     
     ax.plot(forecast['ds'], forecast['yhat'], 'o-', color='#ff7f0e', label='Predictions', 
             linewidth=2.5, markersize=6, alpha=0.8)
@@ -422,7 +429,6 @@ def draw_debug_graph(df_train: pd.DataFrame, forecast: pd.DataFrame, skin_id: in
                      color='#ff7f0e', 
                      label='Confidence Interval')
     
-    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     ax.axvline(x=today, color='#2ca02c', linestyle='--', linewidth=2, alpha=0.7, label='Today')
     
     ax.set_xlabel('Date', fontsize=14, fontweight='bold')
@@ -469,23 +475,28 @@ def draw_lstm_graph(df_train: pd.DataFrame, lstm_predictions: np.ndarray, future
     
     df_recent = df_train[df_train['ds'] >= cutoff_date].copy()
     
-    df_real = df_recent[df_recent['ds'] <= last_real_date]
-    df_gap = df_recent[df_recent['ds'] > last_real_date]
+    # Toutes les données sont réelles (pas de prédictions dans df_train)
+    df_real = df_recent
     
     fig, ax = plt.subplots(figsize=(16, 8), dpi=100)
     
     ax.plot(df_real['ds'], df_real['y'], 'o-', color='#1f77b4', label='Historical Data', 
             linewidth=2.5, markersize=6, alpha=0.8)
     
-    if len(df_gap) > 0:
-        last_real_price = df_real['y'].iloc[-1]
-        last_real_date_val = df_real['ds'].iloc[-1]
+    # Vérifier s'il y a un gap entre la dernière donnée historique et aujourd'hui
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    last_real_date_val = df_real['ds'].iloc[-1]
+    last_real_price = df_real['y'].iloc[-1]
+    
+    # Si la dernière donnée est antérieure à aujourd'hui, tracer le gap
+    if last_real_date_val < today:
         first_pred_date = future_dates[0]
         first_pred_price = lstm_predictions[0]
         
+        # Tracer le gap en gris depuis la dernière donnée jusqu'à la première prédiction
         ax.plot([last_real_date_val, first_pred_date], 
                 [last_real_price, first_pred_price], 
-                '--', color='gray', linewidth=1.5, alpha=0.5, label='Gap')
+                '--', color='gray', linewidth=2, alpha=0.6, label='Data Gap')
     
     ax.plot(future_dates, lstm_predictions, 'o-', color='#d62728', label='LSTM Predictions', 
             linewidth=2.5, markersize=6, alpha=0.8)

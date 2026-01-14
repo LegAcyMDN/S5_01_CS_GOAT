@@ -514,7 +514,7 @@
     private string GetGraphUrl(string filename)
     {
 #if DEBUG
-        return $"http://localhost:5000/api/price_history/graphs/{filename}";
+        return $"http://localhost:5555/api/price_history/graphs/{filename}";
 #else
         return $"https://iacsgoat-h6bkescydravhwf8.canadacentral-01.azurewebsites.net/api/price_history/graphs/{filename}";
 #endif
