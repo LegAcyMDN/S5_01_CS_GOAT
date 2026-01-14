@@ -312,7 +312,9 @@
     max-width: 60%;
     text-align: -webkit-center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
+        max-height: 80vh;
+        overflow-y: auto;
+    }
 
 .popup-modal h3 {
     color: white;
@@ -433,7 +435,27 @@
     box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4);
 }
 
+
 .error-modal .error-message-text {
     color: rgba(255, 255, 255, 0.8);
     font-size: 16px;
+}
+
+.btn-predict {
+    background: linear-gradient(90deg, #ff9800 0%, #ff5722 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 32px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    outline: none;
+}
+.btn-predict:hover {
+    background: linear-gradient(90deg, #ffb74d 0%, #ff7043 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 18px rgba(255, 152, 0, 0.3);
 }
