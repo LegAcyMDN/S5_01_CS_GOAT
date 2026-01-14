@@ -87,21 +87,18 @@
     color: #fff;
 }
 
-.favorites-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    color: #fff;
-}
-
-.favorites-toggle input[type="checkbox"] {
-    cursor: pointer;
-}
-
 .selected-count {
     color: #4b69ff;
     font-weight: 600;
+}
+
+/* Espacement pour les composants de filtrage et pagination */
+.section .filter-controls {
+    margin-bottom: 1rem;
+}
+
+.section .pagination-container {
+    margin-top: 1rem;
 }
 
 .skins-grid {

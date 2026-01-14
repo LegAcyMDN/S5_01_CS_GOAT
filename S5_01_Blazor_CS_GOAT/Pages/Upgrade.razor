@@ -1,5 +1,6 @@
 @page "/upgrade"
 @using S5_01_Blazor_CS_GOAT.Layout
+@using S5_01_Blazor_CS_GOAT.Pages.Components
 @using S5_01_Blazor_CS_GOAT.ViewModels
 @inject UpgradeViewModel ViewModel
 
@@ -38,12 +39,19 @@
                     <div class="section target-skin-section">
                         <div class="section-header">
                             <h2>Choisir le skin cible</h2>
-                            <label class="favorites-toggle">
-                                <input type="checkbox" 
-                                       @bind="ViewModel.ShowFavoritesOnly" />
-                                <span>Favoris uniquement</span>
-                            </label>
                         </div>
+                        
+                        <SearchFilterComponent 
+                            SearchPlaceholder="Rechercher un skin..."
+                            ShowSearchBar="true"
+                            SearchTerm="@ViewModel.SkinSearchTerm"
+                            SearchTermChanged="@((value) => ViewModel.SkinSearchTerm = value)"
+                            SortKey="@ViewModel.SkinSortKey"
+                            SortKeyChanged="@((value) => ViewModel.SkinSortKey = value)"
+                            SortType="@ViewModel.SkinSortType"
+                            SortTypeChanged="@((value) => ViewModel.SkinSortType = value)"
+                            ShowFavoritesFilter="false"
+                            SortableProperties="@ViewModel.SkinSortableProperties" />
                         
                         <div class="skins-grid">
                             @if (ViewModel.AvailableSkins != null && ViewModel.AvailableSkins.Any())
@@ -66,6 +74,15 @@
                                 <p class="no-items">Aucun skin disponible</p>
                             }
                         </div>
+                        
+                        <PaginationComponent 
+                            CurrentPage="@ViewModel.SkinCurrentPage"
+                            TotalPages="@ViewModel.SkinTotalPages"
+                            PageSize="@ViewModel.SkinPageSize"
+                            TotalCount="@ViewModel.SkinTotalCount"
+                            FilteredCount="@ViewModel.SkinFilteredCount"
+                            OnPageChange="@((page) => ViewModel.SkinCurrentPage = page)"
+                            OnPageSizeChange="@((size) => ViewModel.SkinPageSize = size)" />
                     </div>
 
                     <div class="section inventory-section">
@@ -73,6 +90,15 @@
                             <h2>Votre inventaire</h2>
                             <span class="selected-count">@ViewModel.SelectedItems.Count selectionne(s)</span>
                         </div>
+                        
+                        <SearchFilterComponent 
+                            ShowSearchBar="false"
+                            SortKey="@ViewModel.InventorySortKey"
+                            SortKeyChanged="@((value) => ViewModel.InventorySortKey = value)"
+                            SortType="@ViewModel.InventorySortType"
+                            SortTypeChanged="@((value) => ViewModel.InventorySortType = value)"
+                            ShowFavoritesFilter="false"
+                            SortableProperties="@ViewModel.InventorySortableProperties" />
                         
                         <div class="inventory-grid">
                             @if (ViewModel.UserInventory != null && ViewModel.UserInventory.Any())
@@ -97,6 +123,15 @@
                                 <p class="no-items">Votre inventaire est vide</p>
                             }
                         </div>
+                        
+                        <PaginationComponent 
+                            CurrentPage="@ViewModel.InventoryCurrentPage"
+                            TotalPages="@ViewModel.InventoryTotalPages"
+                            PageSize="@ViewModel.InventoryPageSize"
+                            TotalCount="@ViewModel.InventoryTotalCount"
+                            FilteredCount="@ViewModel.InventoryFilteredCount"
+                            OnPageChange="@((page) => ViewModel.InventoryCurrentPage = page)"
+                            OnPageSizeChange="@((size) => ViewModel.InventoryPageSize = size)" />
                     </div>
                 </div>
 
@@ -154,7 +189,7 @@
 
                         <div class="action-buttons">
                             <button class="btn btn-upgrade" 
-                                    @onclick="ViewModel.ExecuteUpgradeAsync"
+                                    @onclick="OnExecuteUpgrade"
                                     disabled="@(!ViewModel.CanUpgrade)">
                                 @if (ViewModel.IsProcessing)
                                 {
@@ -190,10 +225,26 @@
     }
 </div>
 
+<!-- Modal de résultats -->
+<UpgradeOutputModal Output="ViewModel.PreviewResult" TargetSkin="ViewModel.SelectedTargetSkin" IsVisible="@_showResultModal" OnClose="@OnResultModalClose" />
+
 @code {
+    private bool _showResultModal = false;
+
     protected override async Task OnInitializedAsync()
     {
         await ViewModel.InitializeAsync();
         ViewModel.PropertyChanged += (s, e) => StateHasChanged();
+    }
+
+    private async Task OnExecuteUpgrade()
+    {
+        await ViewModel.ExecuteUpgradeAsync();
+        _showResultModal = true;
+    }
+
+    private async Task OnResultModalClose()
+    {
+        _showResultModal = false;
     }
 }
