@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -68,7 +70,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             }
         }
 
-        private UpgradeResultDTO SkinUpgrade(
+        private double SkinUpgrade(
             PriceInfo invItemPrice,
             PriceInfo targetSkinPrice,
             double monetaryValue)
@@ -80,18 +82,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 1 / (Math.Pow((t + 1), 2) + Math.Pow(p, 1.75))
                 * Math.Pow(p, 2)
             ));
-
-            return new UpgradeResultDTO
-            {
-                ProbIntact = 0,
-                ProbDegrade = 1 - probDestroy,
-                PropDestroy = probDestroy,
-                DegradeFunction = "Uniform"
-            };
+            return probDestroy;
         }
 
         private UpgradeResultDTO ItemDowngrade(
-            UpgradeResultDTO skinResult,
+            double successProbability,
             InventoryItem item,
             PriceInfo invItemPrice,
             double monetaryValue)
@@ -103,7 +98,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             if (i == null) return new UpgradeResultDTO()
             {
                 FloatStart = item.Float,
-                FloatEnd = item.Float,
                 ProbIntact = 1,
                 ProbDegrade = 0,
                 PropDestroy = 0,
@@ -118,8 +112,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return new UpgradeResultDTO
             {
                 FloatStart = item.Float,
-                ProbIntact = keepProb * skinResult.PropDestroy,
-                ProbDegrade = keepProb * skinResult.ProbDegrade,
+                ProbIntact = keepProb * (1 - successProbability),
+                ProbDegrade = keepProb * successProbability,
                 PropDestroy = 1 - keepProb,
                 DegradeFunction = "Uniform"
             };
@@ -146,6 +140,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .Before(i => i.Wear.Skin.Rarity)
                 .Before(i => dto.InventoryItemIds.Contains(i.InventoryItemId))
                 .Before(i => i.UserId == user.UserId)
+                .Before(i => i.RemovedOn == null)
                 .After(i => i.Wear.WearClass.PriceHistories);
             IEnumerable<InventoryItem> invItems = await _inventoryItemRepository.GetAllAsyncNew(options2);
             if (invItems.Count() != dto.InventoryItemIds.Count)
@@ -153,7 +148,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             PriceInfo invItemPrice = new PriceInfo(invItems.Select(i => i.Wear.CurrentPrice));
 
             UpgradeOutputDTO output = new() {
-                UpgradeResult = SkinUpgrade(
+                Preview = dto.Preview,
+                FailProbability = SkinUpgrade(
                     invItemPrice,
                     skinPrice,
                     dto.MonetaryValue
@@ -163,7 +159,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             foreach (InventoryItem inventoryItem in invItems)
             {
                 UpgradeResultDTO itemUpgradeResult = ItemDowngrade(
-                    output.UpgradeResult,
+                    output.FailProbability,
                     inventoryItem,
                     invItemPrice,
                     dto.MonetaryValue
@@ -177,15 +173,129 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             }
             if (!dto.Preview)
             {
-                output = await ExecuteUpgradeAsync(output, user, skin, invItems);
+                output = await ExecuteUpgradeAsync(
+                    output, user, skin, invItems, dto.MonetaryValue);
             }
             return output;
         }
 
-        private async Task<UpgradeOutputDTO> ExecuteUpgradeAsync(UpgradeOutputDTO dto,
-            User? user, Skin? skin, IEnumerable<InventoryItem>? invItems)
+
+        private async Task<UpgradeOutputItemDTO> Resolve(
+            UpgradeOutputItemDTO tuple,
+            IEnumerable<InventoryItem> invItems,
+            RandomTransaction randomTransaction,
+            FairRandom fairRandom, User user)
         {
-            throw new NotImplementedException();
+            FairRandom newRandom = await _fairRandomRepository.Resolve(user, fairRandom, true);
+            InventoryItem invItem = invItems
+                .First(i => i.InventoryItemId == tuple.InventoryItem.InventoryItemId);
+
+            // If item is not left intact
+            if (tuple.UpgradeResult.ProbIntact < 1 && newRandom.Fraction1 < (1 - tuple.UpgradeResult.ProbIntact))
+            {
+                if (newRandom.Fraction1 < tuple.UpgradeResult.PropDestroy)
+                {
+                    // Destroy item
+                    invItem.RemovedOn = DateTime.UtcNow;
+                    tuple.UpgradeResult.FloatEnd = 0;
+                }
+                else
+                {
+                    // Degrade item
+                    float newFloat = Degrade(
+                        (float)tuple.UpgradeResult.FloatStart!,
+                        (double)newRandom.Fraction2!,
+                        tuple.UpgradeResult.DegradeFunction
+                    );
+                    invItem.Float = newFloat;
+                    tuple.UpgradeResult.FloatEnd = newFloat;
+                    Wear targetWear = invItem.Wear.Skin.GetClosestWear(newFloat);
+                    invItem.WearId = targetWear.WearId;
+                }
+                await _inventoryItemRepository.UpdateAsync(invItem);
+                QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
+                    .Before(i => i.Wear.Skin.Rarity);
+                invItem = (await _inventoryItemRepository.GetByIdAsyncNew(invItem.InventoryItemId, options))!;
+                tuple.InventoryItem = _mapper.Map<InventoryItemDTO>(invItem);
+            }
+            else
+            {
+                // Item stays intact
+                tuple.UpgradeResult.FloatEnd = invItem.Float;
+            }
+
+            UpgradeResult upgradeResult = new UpgradeResult()
+            {
+                InventoryItemId = invItem.InventoryItemId,
+                TransactionId = randomTransaction.TransactionId,
+                FairRandomId = newRandom.FairRandomId,
+                FloatStart = (float)tuple.UpgradeResult.FloatStart!,
+                FloatEnd = tuple.UpgradeResult.FloatEnd ?? invItem.Float,
+                ProbIntact = tuple.UpgradeResult.ProbIntact,
+                ProbDegrade = tuple.UpgradeResult.ProbDegrade,
+                PropDestroy = tuple.UpgradeResult.PropDestroy,
+                DegradeFunction = tuple.UpgradeResult.DegradeFunction
+            };
+            await _upgradeResultRepository.AddAsync(upgradeResult);
+            tuple.UpgradeResult = _mapper.Map<UpgradeResultDTO>(upgradeResult);
+            await _context.Entry(upgradeResult).Reference(u => u.FairRandom).LoadAsync();
+            tuple.UpgradeResult.FairRandom = _mapper.Map<FairRandomDTO>(upgradeResult.FairRandom);
+            return tuple;
+        }
+
+
+        private async Task<UpgradeOutputDTO> ExecuteUpgradeAsync(UpgradeOutputDTO dto,
+            User user, Skin skin, IEnumerable<InventoryItem> invItems, double monetaryValue)
+        {
+            if (user.Wallet < monetaryValue) throw new Exception("Insufficient funds.");
+            using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+            FairRandom initRandom = await _fairRandomRepository.Resolve(user, null, true);
+            dto.FairRandom = _mapper.Map<FairRandomDTO>(initRandom);
+            InventoryItem? newItem = null;
+            
+            if (initRandom.Fraction1 > dto.FailProbability)
+            {
+                Wear targetWear = skin.GetClosestWear((float)initRandom.Fraction2!);
+                newItem = new InventoryItem()
+                {
+                    UserId = user.UserId,
+                    WearId = targetWear.WearId,
+                    Float = (float)initRandom.Fraction2!,
+                    IsFavorite = false
+                };
+                await _inventoryItemRepository.AddAsync(newItem);
+
+                QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
+                    .Before(i => i.Wear.Skin.Rarity, i => i.Wear.WearType,
+                    i => i.Wear.Skin.Item.ItemType)
+                    .After(i => i.Wear.WearClass.PriceHistories);
+                newItem = await _inventoryItemRepository.GetByIdAsyncNew(newItem.InventoryItemId, options);
+                dto.ItemResult = _mapper.Map<InventoryItemDetailDTO>(newItem);
+            }
+
+            RandomTransaction randomTransaction = new RandomTransaction()
+            {
+                UserId = user.UserId,
+                FairRandomId = initRandom.FairRandomId,
+                CaseId = null,
+                WalletValue = -monetaryValue,
+                InventoryItemId = newItem?.InventoryItemId
+            };
+            _context.ItemTransactions.Add(randomTransaction);
+
+            List<UpgradeOutputItemDTO> resolvedItems = new List<UpgradeOutputItemDTO>();
+            foreach (var item in dto.Items)
+            {
+                var resolved = await Resolve(item, invItems, randomTransaction, initRandom, user);
+                resolvedItems.Add(resolved);
+            }
+            dto.Items = resolvedItems;
+
+            user.Wallet -= monetaryValue;
+            await _userRepository.UpdateAsync(user);
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return dto;
         }
     }
 }
