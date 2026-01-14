@@ -1,11 +1,11 @@
 using S5_01_Blazor_CS_GOAT.Service;
 using Shared.DTO;
+using System.Net.Http.Json;
 
 namespace S5_01_Blazor_CS_GOAT.ViewModels
 {
     /// <summary>
-    /// ViewModel pour la page Wallet - Refactorisé selon le principe SRP
-    /// Responsabilité : Afficher le portefeuille et coordonner les opérations financières
+    /// ViewModel pour la page Wallet avec support Stripe et PayPal
     /// </summary>
     public class WalletViewModel : ViewModelBase
     {
@@ -13,21 +13,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private readonly AuthService _authService;
         private readonly StripeService _stripeService;
         private readonly NavigationService _navigationService;
+        private readonly HttpClient _httpClient;
 
         private UserDTO? _currentUser;
         private List<MoneyTransactionDTO>? _transactionsList;
         private bool _isLoading = true;
+        private bool _isProcessingPayment = false;
+        private string? _errorMessage = null;
 
         public WalletViewModel(
             IService<MoneyTransactionDTO> moneyTransactionRepository,
             AuthService authService,
             StripeService stripeService,
-            NavigationService navigationService)
+            NavigationService navigationService,
+            HttpClient httpClient)
         {
             _moneyTransactionRepository = moneyTransactionRepository;
             _authService = authService;
             _stripeService = stripeService;
             _navigationService = navigationService;
+            _httpClient = httpClient;
         }
 
         public UserDTO? CurrentUser
@@ -48,6 +53,18 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
+        public bool IsProcessingPayment
+        {
+            get => _isProcessingPayment;
+            set => SetProperty(ref _isProcessingPayment, value);
+        }
+
+        public string? ErrorMessage
+        {
+            get => _errorMessage;
+            set => SetProperty(ref _errorMessage, value);
+        }
+
         public override async Task InitializeAsync()
         {
             await LoadWalletDataAsync();
@@ -61,6 +78,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 IsLoading = true;
+                ErrorMessage = null;
 
                 await UpdateUserStateAsync();
 
@@ -73,6 +91,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             catch (Exception ex)
             {
                 Console.WriteLine($"Erreur lors du chargement du portefeuille: {ex.Message}");
+                ErrorMessage = "Erreur lors du chargement des données";
             }
             finally
             {
@@ -96,17 +115,94 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         /// <summary>
         /// Ajoute des fonds via Stripe
         /// </summary>
-        public async Task AddFunds(double amount)
+        public async Task AddFundsStripe(double amount)
         {
-            var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(amount);
+            if (IsProcessingPayment) return;
+
+            try
+            {
+                IsProcessingPayment = true;
+                ErrorMessage = null;
+
+                var checkoutUrl = await _stripeService.CreateCheckoutSessionAsync(amount);
         
-            if (checkoutUrl != null)
-            {
-                _navigationService.NavigateTo(checkoutUrl, forceLoad: true);
+                if (checkoutUrl != null)
+                {
+                    _navigationService.NavigateTo(checkoutUrl, forceLoad: true);
+                }
+                else
+                {
+                    ErrorMessage = "Impossible de créer la session Stripe";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Failed to create checkout session");
+                Console.WriteLine($"Error creating Stripe session: {ex.Message}");
+                ErrorMessage = "Erreur lors de la création du paiement Stripe";
+            }
+            finally
+            {
+                IsProcessingPayment = false;
+            }
+        }
+
+        /// <summary>
+        /// Ajoute des fonds via PayPal
+        /// </summary>
+        public async Task AddFundsPayPal(double amount)
+        {
+            if (IsProcessingPayment) return;
+
+            try
+            {
+                IsProcessingPayment = true;
+                ErrorMessage = null;
+
+                var token = await _authService.GetTokenAsync();
+                if (string.IsNullOrEmpty(token))
+                {
+                    ErrorMessage = "Vous devez être connecté";
+                    return;
+                }
+
+                // Préparer la requête
+                _httpClient.DefaultRequestHeaders.Authorization = 
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                var request = new { amount = (decimal)amount };
+
+                // Appeler l'API pour créer l'ordre PayPal
+                var response = await _httpClient.PostAsJsonAsync("paypal/create-order", request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<PayPalOrderResult>();
+                    
+                    if (!string.IsNullOrEmpty(result?.ApprovalUrl))
+                    {
+                        // Rediriger vers PayPal
+                        _navigationService.NavigateTo(result.ApprovalUrl, forceLoad: true);
+                    }
+                    else
+                    {
+                        ErrorMessage = "Impossible de créer le paiement PayPal";
+                    }
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"PayPal order creation failed: {errorContent}");
+                    ErrorMessage = "Erreur lors de la création du paiement PayPal";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error creating PayPal order: {ex.Message}");
+                ErrorMessage = $"Erreur PayPal: {ex.Message}";
+            }
+            finally
+            {
+                IsProcessingPayment = false;
             }
         }
         
@@ -117,18 +213,23 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         {
             if (amount <= 0)
             {
-                Console.WriteLine("Amount must be positive");
+                ErrorMessage = "Le montant doit être positif";
                 return;
             }
 
             if (CurrentUser?.Wallet < amount)
             {
-                Console.WriteLine("Insufficient funds");
+                ErrorMessage = "Solde insuffisant";
                 return;
             }
 
+            if (IsProcessingPayment) return;
+
             try
             {
+                IsProcessingPayment = true;
+                ErrorMessage = null;
+
                 var withdrawalUrl = await _stripeService.CreateWithdrawalSessionAsync(amount);
     
                 if (withdrawalUrl != null)
@@ -137,13 +238,34 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
                 }
                 else
                 {
-                    Console.WriteLine("Failed to create withdrawal session");
+                    ErrorMessage = "Impossible de créer la session de retrait";
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error withdrawing funds: {ex.Message}");
+                ErrorMessage = "Erreur lors du retrait";
             }
+            finally
+            {
+                IsProcessingPayment = false;
+            }
+        }
+
+        /// <summary>
+        /// Rafraîchir les données après un paiement
+        /// </summary>
+        public async Task RefreshDataAsync()
+        {
+            await LoadWalletDataAsync();
+        }
+
+        // DTO pour la réponse PayPal
+        private class PayPalOrderResult
+        {
+            public string? OrderId { get; set; }
+            public string? ApprovalUrl { get; set; }
+            public string? Status { get; set; }
         }
     }
 }

@@ -1,0 +1,180 @@
+@page "/payment/success"
+@using S5_01_Blazor_CS_GOAT.Service
+@inject PayPalService PayPalService
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Recharge with PayPal</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (isProcessing)
+{
+    <div class="alert alert-info">Processing payment...</div>
+}
+
+@code {
+    private decimal amount = 10;
+    private bool isProcessing = false;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if returning from PayPal
+        var uri = new Uri(Navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var token = query["token"]; // PayPal order ID
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            await CapturePayment(token);
+        }
+    }
+
+    private async Task InitiatePayPalPayment()
+    {
+        errorMessage = null;
+        successMessage = null;
+        isProcessing = true;
+
+        try
+        {
+            var jwtToken = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                errorMessage = "You must be logged in";
+                return;
+            }
+
+            var orderResponse = await PayPalService.CreateOrderAsync(amount, jwtToken);
+            
+            if (orderResponse == null || string.IsNullOrEmpty(orderResponse.ApprovalUrl))
+            {
+                errorMessage = "Failed to create PayPal order";
+                return;
+            }
+
+            // Redirect to PayPal for approval
+            Navigation.NavigateTo(orderResponse.ApprovalUrl, true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task CapturePayment(string orderId)
+    {
+        isProcessing = true;
+        errorMessage = null;
+
+        try
+        {
+            Console.WriteLine($"Capturing PayPal order: {orderId}");
+            
+            var jwtToken = await AuthService.GetTokenAsync();
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                errorMessage = "Authentication error";
+                return;
+            }
+
+            var captureResponse = await PayPalService.CaptureOrderAsync(orderId, jwtToken);
+            
+            if (captureResponse != null && captureResponse.Success)
+            {
+                successMessage = $"Payment successful! €{captureResponse.Amount} added to your wallet. New balance: €{captureResponse.NewBalance}";
+                
+                // Reload user data
+                await AuthService.LoadCurrentUserAsync();
+                
+                // Redirect to wallet page after 3 seconds
+                await Task.Delay(3000);
+                Navigation.NavigateTo("/wallet");
+            }
+            else
+            {
+                errorMessage = "Failed to capture payment";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error capturing payment: {ex.Message}";
+            Console.WriteLine($"Capture error: {ex}");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
+
+
+
+
+
+
+@* @page "/payment/success" *@
+@* @using S5_01_Blazor_CS_GOAT.ViewModels *@
+@* @inject WalletViewModel ViewModel *@
+@* @inject NavigationManager Navigation *@
+@* *@
+@* <PageTitle>Paiement réussi</PageTitle> *@
+@* *@
+@* <div class="payment-result-page"> *@
+@*     @if (IsProcessing) *@
+@*     { *@
+@*         <h2>⏳ Validation du paiement...</h2> *@
+@*         <p>Veuillez patienter...</p> *@
+@*     } *@
+@*     else if (IsSuccess) *@
+@*     { *@
+@*         <h2>✅ Paiement réussi !</h2> *@
+@*         <p>Votre portefeuille a été crédité.</p> *@
+@*         <button @onclick="GoToWallet">Retour au portefeuille</button> *@
+@*     } *@
+@*     else *@
+@*     { *@
+@*         <h2>❌ Erreur</h2> *@
+@*         <p>@ErrorMessage</p> *@
+@*         <button @onclick="GoToWallet">Retour au portefeuille</button> *@
+@*     } *@
+@* </div> *@
+@* *@
+@* @code { *@
+@*     [SupplyParameterFromQuery] *@
+@*     public string? Token { get; set; } *@
+@* *@
+@*     private bool IsProcessing = true; *@
+@*     private bool IsSuccess = false; *@
+@*     private string? ErrorMessage; *@
+@* *@
+@*     protected override async Task OnInitializedAsync() *@
+@*     { *@
+@*         // Le paiement sera capturé par le backend via webhook *@
+@*         // Ici on attend juste un peu puis on rafraîchit *@
+@*         await Task.Delay(2000); *@
+@*         await ViewModel.RefreshDataAsync(); *@
+@*         IsSuccess = true; *@
+@*         IsProcessing = false; *@
+@*     } *@
+@* *@
+@*     private void GoToWallet() *@
+@*     { *@
+@*         Navigation.NavigateTo("/wallet"); *@
+@*     } *@
+@* } *@
