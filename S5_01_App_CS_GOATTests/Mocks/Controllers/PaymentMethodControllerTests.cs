@@ -50,6 +50,57 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
+        [TestMethod]
+        public void GetAll_EmptyList_ReturnsOk()
+        {
+            // Given
+            var emptyList = new List<PaymentMethod>();
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                       .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public void GetAll_MultiplePaymentMethods_ReturnsOkWithAll()
+        {
+            // Given
+            var multiplePaymentMethods = new List<PaymentMethod>
+            {
+                new PaymentMethod { PaymentMethodId = 1, PaymentMethodName = "Credit Card" },
+                new PaymentMethod { PaymentMethodId = 2, PaymentMethodName = "PayPal" },
+                new PaymentMethod { PaymentMethodId = 3, PaymentMethodName = "Bank Transfer" }
+            };
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                       .ReturnsAsync(multiplePaymentMethods);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+        }
+
+        [TestMethod]
+        public void GetAll_RepositoryCallsWithoutFilter_VerifiesCall()
+        {
+            // Given
+            paymentMethodRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                       .ReturnsAsync(paymentMethods);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            paymentMethodRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once());
+            paymentMethodRepositoryMock.VerifyNoOtherCalls();
+        }
+
         #endregion
     }
 }

@@ -133,6 +133,48 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
         }
 
+        [TestMethod]
+        public void GetByInventoryItem_InvalidId_ReturnsNotFound()
+        {
+            JwtService.AuthentifyController(controller, normalUser);
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(999, It.IsAny<QueryOptions<InventoryItem>>()))
+                                       .ReturnsAsync((InventoryItem?)null);
+
+            // When
+            IActionResult? result = controller.GetByInventoryItem(999).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByInventoryItem_NegativeId_ReturnsNotFound()
+        {
+            JwtService.AuthentifyController(controller, normalUser);
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(-1, It.IsAny<QueryOptions<InventoryItem>>()))
+                                       .ReturnsAsync((InventoryItem?)null);
+
+            // When
+            IActionResult? result = controller.GetByInventoryItem(-1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByRandomTransaction_InvalidId_ReturnsNotFound()
+        {
+            JwtService.AuthentifyController(controller, normalUser);
+            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(999, It.IsAny<QueryOptions<RandomTransaction>>()))
+                                           .ReturnsAsync((RandomTransaction?)null);
+
+            // When
+            IActionResult? result = controller.GetByRandomTransaction(999).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
         #endregion
     }
 }

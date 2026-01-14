@@ -76,6 +76,50 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             wearRepositoryMock.Verify(r => r.GetByIdAsyncOld(999, "Skin.Item"), Times.Once);
         }
 
+        [TestMethod]
+        public void Get3dModelByWear_NegativeWearId_ReturnsNotFound()
+        {
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(-1, "Skin.Item"))
+                               .ReturnsAsync((Wear?)null);
+
+            // When
+            IActionResult? result = controller.Get3dModelByWear(-1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void Get3dModelByWear_ZeroWearId_ReturnsNotFound()
+        {
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(0, "Skin.Item"))
+                               .ReturnsAsync((Wear?)null);
+
+            // When
+            IActionResult? result = controller.Get3dModelByWear(0).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void Get3dModelByWear_WearWithoutSkin_ReturnsOkWithPartialModel()
+        {
+            var wearWithoutSkin = new Wear { WearId = 1, Skin = null };
+            var emptyModel = new ModelDTO();
+
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncOld(1, "Skin.Item"))
+                               .ReturnsAsync(wearWithoutSkin);
+            mapperMock.Setup(m => m.Map<ModelDTO>(wearWithoutSkin))
+                       .Returns(emptyModel);
+
+            // When
+            IActionResult? result = controller.Get3dModelByWear(1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
         #endregion
     }
 }

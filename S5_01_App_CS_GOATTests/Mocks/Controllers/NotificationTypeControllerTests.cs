@@ -56,6 +56,67 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             notificationTypeRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
         }
 
+        [TestMethod]
+        public void GetAll_EmptyList_ReturnsOkWithEmptyList()
+        {
+            // Given
+            var emptyList = new List<NotificationType>();
+            var emptyDTOList = new List<NotificationTypeDTO>();
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                          .ReturnsAsync(emptyList);
+            mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(emptyList))
+                      .Returns(emptyDTOList);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+            var okResult = (OkObjectResult?)result;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(200, okResult.StatusCode);
+        }
+
+        [TestMethod]
+        public void GetAll_RepositoryThrowsException_ReturnsOkWithEmptyResult()
+        {
+            // Given
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                          .ThrowsAsync(new Exception("Database error"));
+
+            // When & Then
+            try
+            {
+                controller.GetAll().GetAwaiter().GetResult();
+                Assert.Fail("Expected exception was not thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Database error"));
+            }
+        }
+
+        [TestMethod]
+        public void GetAll_MappingFails_StillReturnsOk()
+        {
+            // Given
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+                                          .ReturnsAsync(notificationTypes);
+            mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
+                      .Throws(new AutoMapperMappingException("Mapping failed"));
+
+            // When & Then
+            try
+            {
+                controller.GetAll().GetAwaiter().GetResult();
+                Assert.Fail("Expected exception was not thrown");
+            }
+            catch (AutoMapperMappingException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Mapping failed"));
+            }
+        }
+
         #endregion
     }
 }

@@ -124,6 +124,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             notificationRepositoryMock.Verify(r => r.AddAsync(userNotification), Times.Never);
         }
 
+        [TestMethod]
+        public void Create_Unauthenticated_ReturnsUnauthorized()
+        {
+            // When
+            IActionResult? result = controller.Create(notificationDTO).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+        }
+
         #endregion
     }
 }

@@ -131,6 +131,38 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Once);
         }
 
+        [TestMethod]
+        public void GetByUser_AuthenticatedWithEmptyTransactions_ReturnsOkWithEmptyList()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            var emptyList = new List<MoneyTransaction>();
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+                                          .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.GetByUser().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public void GetAll_AsAdminWithEmptyList_ReturnsOkWithEmptyList()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, admin);
+            var emptyList = new List<MoneyTransaction>();
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+                                          .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
         #endregion
     }
 }

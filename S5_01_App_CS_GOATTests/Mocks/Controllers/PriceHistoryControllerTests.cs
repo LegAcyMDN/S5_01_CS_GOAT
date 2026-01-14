@@ -62,6 +62,38 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             wearRepositoryMock.Verify(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()), Times.Once);
         }
 
+        [TestMethod]
+        public void GetByWear_WearNotFound_ReturnsNotFound()
+        {
+            // Given
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+                                  .ReturnsAsync((Wear?)null);
+
+            // When
+            IActionResult? result = controller.GetByWear(wear.WearId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByWear_EmptyPriceHistory_ReturnsOkWithEmptyList()
+        {
+            // Given
+            var emptyList = new List<PriceHistory>();
+            var emptyDTOList = new List<PriceHistoryDTO>();
+            wearRepositoryMock.Setup(r => r.GetByIdAsyncNew(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+                                  .ReturnsAsync(wear);
+            mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(emptyList))
+                      .Returns(emptyDTOList);
+
+            // When
+            IActionResult? result = controller.GetByWear(wear.WearId).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
         #endregion
 
         #region GetAIPrediction Tests

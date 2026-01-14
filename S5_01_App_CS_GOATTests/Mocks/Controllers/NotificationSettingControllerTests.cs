@@ -155,6 +155,24 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
         }
 
+        [TestMethod]
+        public void GetByUser_AuthenticatedWithEmptySettings_ReturnsOkWithEmptyList()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            var emptyList = new List<NotificationSetting>();
+            notificationSettingRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "NotificationType"))
+                                             .ReturnsAsync(emptyList);
+            mapperMock.Setup(m => m.Map<IEnumerable<NotificationSettingDTO>>(emptyList))
+                      .Returns(new List<NotificationSettingDTO>());
+
+            // When
+            IActionResult? result = controller.GetByUser().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
         #endregion
     }
 }

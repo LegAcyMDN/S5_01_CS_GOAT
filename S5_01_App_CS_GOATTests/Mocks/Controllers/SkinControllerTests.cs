@@ -94,6 +94,59 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             ), Times.Once);
         }
 
+        [TestMethod]
+        public void GetByCase_NegativeCaseId_ReturnsNotFound()
+        {
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+                -1,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync((Case?)null);
+
+            // When
+            IActionResult? result = controller.GetByCase(-1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByCase_ZeroCaseId_ReturnsNotFound()
+        {
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+                0,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync((Case?)null);
+
+            // When
+            IActionResult? result = controller.GetByCase(0).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByCase_CaseWithEmptySkins_ReturnsOkWithEmptyList()
+        {
+            var emptyCaseContents = new List<CaseContent>();
+            var caseWithNoSkins = new Case 
+            { 
+                CaseId = 1, 
+                CaseName = "Empty Case",
+                CaseContents = emptyCaseContents
+            };
+
+            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+                1,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync(caseWithNoSkins);
+
+            // When
+            IActionResult? result = controller.GetByCase(1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
         #endregion
     }
 }
