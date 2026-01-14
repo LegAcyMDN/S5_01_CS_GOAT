@@ -11,6 +11,9 @@ using System.Dynamic;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
+/// <summary>
+/// Manages user account operations including creation, authentication, updates, and profile management
+/// </summary>
 public class UserManager : CrudRepository<User, int>, IUserRepository
 {
     protected readonly IConfiguration _configuration;

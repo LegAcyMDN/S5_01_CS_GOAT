@@ -3,6 +3,9 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages promotional code validation, refreshing, and consumption
+    /// </summary>
     public class PromoCodeManager : CrudRepository<PromoCode, int>, IPromoCodeRepository
     {
         protected readonly CSGOATDbContext _context;

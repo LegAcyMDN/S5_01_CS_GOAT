@@ -3,6 +3,9 @@ using System.Text;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Provides security-related utilities including token generation, password hashing, and password verification
+    /// </summary>
     public class SecurityService
     {
         /// <summary>

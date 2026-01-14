@@ -5,6 +5,13 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages provably fair random number generation for gaming operations
+    /// </summary>
+    /// <remarks>
+    /// Implements the provably fair system by combining server seeds, client seeds, and nonces
+    /// to generate verifiable random outcomes that players can independently verify.
+    /// </remarks>
     public class FairRandomManager: CrudRepository<FairRandom, int>, IFairRandomRepository
     {
         protected readonly CSGOATDbContext _context;

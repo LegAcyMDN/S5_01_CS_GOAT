@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Provides integration with Steam API to retrieve user profile information
+    /// </summary>
     public class SteamUserService
     {
         private readonly HttpClient _httpClient;

@@ -4,6 +4,9 @@ using PayPalHttp;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Provides integration with PayPal Checkout API for payment processing
+    /// </summary>
     public class PayPalService
     {
         private readonly PayPalHttpClient _client;

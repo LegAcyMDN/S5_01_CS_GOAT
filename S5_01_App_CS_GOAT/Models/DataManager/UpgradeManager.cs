@@ -10,6 +10,13 @@ using Stripe;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages item upgrade/downgrade operations with probability calculations based on prices and wear
+    /// </summary>
+    /// <remarks>
+    /// Implements complex probability formulas that determine success rates when users combine items,
+    /// potentially resulting in upgraded, downgraded, or destroyed outcomes.
+    /// </remarks>
     public class UpgradeManager : IUpgradeRepository
     {
         private readonly CSGOATDbContext _context;

@@ -9,6 +9,9 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages the opening of cases with randomized item selection and promo code application
+    /// </summary>
     public class CaseOpenningManager : ICaseOpenningRepository
     {
         protected readonly CSGOATDbContext _context;

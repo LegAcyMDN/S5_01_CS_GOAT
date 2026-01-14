@@ -6,6 +6,9 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages sending and verification of email and SMS codes for user contact information verification
+    /// </summary>
     public class SendingManager: ISendingRepository
     {
         protected readonly CSGOATDbContext _context;

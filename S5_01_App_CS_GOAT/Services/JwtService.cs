@@ -10,6 +10,9 @@ using System.Text;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Contains JWT authentication result information
+    /// </summary>
     public struct AuthResult
     {
         public int? AuthUserId { get; set; }
@@ -56,6 +59,9 @@ namespace S5_01_App_CS_GOAT.Services
         }
     }
 
+    /// <summary>
+    /// Provides JWT token generation and authentication validation services
+    /// </summary>
     public abstract class JwtService
     {
         /// <summary>

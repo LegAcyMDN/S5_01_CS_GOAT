@@ -8,6 +8,9 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages the selling of inventory items and corresponding wallet transactions
+    /// </summary>
     public class SellingManager : ISellingRepository
     {
         protected readonly CSGOATDbContext _context;

@@ -3,6 +3,13 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages historical price data retrieval and AI-based price predictions
+    /// </summary>
+    /// <remarks>
+    /// Interfaces with external Flask service for machine learning-based price predictions.
+    /// Supports both debug (localhost) and production (Azure) Flask endpoints.
+    /// </remarks>
     public class PriceHistoryManager: ReadRepository<PriceHistory, int>, IPriceHistoryRepository
     {
 #if DEBUG
