@@ -1,0 +1,234 @@
+@* Composant de filtres pour le tableau des utilisateurs *@
+
+<div class="users-filter-container">
+    <!-- Barre de recherche principale -->
+    <div class="search-bar">
+        <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" 
+                   class="search-input" 
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   @onkeyup="@(async (e) => { if (e.Key == "Enter") await OnSearchAsync(); })"
+                   placeholder="Rechercher un utilisateur (nom, email, login...)" />
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <button class="clear-search-btn" @onclick="ClearSearch" title="Effacer">✕</button>
+            }
+        </div>
+        <button class="search-btn" @onclick="OnSearchAsync">Rechercher</button>
+        <button class="filter-toggle-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters">
+            <span class="filter-icon">@(showFilters ? "▲" : "▼")</span> Filtres
+            @if (GetActiveFiltersCount() > 0)
+            {
+                <span class="filter-badge">@GetActiveFiltersCount()</span>
+            }
+        </button>
+    </div>
+
+    <!-- Section des filtres (collapsable) -->
+    @if (showFilters)
+    {
+        <div class="filters-panel">
+            <div class="filters-header">
+                <h4>🔽 Filtres avancés</h4>
+                <button class="reset-filters-btn" @onclick="ResetFilters">🔄 Réinitialiser tout</button>
+            </div>
+
+            <div class="filters-grid">
+                <!-- Filtre Tri -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📊</span> Trier par
+                    </label>
+                    <select @bind="sortKey" class="filter-select">
+                        <option value="">Par défaut</option>
+                        <option value="userid">ID</option>
+                        <option value="login">Login</option>
+                        <option value="displayname">Nom d'affichage</option>
+                        <option value="email">Email</option>
+                        <option value="creationdate">Date d'inscription</option>
+                        <option value="lastlogin">Dernière connexion</option>
+                        <option value="wallet">Portefeuille</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">↕️</span> Ordre
+                    </label>
+                    <select @bind="sortType" class="filter-select">
+                        <option value="asc">Croissant ↑</option>
+                        <option value="desc">Décroissant ↓</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Rôle -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">👤</span> Rôle
+                    </label>
+                    <select @bind="roleFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="admin">Administrateurs</option>
+                        <option value="user">Utilisateurs</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Email vérifié -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📧</span> Email vérifié
+                    </label>
+                    <select @bind="emailVerifiedFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="true">Vérifié ✓</option>
+                        <option value="false">Non vérifié ✗</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Téléphone vérifié -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📱</span> Téléphone vérifié
+                    </label>
+                    <select @bind="phoneVerifiedFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="true">Vérifié ✓</option>
+                        <option value="false">Non vérifié ✗</option>
+                    </select>
+                </div>
+
+                <!-- Filtre 2FA -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">🔐</span> Authentification 2FA
+                    </label>
+                    <select @bind="twoFAFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="None">Désactivé</option>
+                        <option value="Phone">SMS</option>
+                        <option value="Email">Email</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Compte Steam -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">🎮</span> Compte Steam
+                    </label>
+                    <select @bind="steamFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="true">Lié</option>
+                        <option value="false">Non lié</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters-actions">
+                <button class="apply-filters-btn" @onclick="ApplyFilters">✓ Appliquer les filtres</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnSearchTermChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<(string? sortKey, string sortType, Dictionary<string, List<string>> filters)> OnApplyFiltersAndSort { get; set; }
+
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+
+    private bool showFilters = false;
+    private string searchTerm = string.Empty;
+    private string? sortKey;
+    private string sortType = "asc";
+    private string roleFilter = string.Empty;
+    private string emailVerifiedFilter = string.Empty;
+    private string phoneVerifiedFilter = string.Empty;
+    private string twoFAFilter = string.Empty;
+    private string steamFilter = string.Empty;
+
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+    }
+
+    private async Task OnSearchAsync()
+    {
+        await OnSearchTermChanged.InvokeAsync(searchTerm);
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = string.Empty;
+        await OnSearchTermChanged.InvokeAsync(searchTerm);
+    }
+
+    private int GetActiveFiltersCount()
+    {
+        int count = 0;
+        if (!string.IsNullOrEmpty(roleFilter)) count++;
+        if (!string.IsNullOrEmpty(emailVerifiedFilter)) count++;
+        if (!string.IsNullOrEmpty(phoneVerifiedFilter)) count++;
+        if (!string.IsNullOrEmpty(twoFAFilter)) count++;
+        if (!string.IsNullOrEmpty(steamFilter)) count++;
+        return count;
+    }
+
+    private async Task ApplyFilters()
+    {
+        var filters = new Dictionary<string, List<string>>();
+
+        // Filtre rôle - Envoie directement true/false
+        if (!string.IsNullOrEmpty(roleFilter))
+        {
+            filters["isadmin"] = new List<string> { roleFilter == "admin" ? "True" : "False" };
+        }
+
+        // Filtre email vérifié - Envoie directement True/False
+        if (!string.IsNullOrEmpty(emailVerifiedFilter))
+        {
+            filters["emailisverified"] = new List<string> { emailVerifiedFilter == "true" ? "True" : "False" };
+        }
+
+        // Filtre téléphone vérifié - Envoie directement True/False
+        if (!string.IsNullOrEmpty(phoneVerifiedFilter))
+        {
+            filters["phoneisverified"] = new List<string> { phoneVerifiedFilter == "true" ? "True" : "False" };
+        }
+
+        // Filtre 2FA - Envoie les noms de l'enum
+        if (!string.IsNullOrEmpty(twoFAFilter))
+        {
+            filters["twofa"] = new List<string> { twoFAFilter };
+        }
+
+        // Filtre Steam - Envoie directement True/False
+        if (!string.IsNullOrEmpty(steamFilter))
+        {
+            filters["issteamlogin"] = new List<string> { steamFilter == "true" ? "True" : "False" };
+        }
+
+        // Appliquer filtres et tri ensemble
+        await OnApplyFiltersAndSort.InvokeAsync((sortKey, sortType, filters));
+    }
+
+    private async Task ResetFilters()
+    {
+        searchTerm = string.Empty;
+        sortKey = null;
+        sortType = "asc";
+        roleFilter = string.Empty;
+        emailVerifiedFilter = string.Empty;
+        phoneVerifiedFilter = string.Empty;
+        twoFAFilter = string.Empty;
+        steamFilter = string.Empty;
+        showFilters = false;
+        
+        await OnReset.InvokeAsync();
+    }
+}

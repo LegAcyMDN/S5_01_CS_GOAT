@@ -1,0 +1,314 @@
+@using Shared.DTO
+@* Composant de filtres pour le tableau des codes promos *@
+
+<div class="promocodes-filter-container">
+    <!-- Barre de recherche principale -->
+    <div class="search-bar">
+        <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" 
+                   class="search-input" 
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   @onkeyup="@(async (e) => { if (e.Key == "Enter") await OnSearchAsync(); })"
+                   placeholder="Rechercher un code promo..." />
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <button class="clear-search-btn" @onclick="ClearSearch" title="Effacer">✕</button>
+            }
+        </div>
+        <button class="search-btn" @onclick="OnSearchAsync">Rechercher</button>
+        <button class="filter-toggle-btn @(showFilters ? "active" : "")" @onclick="ToggleFilters">
+            <span class="filter-icon">@(showFilters ? "▲" : "▼")</span> Filtres
+            @if (GetActiveFiltersCount() > 0)
+            {
+                <span class="filter-badge">@GetActiveFiltersCount()</span>
+            }
+        </button>
+    </div>
+
+    <!-- Section des filtres (collapsable) -->
+    @if (showFilters)
+    {
+        <div class="filters-panel">
+            <div class="filters-header">
+                <h4>🔽 Filtres avancés</h4>
+                <button class="reset-filters-btn" @onclick="ResetFilters">🔄 Réinitialiser tout</button>
+            </div>
+
+            <div class="filters-grid">
+                <!-- Filtre Tri -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📊</span> Trier par
+                    </label>
+                    <select @bind="sortKey" class="filter-select">
+                        <option value="">Par défaut</option>
+                        <option value="code">Code</option>
+                        <option value="validitystart">Date de début</option>
+                        <option value="expirydate">Date d'expiration</option>
+                        <option value="discountpercentage">% Réduction</option>
+                        <option value="discountamount">Montant</option>
+                        <option value="remaininguses">Utilisations restantes</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">↕️</span> Ordre
+                    </label>
+                    <select @bind="sortType" class="filter-select">
+                        <option value="asc">Croissant ↑</option>
+                        <option value="desc">Décroissant ↓</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Type de code -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">🎯</span> Type de code
+                    </label>
+                    <select @bind="typeFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="global">🌍 Global</option>
+                        <option value="user">👤 Utilisateur spécifique</option>
+                        <option value="case">📦 Case spécifique</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Statut -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📈</span> Statut
+                    </label>
+                    <select @bind="statusFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="active">✅ Actif</option>
+                        <option value="expired">❌ Expiré</option>
+                        <option value="pending">⏳ En attente</option>
+                        <option value="depleted">🚫 Épuisé</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Utilisations -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">🔢</span> Utilisations
+                    </label>
+                    <select @bind="usesFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="unlimited">♾️ Illimité</option>
+                        <option value="limited">🔢 Limité</option>
+                        <option value="depleted">🚫 Épuisé (0)</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Type de réduction -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">💰</span> Type de réduction
+                    </label>
+                    <select @bind="discountTypeFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="percentage">% Pourcentage</option>
+                        <option value="amount">€ Montant fixe</option>
+                        <option value="both">🔀 Les deux</option>
+                    </select>
+                </div>
+
+                <!-- Filtre Date d'expiration -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="label-icon">📅</span> Expiration
+                    </label>
+                    <select @bind="expirationFilter" class="filter-select">
+                        <option value="">Tous</option>
+                        <option value="permanent">♾️ Permanent</option>
+                        <option value="temporary">⏱️ Temporaire</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters-actions">
+                <button class="apply-filters-btn" @onclick="ApplyFilters">✓ Appliquer les filtres</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnSearchTermChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<(string? sortKey, string sortType, Dictionary<string, List<string>> filters)> OnApplyFiltersAndSort { get; set; }
+
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+
+    private bool showFilters = false;
+    private string searchTerm = string.Empty;
+    private string? sortKey;
+    private string sortType = "asc";
+    private string typeFilter = string.Empty;
+    private string statusFilter = string.Empty;
+    private string usesFilter = string.Empty;
+    private string discountTypeFilter = string.Empty;
+    private string expirationFilter = string.Empty;
+
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+    }
+
+    private async Task OnSearchAsync()
+    {
+        await OnSearchTermChanged.InvokeAsync(searchTerm);
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = string.Empty;
+        await OnSearchTermChanged.InvokeAsync(searchTerm);
+    }
+
+    private int GetActiveFiltersCount()
+    {
+        int count = 0;
+        if (!string.IsNullOrEmpty(typeFilter)) count++;
+        if (!string.IsNullOrEmpty(statusFilter)) count++;
+        if (!string.IsNullOrEmpty(usesFilter)) count++;
+        if (!string.IsNullOrEmpty(discountTypeFilter)) count++;
+        if (!string.IsNullOrEmpty(expirationFilter)) count++;
+        return count;
+    }
+
+    private async Task ApplyFilters()
+    {
+        var filters = new Dictionary<string, List<string>>();
+
+        // Pour les PromoCode, la plupart des filtres nécessitent un traitement côté client
+        // car ils dépendent de NULL/NOT NULL ou de logique complexe
+        // On applique uniquement le tri côté serveur et on filtrera côté client après
+
+        // Appliquer le tri côté serveur
+        await OnApplyFiltersAndSort.InvokeAsync((sortKey, sortType, filters));
+    }
+
+    // Méthode pour filtrer les codes promos côté client
+    public List<PromoCodeDTO> FilterPromoCodesClientSide(List<PromoCodeDTO> promoCodes)
+    {
+        if (promoCodes == null || !promoCodes.Any())
+            return promoCodes ?? new List<PromoCodeDTO>();
+
+        var filtered = promoCodes.AsEnumerable();
+
+        // Filtre type de code
+        if (!string.IsNullOrEmpty(typeFilter))
+        {
+            if (typeFilter == "global")
+            {
+                filtered = filtered.Where(p => !p.UserId.HasValue && !p.CaseId.HasValue);
+            }
+            else if (typeFilter == "user")
+            {
+                filtered = filtered.Where(p => p.UserId.HasValue);
+            }
+            else if (typeFilter == "case")
+            {
+                filtered = filtered.Where(p => p.CaseId.HasValue);
+            }
+        }
+
+        // Filtre statut
+        if (!string.IsNullOrEmpty(statusFilter))
+        {
+            var now = DateTime.Now;
+            if (statusFilter == "active")
+            {
+                filtered = filtered.Where(p => 
+                    p.ValidityStart <= now && 
+                    (!p.ExpiryDate.HasValue || p.ExpiryDate.Value > now) &&
+                    (!p.RemainingUses.HasValue || p.RemainingUses.Value > 0));
+            }
+            else if (statusFilter == "expired")
+            {
+                filtered = filtered.Where(p => p.ExpiryDate.HasValue && p.ExpiryDate.Value <= now);
+            }
+            else if (statusFilter == "pending")
+            {
+                filtered = filtered.Where(p => p.ValidityStart > now);
+            }
+            else if (statusFilter == "depleted")
+            {
+                filtered = filtered.Where(p => p.RemainingUses.HasValue && p.RemainingUses.Value == 0);
+            }
+        }
+
+        // Filtre utilisations
+        if (!string.IsNullOrEmpty(usesFilter))
+        {
+            if (usesFilter == "unlimited")
+            {
+                filtered = filtered.Where(p => !p.RemainingUses.HasValue);
+            }
+            else if (usesFilter == "limited")
+            {
+                filtered = filtered.Where(p => p.RemainingUses.HasValue && p.RemainingUses.Value > 0);
+            }
+            else if (usesFilter == "depleted")
+            {
+                filtered = filtered.Where(p => p.RemainingUses.HasValue && p.RemainingUses.Value == 0);
+            }
+        }
+
+        // Filtre type de réduction
+        if (!string.IsNullOrEmpty(discountTypeFilter))
+        {
+            if (discountTypeFilter == "percentage")
+            {
+                filtered = filtered.Where(p => p.DiscountPercentage.HasValue && !p.DiscountAmount.HasValue);
+            }
+            else if (discountTypeFilter == "amount")
+            {
+                filtered = filtered.Where(p => p.DiscountAmount.HasValue && !p.DiscountPercentage.HasValue);
+            }
+            else if (discountTypeFilter == "both")
+            {
+                filtered = filtered.Where(p => p.DiscountPercentage.HasValue && p.DiscountAmount.HasValue);
+            }
+        }
+
+        // Filtre expiration
+        if (!string.IsNullOrEmpty(expirationFilter))
+        {
+            if (expirationFilter == "permanent")
+            {
+                // Les codes permanents n'ont PAS de date d'expiration
+                filtered = filtered.Where(p => !p.ExpiryDate.HasValue);
+            }
+            else if (expirationFilter == "temporary")
+            {
+                // Les codes temporaires ont UNE date d'expiration
+                filtered = filtered.Where(p => p.ExpiryDate.HasValue);
+            }
+        }
+
+        return filtered.ToList();
+    }
+
+    private async Task ResetFilters()
+    {
+        searchTerm = string.Empty;
+        sortKey = null;
+        sortType = "asc";
+        typeFilter = string.Empty;
+        statusFilter = string.Empty;
+        usesFilter = string.Empty;
+        discountTypeFilter = string.Empty;
+        expirationFilter = string.Empty;
+        showFilters = false;
+        
+        await OnReset.InvokeAsync();
+    }
+}

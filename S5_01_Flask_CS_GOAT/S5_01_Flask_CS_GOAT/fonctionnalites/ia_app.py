@@ -29,19 +29,8 @@ ia_bp = Blueprint('ia', __name__)
 MODELS_DIR = os.path.join(os.path.dirname(__file__), 'models')
 os.makedirs(MODELS_DIR, exist_ok=True)
 
-def get_item_name(skin_id: int = None, wear_id: int = None) -> str:
-    if skin_id:
-        skin = Skin.query.get(skin_id)
-        if not skin:
-            return None
-
-        item = Item.query.get(skin.item_id)
-        if not item:
-            return None
-        
-        return f"{item.item_name} | {skin.skin_name}"
-
-    elif wear_id:
+def get_item_name(skin_id: int = None, wear_id: int = None, wear_type_id: int = None) -> str:
+    if wear_id:
         wear = Wear.query.get(wear_id)
         if not wear:
             return None
@@ -55,7 +44,45 @@ def get_item_name(skin_id: int = None, wear_id: int = None) -> str:
         if not item or not wear_type:
             return None
 
-        return f"{item.item_name} | {skin.skin_name} ({wear_type.wear_type_name})"
+        # Ajouter ★ pour les couteaux et gants
+        item_name = item.item_name
+        if 'Knife' in item_name or 'Gloves' in item_name:
+            item_name = f"★ {item_name}"
+        
+        return f"{item_name} | {skin.skin_name} ({wear_type.wear_type_name})"
+    
+    elif skin_id and wear_type_id:
+        skin = Skin.query.get(skin_id)
+        if not skin:
+            return None
+
+        item = Item.query.get(skin.item_id)
+        wear_type = WearType.query.get(wear_type_id)
+        if not item or not wear_type:
+            return None
+        
+        # Ajouter ★ pour les couteaux et gants
+        item_name = item.item_name
+        if 'Knife' in item_name or 'Gloves' in item_name:
+            item_name = f"★ {item_name}"
+        
+        return f"{item_name} | {skin.skin_name} ({wear_type.wear_type_name})"
+    
+    elif skin_id:
+        skin = Skin.query.get(skin_id)
+        if not skin:
+            return None
+
+        item = Item.query.get(skin.item_id)
+        if not item:
+            return None
+        
+        # Ajouter ★ pour les couteaux et gants
+        item_name = item.item_name
+        if 'Knife' in item_name or 'Gloves' in item_name:
+            item_name = f"★ {item_name}"
+        
+        return f"{item_name} | {skin.skin_name}"
 
     return None
 
@@ -67,13 +94,14 @@ def predict_and_save(jours:int=30, wear_id:int=None, skin_id:int=None, wear_type
         debug_print(f"Limiting prediction from {jours} to 30 days for better accuracy")
         jours = 30
 
-    item_name = get_item_name(skin_id=skin_id, wear_id=wear_id)
+    item_name = get_item_name(skin_id=skin_id, wear_id=wear_id, wear_type_id=wear_type_id)
     if not item_name:
         debug_print("Item name could not be determined.")
         return False
     
-    debug_print("Fetching the latest price data...")
-    fetch_price_data(item_name)
+    # Ne plus fetcher ici, ce sera fait dans do_predict si nécessaire
+    # debug_print("Fetching the latest price data...")
+    # fetch_price_data(item_name)
 
     if wear_id:
         (skin_id, wear_type_id) = predict_with_wear(wear_id)
@@ -224,7 +252,31 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
     
     if len(df_train) < 14:
         debug_print(f"Not enough recent data: {len(df_train)} points")
-        return False
+        
+        # Tenter de récupérer plus de données depuis Steam
+        item_name = get_item_name(skin_id=skin_id, wear_type_id=wear_type_id)
+        if item_name:
+            debug_print(f"Fetching more price data from Steam for {item_name}...")
+            fetch_price_data(item_name)
+            
+            # Recharger les données après fetch
+            price_history = get_all(skin_id, wear_type_id)
+            df = pd.DataFrame([{
+                'ds': datetime.fromisoformat(ph['pricedate']),
+                'y': ph['pricevalue']
+            } for ph in price_history])
+            
+            df = df.sort_values('ds')
+            df_train = df[df['ds'] >= cutoff_date].copy()
+            df_train = df_train.reset_index(drop=True)
+            
+            # Vérifier à nouveau si on a assez de données
+            if len(df_train) < 14:
+                debug_print(f"Still not enough data after fetch: {len(df_train)} points")
+                return False
+            debug_print(f"Successfully fetched more data: {len(df_train)} points")
+        else:
+            return False
     
     last_historical_price = df_train['y'].iloc[-1]
     last_historical_date = df_train['ds'].max()
@@ -309,6 +361,12 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
         draw_debug_graph(df_train, forecast, skin_id, wear_type_id, item_id, last_historical_date)
         if lstm_predictions is not None:
             draw_lstm_graph(df_train, lstm_predictions, future_dates, skin_id, wear_type_id, item_id, last_historical_date)
+    
+    # Toujours générer les graphiques pour le frontend
+    graph_paths = {}
+    graph_paths['prophet'] = draw_debug_graph(df_train, forecast, skin_id, wear_type_id, item_id, last_historical_date)
+    if lstm_predictions is not None:
+        graph_paths['lstm'] = draw_lstm_graph(df_train, lstm_predictions, future_dates, skin_id, wear_type_id, item_id, last_historical_date)
 
     for idx, row in forecast.iterrows():
         new_prediction = PriceHistory(
@@ -327,10 +385,10 @@ def do_predict(skin_id:int, wear_type_id:int, jours:int = 30, training_days:int=
     
     print(f"Saved {len(forecast)} predictions!")
     
-    return True
+    return graph_paths if graph_paths else True
 
 def draw_debug_graph(df_train: pd.DataFrame, forecast: pd.DataFrame, skin_id: int, 
-                     wear_type_id: int, item_id: int, last_real_date: datetime) -> bool:
+                     wear_type_id: int, item_id: int, last_real_date: datetime) -> str:
     lookback_days = 60
     cutoff_date = datetime.now() - timedelta(days=lookback_days)
     
@@ -402,10 +460,10 @@ def draw_debug_graph(df_train: pd.DataFrame, forecast: pd.DataFrame, skin_id: in
     debug_print(f"Graph saved: {graph_path}")
     
     plt.close()
-    return True
+    return f'prediction_prophet_item_{item_id}_skin_{skin_id}_wear_{wear_type_id}.png'
 
 def draw_lstm_graph(df_train: pd.DataFrame, lstm_predictions: np.ndarray, future_dates: list,
-                    skin_id: int, wear_type_id: int, item_id: int, last_real_date: datetime) -> bool:
+                    skin_id: int, wear_type_id: int, item_id: int, last_real_date: datetime) -> str:
     lookback_days = 60
     cutoff_date = datetime.now() - timedelta(days=lookback_days)
     
@@ -477,7 +535,7 @@ def draw_lstm_graph(df_train: pd.DataFrame, lstm_predictions: np.ndarray, future
     debug_print(f"Graph saved: {graph_path}")
     
     plt.close()
-    return True
+    return f'prediction_lstm_item_{item_id}_skin_{skin_id}_wear_{wear_type_id}.png'
 
 def get_all(skin_id:int, wear_type_id:int) -> list:
     price_histories = PriceHistory.query.filter_by(
