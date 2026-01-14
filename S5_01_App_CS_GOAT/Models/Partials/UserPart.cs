@@ -27,8 +27,8 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             return true;
         }
 
-        public bool TrySetPassword(string password) {
-            if (!IsValidPassword(password)) return false;
+        public bool TrySetPassword(string password, bool bypassValidity = false) {
+            if (!bypassValidity && !IsValidPassword(password)) return false;
             string newSalt = SecurityService.GenerateToken();
             string newHash = SecurityService.HashAndSalt(password, newSalt);
             this.SaltPassword = newSalt;

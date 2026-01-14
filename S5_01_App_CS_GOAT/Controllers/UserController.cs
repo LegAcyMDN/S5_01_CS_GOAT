@@ -161,16 +161,36 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Request password reset for a user
         /// </summary>
         /// <param name="identifier">The email or login of the user</param>
-        /// <returns>No content (always returns success for security)</returns>
-        [HttpHead("resetpassword")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        /// <param name="url">The URL to send the reset link to (optional)</param>
+        /// <param name="code">The reset code (optional)</param>
+        /// <param name="preferMail">Whether to prefer email for communication</param>
+        /// <returns>Status code indicating the result of the operation</returns>
+        [HttpGet("resetpassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult ResetPassword([FromQuery] string identifier)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ResetPassword(
+            [FromQuery] string identifier,
+            [FromQuery] string? url = null, 
+            [FromQuery] string? code = null,
+            [FromQuery] bool preferMail = true)
         {
-            if (string.IsNullOrEmpty(identifier))
+            if (string.IsNullOrEmpty(identifier)) return BadRequest();
+            if ((string.IsNullOrEmpty(url) ? 0 : 1) + (string.IsNullOrEmpty(code) ? 0 : 1) != 1)
                 return BadRequest();
-
-            throw new NotImplementedException();
+            if (url != null)
+            {
+                int response = await manager.StartResetPassword(identifier, url, preferMail);
+                return StatusCode(response);
+            }
+            else
+            {
+                Tuple<int, string?> response = await manager.EndResetPassword(identifier, code!);
+                if (response.Item2 != null) return Ok(response.Item2);
+                return StatusCode(response.Item1);
+            }
         }
 
         /// <summary>

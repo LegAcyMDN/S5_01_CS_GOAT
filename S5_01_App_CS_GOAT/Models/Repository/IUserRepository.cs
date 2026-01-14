@@ -22,7 +22,10 @@ public interface IUserRepository : IDataRepository<User, int>
     Task<User?> GetByLogin(string login);
     Task<User?> GetByEmail(string email);
     Task<User?> GetByPhone(string phone);
-    
+
+    Task<int> StartResetPassword(string identifier, string url, bool preferMail = true);
+    Task<Tuple<int, string?>> EndResetPassword(string identifier, string code);
+
     Task<User?> GetBySteamIdAsync(string steamId);
     Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO);
 
