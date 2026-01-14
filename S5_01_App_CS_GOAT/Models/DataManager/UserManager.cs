@@ -1,23 +1,26 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 using Shared.DTO.Helpers;
 using Shared.Enum;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
 public class UserManager : CrudRepository<User, int>, IUserRepository
 {
     protected readonly CSGOATDbContext _context;
+    protected readonly IConfiguration _configuration;
     protected readonly IMapper _mapper;
 
-    public UserManager(CSGOATDbContext context, IMapper mapper) : base(context)
+    public UserManager(CSGOATDbContext context, IMapper mapper, IConfiguration configuration) : base(context)
     {
         _context = context;
         _mapper = mapper;
+        _configuration = configuration;
     }
 
     public async Task UpdateUserDetails(User existing, UpdateUserDTO userDTO)
@@ -325,17 +328,81 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
     
             return newUser;
         }
-        
-        /// <summary>
-        /// Generate a random seed for provably fair system
-        /// </summary>
-        private string GenerateSeed()
+
+
+    public async Task<int> StartResetPassword(string identifier, string url, bool preferMail = true)
+    {
+        Console.WriteLine($"Starting password reset for identifier: {identifier}, url: {url}, preferMail: {preferMail}");
+        User? user = await GetByIdentifier(identifier);
+        if (user == null) return StatusCodes.Status404NotFound;
+        IEnumerable<Token> existingTokens = _context.Set<Token>()
+            .Where(t => t.UserId == user.UserId && t.TokenTypeId == 2 && t.TokenExpiry > DateTime.Now);
+        if (existingTokens.Any()) return StatusCodes.Status429TooManyRequests;
+        using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+        Token resetToken = new Token
         {
-            var bytes = new byte[16];
-            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(bytes);
-            }
-            return Convert.ToBase64String(bytes);
+            UserId = user.UserId,
+            TokenTypeId = 2,
+            TokenExpiry = DateTime.Now.AddMinutes(15),
+            TokenValue = SecurityService.GenerateSeed(preferMail ? 32 : 16)
+        };
+        await _context.Set<Token>().AddAsync(resetToken);
+        await _context.SaveChangesAsync();
+
+        Message message = new Message(_configuration, user)
+        {
+            Text = $"\n\nA password reset request has been received for your CS:GOAT account." +
+                $"\nFollow the link below if you have forgotten your password." +
+                $"\nIf you did not initiate this request, you can ignore it." +
+                $"\n{url}?identifier={identifier}&code={resetToken.TokenValue}",
+            Subject = "Réinitialisation du mot de passe CS:GOAT / CS:GOAT Password Reset",
+            Html = $"<p>Une demande de réinitialisation de votre mot de passe à été reçue pour votre compte CS:GOAT.<br>" +
+                $"Suivez le lien ci-dessous si vous avez oublié votre mot de passe.<br>" +
+                $"Si vous n'êtes pas à l'origine de cette demande, vous pouvez l'ignorer.</p>" +
+                $"<p>A password reset request has been received for your CS:GOAT account.<br>" +
+                $"Follow the link below if you have forgotten your password.<br>" +
+                $"If you did not initiate this request, you can ignore it.</p>" +
+                $"<p><a href=\"{url}?identifier={identifier}&code={resetToken.TokenValue}\">" +
+                $"{url}?identifier={identifier}&code={resetToken.TokenValue}</a></p>"
+        };
+        if ((preferMail && !string.IsNullOrEmpty(user.Email)) || string.IsNullOrEmpty(user.Phone))
+        {
+            HttpResponseMessage response = await message.SendMailAsync();
+            if (!response.IsSuccessStatusCode)
+                await transaction.RollbackAsync();
+            else 
+                await transaction.CommitAsync();
+            return (int)response.StatusCode;
         }
+        else if (!string.IsNullOrEmpty(user.Phone))
+        {
+            HttpResponseMessage response = await message.SendSmsAsync();
+            if (!response.IsSuccessStatusCode)
+                await transaction.RollbackAsync();
+            else 
+                await transaction.CommitAsync();
+            return (int)response.StatusCode;
+        }
+        await transaction.RollbackAsync();
+        return StatusCodes.Status400BadRequest;
+    }
+
+    public async Task<Tuple<int, string?>> EndResetPassword(string identifier, string code)
+    {
+        User? user = await GetByIdentifier(identifier);
+        if (user == null) return new Tuple<int, string?>(StatusCodes.Status404NotFound, null);
+        Token? token = await _context.Set<Token>()
+            .FirstOrDefaultAsync(t =>
+                t.UserId == user.UserId &&
+                t.TokenTypeId == 2 &&
+                t.TokenValue == code &&
+                t.TokenExpiry > DateTime.Now);
+        if (token == null) return new Tuple<int, string?>(StatusCodes.Status400BadRequest, null);
+        string newPassword = SecurityService.GenerateSeed(12);
+        if (!user.TrySetPassword(newPassword, true))
+            return new Tuple<int, string?>(StatusCodes.Status500InternalServerError, null);
+        _context.Set<Token>().Remove(token);
+        await _context.SaveChangesAsync();
+        return new Tuple<int, string?>(StatusCodes.Status200OK, newPassword);
+    }
 }

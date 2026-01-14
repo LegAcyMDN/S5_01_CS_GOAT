@@ -43,9 +43,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             Message message = new Message(_configuration, user)
             {
-                Text = $"Your CS:GOAT verification code is: {token}",
-                Subject = "CS:GOAT Verification Code",
-                Html = $"<p>Your CS:GOAT verification code is: <strong>{token}</strong></p>"
+                Text = $"Votre code de vérification CS:GOAT est: / Your CS:GOAT verification code is: {token}",
+                Subject = "Code de vérification CS:GOAT / CS:GOAT Verification code",
+                Html = $"<p>Votre code de vérification CS:GOAT est: / Your CS:GOAT verification code is:<br><strong>{token}</strong></p>"
             };
             return message;
         }

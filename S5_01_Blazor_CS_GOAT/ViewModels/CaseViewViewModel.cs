@@ -267,7 +267,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 NeedAuth = false;
                 IsInvalidPromoCode = false;
-                
+                ShowPopup = false;
                 
                 if (!string.IsNullOrEmpty(PromoCode))
                 {
