@@ -1,0 +1,206 @@
+@using Shared.DTO
+@using Shared.DTO.Helpers
+
+@if (IsVisible)
+{
+    <div class="modal-overlay" @onclick="OnBackdropClick">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2>Résultats de l'Amélioration</h2>
+                <button class="modal-close-btn" @onclick="Close" aria-label="Fermer">×</button>
+            </div>
+
+            @if (Output != null)
+            {
+                <div class="modal-body">
+                    <!-- Skin Cible -->
+                    @if (TargetSkin != null)
+                    {
+                        <div class="target-skin-section">
+                            <h3>Skin Cible</h3>
+                            <div class="target-skin-card">
+                                <div class="target-rarity-indicator" style="background-color: @TargetSkin.RarityColor;">
+                                    @if (!string.IsNullOrEmpty(TargetSkin.AnyUuid))
+                                    {
+                                        <img src="https://screenshots.cs.money/csmoney2/@(TargetSkin.AnyUuid)_icon.png" alt="@TargetSkin.SkinName" />
+                                    }
+                                </div>
+                                <div class="target-skin-info">
+                                    <span class="target-skin-name">@TargetSkin.SkinName</span>
+                                    <span class="target-item-name">@TargetSkin.ItemName</span>
+                                    <span class="target-rarity-name">@TargetSkin.RarityName</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Résumé succès/échec -->
+                    <div class="result-summary">
+                        @if (Output.Preview)
+                        {
+                            <div class="preview-badge">
+                                <span>Aperçu (Non exécuté)</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="result-badge @(Output.ItemResult != null ? "success" : "failure")">
+                                @if (Output.ItemResult != null)
+                                {
+                                    <span>✓ Amélioration Réussie</span>
+                                }
+                                else
+                                {
+                                    <span>✗ Amélioration Échouée</span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Probabilités -->
+                    <div class="probabilities-section">
+                        <h3>Probabilités</h3>
+                        <div class="probability-row">
+                            <span class="prob-label">Succès:</span>
+                            <span class="prob-value success">@($"{(Output.SuccessProbability * 100):F1}%")</span>
+                        </div>
+                        <div class="probability-row">
+                            <span class="prob-label">Échec:</span>
+                            <span class="prob-value failure">@($"{(Output.FailProbability * 100):F1}%")</span>
+                        </div>
+                    </div>
+
+                    <!-- Items consommés -->
+                    @if (Output.Items != null && Output.Items.Any())
+                    {
+                        <div class="consumed-items-section">
+                            <h3>Objets Consommés</h3>
+                            @foreach (var itemResult in Output.Items)
+                            {
+                                <div class="consumed-item">
+                                    <div class="item-header">
+                                        <div class="rarity-indicator" style="background-color: @itemResult.InventoryItem?.RarityColor;">
+                                            @if (!string.IsNullOrEmpty(itemResult.InventoryItem?.Uuid))
+                                            {
+                                                <img src="https://screenshots.cs.money/csmoney2/@(itemResult.InventoryItem.Uuid)_icon.png" alt="Item #@itemResult.InventoryItem.InventoryItemId" />
+                                            }
+                                        </div>
+                                        <div class="item-info">
+                                            <span class="item-name">Item #@itemResult.InventoryItem?.InventoryItemId</span>
+                                            <span class="item-acquired">Acquis le: @itemResult.InventoryItem?.AcquiredOn.ToString("dd/MM/yyyy")</span>
+                                            @if (itemResult.UpgradeResult != null)
+                                            {
+                                                @if (!itemResult.UpgradeResult.FloatEnd.HasValue || itemResult.UpgradeResult.PropDestroy >= 1)
+                                                {
+                                                    <span class="item-status destroyed">🔥 Détruite</span>
+                                                }
+                                                else if (itemResult.UpgradeResult.FloatEnd > itemResult.UpgradeResult.FloatStart)
+                                                {
+                                                    <span class="item-status degraded">⚠️ Dégradée</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="item-status intact">✓ Intacte</span>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+
+                                    @if (itemResult.UpgradeResult != null)
+                                    {
+                                        <div class="upgrade-details">
+                                            <div class="detail-row">
+                                                <span class="label">Float avant:</span>
+                                                <span class="value">@($"{itemResult.UpgradeResult.FloatStart:F4}")</span>
+                                            </div>
+                                            @if (itemResult.UpgradeResult.FloatEnd.HasValue)
+                                            {
+                                                <div class="detail-row">
+                                                    <span class="label">Float après:</span>
+                                                    <span class="value">@($"{itemResult.UpgradeResult.FloatEnd:F4}")</span>
+                                                </div>
+                                            }
+                                            
+                                            <div class="probabilities-mini">
+                                                <div class="mini-prob intact">
+                                                    <span>Intacte: @($"{(itemResult.UpgradeResult.ProbIntact * 100):F1}%")</span>
+                                                </div>
+                                                @if (itemResult.UpgradeResult.ProbDegrade > 0)
+                                                {
+                                                    <div class="mini-prob degrade">
+                                                        <span>Dégradée: @($"{(itemResult.UpgradeResult.ProbDegrade * 100):F1}%")</span>
+                                                    </div>
+                                                }
+                                                @if (itemResult.UpgradeResult.PropDestroy > 0)
+                                                {
+                                                    <div class="mini-prob destroy">
+                                                        <span>Détruite: @($"{(itemResult.UpgradeResult.PropDestroy * 100):F1}%")</span>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Résultat final -->
+                    @if (Output.ItemResult != null && !Output.Preview)
+                    {
+                        <div class="final-result-section">
+                            <h3>Arme Obtenue</h3>
+                            <div class="final-item">
+                                <div class="final-rarity-indicator" style="background-color: @Output.ItemResult.RarityColor;">
+                                    @if (!string.IsNullOrEmpty(Output.ItemResult.Uuid))
+                                    {
+                                        <img src="https://screenshots.cs.money/csmoney2/@(Output.ItemResult.Uuid)_icon.png" alt="@Output.ItemResult.SkinName" />
+                                    }
+                                </div>
+                                <div class="final-item-info">
+                                    <span class="final-item-name">@Output.ItemResult.SkinName</span>
+                                    <span class="final-item-wear">@Output.ItemResult.WearTypeName</span>
+                                    <span class="final-item-type">@Output.ItemResult.ItemTypeName</span>
+                                    <span class="final-item-float">Float: @($"{Output.ItemResult.Float:F4}")</span>
+                                    @if (Output.ItemResult.CurrentPrice.HasValue)
+                                    {
+                                        <span class="final-item-price">Prix: @($"{Output.ItemResult.CurrentPrice:F2}€")</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" @onclick="Close">Fermer</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public UpgradeOutputDTO? Output { get; set; }
+
+    [Parameter]
+    public SkinDTO? TargetSkin { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    public async Task Close()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task OnBackdropClick()
+    {
+        await Close();
+    }
+}

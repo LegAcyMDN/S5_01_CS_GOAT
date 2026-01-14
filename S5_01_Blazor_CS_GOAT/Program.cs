@@ -55,7 +55,14 @@ builder.Services.AddScoped<UpgradeService>();
 
 // NEW: Specialized services following SRP
 builder.Services.AddScoped<NavigationService>();
-builder.Services.AddScoped<GetOptionsService>();
+builder.Services.AddScoped<GetOptionsService>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var apiBaseUrl = config["ApiBaseUrl"] ?? throw new InvalidOperationException("ApiBaseUrl not configured");
+    var httpClient = new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+    var authService = sp.GetRequiredService<AuthService>();
+    return new GetOptionsService(httpClient, authService);
+});
 builder.Services.AddScoped<AdminUserService>();
 builder.Services.AddScoped<AdminPromoCodeService>();
 builder.Services.AddScoped<TwoFactorAuthService>();

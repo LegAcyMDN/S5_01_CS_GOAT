@@ -1,4 +1,5 @@
 using S5_01_Blazor_CS_GOAT.Service;
+using S5_01_Blazor_CS_GOAT.Models;
 using Shared.DTO;
 using Shared.DTO.Helpers;
 using System.Collections.ObjectModel;
@@ -14,6 +15,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private readonly IService<InventoryItemDTO> _inventoryService;
         private readonly AuthService _authService;
         private readonly UpgradeService _upgradeService;
+        private readonly GetOptionsService _getOptionsService;
 
         private bool _isLoading = true;
         private bool _isAuthenticated;
@@ -25,18 +27,38 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private bool _isProcessing;
         private string? _errorMessage;
         private string? _successMessage;
-        private bool _showFavoritesOnly = false;
+
+        // Pagination et filtres pour les skins
+        private string _skinSearchTerm = string.Empty;
+        private string? _skinSortKey = "Weight";
+        private string _skinSortType = "desc";
+        private int _skinCurrentPage = 1;
+        private int _skinPageSize = 50;
+        private int _skinTotalPages = 1;
+        private int _skinTotalCount = 0;
+        private int _skinFilteredCount = 0;
+
+        // Pagination et filtres pour l'inventaire
+        private string? _inventorySortKey = "AcquiredOn";
+        private string _inventorySortType = "desc";
+        private int _inventoryCurrentPage = 1;
+        private int _inventoryPageSize = 25;
+        private int _inventoryTotalPages = 1;
+        private int _inventoryTotalCount = 0;
+        private int _inventoryFilteredCount = 0;
 
         public UpgradeViewModel(
             IService<SkinDTO> skinService,
             IService<InventoryItemDTO> inventoryService,
             AuthService authService,
-            UpgradeService upgradeService)
+            UpgradeService upgradeService,
+            GetOptionsService getOptionsService)
         {
             _skinService = skinService;
             _inventoryService = inventoryService;
             _authService = authService;
             _upgradeService = upgradeService;
+            _getOptionsService = getOptionsService;
         }
 
         public bool IsLoading
@@ -105,17 +127,168 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             set => SetProperty(ref _successMessage, value);
         }
 
-        public bool ShowFavoritesOnly
+        // Propriétés de pagination pour les skins
+        public string SkinSearchTerm
         {
-            get => _showFavoritesOnly;
+            get => _skinSearchTerm;
             set
             {
-                if (SetProperty(ref _showFavoritesOnly, value))
+                if (SetProperty(ref _skinSearchTerm, value))
+                {
+                    SkinCurrentPage = 1;
+                    _ = LoadSkinsAsync();
+                }
+            }
+        }
+
+        public string? SkinSortKey
+        {
+            get => _skinSortKey;
+            set
+            {
+                if (SetProperty(ref _skinSortKey, value))
                 {
                     _ = LoadSkinsAsync();
                 }
             }
         }
+
+        public string SkinSortType
+        {
+            get => _skinSortType;
+            set
+            {
+                if (SetProperty(ref _skinSortType, value))
+                {
+                    _ = LoadSkinsAsync();
+                }
+            }
+        }
+
+        public int SkinCurrentPage
+        {
+            get => _skinCurrentPage;
+            set
+            {
+                if (SetProperty(ref _skinCurrentPage, value))
+                {
+                    _ = LoadSkinsAsync();
+                }
+            }
+        }
+
+        public int SkinPageSize
+        {
+            get => _skinPageSize;
+            set
+            {
+                if (SetProperty(ref _skinPageSize, value))
+                {
+                    SkinCurrentPage = 1;
+                    _ = LoadSkinsAsync();
+                }
+            }
+        }
+
+        public int SkinTotalPages
+        {
+            get => _skinTotalPages;
+            set => SetProperty(ref _skinTotalPages, value);
+        }
+
+        public int SkinTotalCount
+        {
+            get => _skinTotalCount;
+            set => SetProperty(ref _skinTotalCount, value);
+        }
+
+        public int SkinFilteredCount
+        {
+            get => _skinFilteredCount;
+            set => SetProperty(ref _skinFilteredCount, value);
+        }
+
+        // Propriétés de pagination pour l'inventaire
+        public string? InventorySortKey
+        {
+            get => _inventorySortKey;
+            set
+            {
+                if (SetProperty(ref _inventorySortKey, value))
+                {
+                    _ = LoadInventoryAsync();
+                }
+            }
+        }
+
+        public string InventorySortType
+        {
+            get => _inventorySortType;
+            set
+            {
+                if (SetProperty(ref _inventorySortType, value))
+                {
+                    _ = LoadInventoryAsync();
+                }
+            }
+        }
+
+        public int InventoryCurrentPage
+        {
+            get => _inventoryCurrentPage;
+            set
+            {
+                if (SetProperty(ref _inventoryCurrentPage, value))
+                {
+                    _ = LoadInventoryAsync();
+                }
+            }
+        }
+
+        public int InventoryPageSize
+        {
+            get => _inventoryPageSize;
+            set
+            {
+                if (SetProperty(ref _inventoryPageSize, value))
+                {
+                    InventoryCurrentPage = 1;
+                    _ = LoadInventoryAsync();
+                }
+            }
+        }
+
+        public int InventoryTotalPages
+        {
+            get => _inventoryTotalPages;
+            set => SetProperty(ref _inventoryTotalPages, value);
+        }
+
+        public int InventoryTotalCount
+        {
+            get => _inventoryTotalCount;
+            set => SetProperty(ref _inventoryTotalCount, value);
+        }
+
+        public int InventoryFilteredCount
+        {
+            get => _inventoryFilteredCount;
+            set => SetProperty(ref _inventoryFilteredCount, value);
+        }
+
+        public Dictionary<string, string> SkinSortableProperties => new()
+        {
+            { "Weight", "Poids" },
+            { "SkinName", "Nom du skin" },
+            { "ItemName", "Nom de l'item" },
+            { "RarityName", "Rareté" }
+        };
+
+        public Dictionary<string, string> InventorySortableProperties => new()
+        {
+            { "AcquiredOn", "Date d'acquisition" },
+            { "RarityColor", "Rareté" }
+        };
 
         public bool CanUpgrade => SelectedTargetSkin != null && SelectedItems.Count > 0 && !IsProcessing;
 
@@ -136,21 +309,37 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             try
             {
                 var token = await _authService.GetTokenAsync();
-                if (string.IsNullOrEmpty(token))
-                    return;
-
+                
                 var queryParams = new Dictionary<string, string>
                 {
-                    { "pagesize", "500" },
-                    { "sortkey", "Weight" },
-                    { "sorttype", "desc" }
+                    { "page", SkinCurrentPage.ToString() },
+                    { "pagesize", SkinPageSize.ToString() }
                 };
 
-                var response = ShowFavoritesOnly 
-                    ? await _skinService.GetAllWithFavoriteFilterAsync(token, queryParams)
-                    : await _skinService.GetAllWithOptionsAsync(token, queryParams);
+                if (!string.IsNullOrWhiteSpace(SkinSearchTerm))
+                {
+                    queryParams["sorttype"] = "search";
+                    queryParams["sortkey"] = SkinSearchTerm;
+                }
+                else if (!string.IsNullOrEmpty(SkinSortKey))
+                {
+                    queryParams["sortkey"] = SkinSortKey;
+                    queryParams["sorttype"] = SkinSortType;
+                }
 
-                AvailableSkins = response?.Result?.OrderByDescending(s => s.Weight ?? 0).ToList();
+                var response = await _skinService.GetAllWithOptionsAsync(token, queryParams);
+
+                if (response != null)
+                {
+                    AvailableSkins = response.Result;
+                    SkinTotalPages = response.PageCount;
+                    SkinTotalCount = response.TotalCount;
+                    SkinFilteredCount = response.FilteredCount;
+                }
+                else
+                {
+                    AvailableSkins = new List<SkinDTO>();
+                }
             }
             catch (Exception ex)
             {
@@ -165,9 +354,36 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
             {
                 var token = await _authService.GetTokenAsync();
                 if (string.IsNullOrEmpty(token))
+                {
+                    UserInventory = new List<InventoryItemDTO>();
                     return;
+                }
 
-                UserInventory = await _inventoryService.GetByUserAsync(token);
+                var queryParams = new Dictionary<string, string>
+                {
+                    { "page", InventoryCurrentPage.ToString() },
+                    { "pagesize", InventoryPageSize.ToString() }
+                };
+
+                if (!string.IsNullOrEmpty(InventorySortKey))
+                {
+                    queryParams["sortkey"] = InventorySortKey;
+                    queryParams["sorttype"] = InventorySortType;
+                }
+
+                var response = await _inventoryService.GetByUserWithOptionsAsync(token, queryParams);
+
+                if (response != null)
+                {
+                    UserInventory = response.Result;
+                    InventoryTotalPages = response.PageCount;
+                    InventoryTotalCount = response.TotalCount;
+                    InventoryFilteredCount = response.FilteredCount;
+                }
+                else
+                {
+                    UserInventory = new List<InventoryItemDTO>();
+                }
             }
             catch (Exception ex)
             {
