@@ -7,66 +7,11 @@
         <h2>Gestion des Utilisateurs</h2>
     </div>
 
-    <!-- Composant de recherche et filtres -->
-    <AdminSearchFilter 
-        SearchPlaceholder="Rechercher un utilisateur..."
-        SearchTerm="@ViewModel.SearchQuery"
-        SortKey="@ViewModel.SortKeyUsers"
-        SortType="@ViewModel.SortTypeUsers"
-        SortableProperties="@userSortableProperties"
-        HasFilters="true"
-        ActiveFiltersCount="@GetActiveFiltersCount()"
-        OnSearch="@(() => ViewModel.SearchUsersAsync())"
-        OnApplySort="@(async (args) => await ViewModel.ChangeUserSortAsync(args.sortKey, args.sortType))"
-        OnReset="@(() => ViewModel.ResetUserFiltersAsync())">
-        <FilterContent>
-            <div class="filter-group">
-                <label>Rôle</label>
-                <select @onchange="@(async (e) => await OnRoleFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="admin">Administrateurs</option>
-                    <option value="user">Utilisateurs</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Email vérifié</label>
-                <select @onchange="@(async (e) => await OnEmailVerifiedFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="true">Vérifié</option>
-                    <option value="false">Non vérifié</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Téléphone vérifié</label>
-                <select @onchange="@(async (e) => await OnPhoneVerifiedFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="true">Vérifié</option>
-                    <option value="false">Non vérifié</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>2FA</label>
-                <select @onchange="@(async (e) => await OnTwoFAFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="0">Désactivé</option>
-                    <option value="1">SMS</option>
-                    <option value="2">Email</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Compte Steam</label>
-                <select @onchange="@(async (e) => await OnSteamFilterChanged(e.Value?.ToString()))">
-                    <option value="">Tous</option>
-                    <option value="true">Lié</option>
-                    <option value="false">Non lié</option>
-                </select>
-            </div>
-        </FilterContent>
-    </AdminSearchFilter>
+    <!-- Nouveau composant de filtres -->
+    <UsersTableFilter 
+        OnSearchTermChanged="@HandleSearchTermChanged"
+        OnApplyFiltersAndSort="@HandleApplyFiltersAndSort"
+        OnReset="@HandleReset" />
 
     @if (ViewModel.IsLoading)
     {
@@ -240,80 +185,23 @@
     [Parameter]
     public AdminViewModel ViewModel { get; set; } = default!;
 
-    private Dictionary<string, string> userSortableProperties = new()
+    private async Task HandleSearchTermChanged(string searchTerm)
     {
-        { "userid", "ID" },
-        { "login", "Login" },
-        { "displayname", "Nom d'affichage" },
-        { "email", "Email" },
-        { "creationdate", "Date d'inscription" },
-        { "lastlogin", "Dernière connexion" },
-        { "wallet", "Portefeuille" }
-    };
-
-    private int GetActiveFiltersCount()
-    {
-        return ViewModel.FiltersUsers?.Count ?? 0;
+        ViewModel.SearchQuery = searchTerm;
+        await ViewModel.SearchUsersAsync();
     }
 
-    private async Task OnRoleFilterChanged(string? value)
+    private async Task HandleApplyFiltersAndSort((string? sortKey, string sortType, Dictionary<string, List<string>> filters) args)
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            await ViewModel.RemoveUserFilterAsync("isadmin");
-        }
-        else
-        {
-            await ViewModel.AddUserFilterAsync("isadmin", new List<string> { value == "admin" ? "true" : "false" });
-        }
+        ViewModel.SortKeyUsers = args.sortKey;
+        ViewModel.SortTypeUsers = args.sortType;
+        ViewModel.FiltersUsers = args.filters;
+        await ViewModel.LoadUsersAsync();
     }
 
-    private async Task OnEmailVerifiedFilterChanged(string? value)
+    private async Task HandleReset()
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            await ViewModel.RemoveUserFilterAsync("emailisverified");
-        }
-        else
-        {
-            await ViewModel.AddUserFilterAsync("emailisverified", new List<string> { value });
-        }
-    }
-
-    private async Task OnPhoneVerifiedFilterChanged(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            await ViewModel.RemoveUserFilterAsync("phoneisverified");
-        }
-        else
-        {
-            await ViewModel.AddUserFilterAsync("phoneisverified", new List<string> { value });
-        }
-    }
-
-    private async Task OnTwoFAFilterChanged(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            await ViewModel.RemoveUserFilterAsync("twofa");
-        }
-        else
-        {
-            await ViewModel.AddUserFilterAsync("twofa", new List<string> { value });
-        }
-    }
-
-    private async Task OnSteamFilterChanged(string? value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            await ViewModel.RemoveUserFilterAsync("issteamlogin");
-        }
-        else
-        {
-            await ViewModel.AddUserFilterAsync("issteamlogin", new List<string> { value });
-        }
+        await ViewModel.ResetUserFiltersAsync();
     }
 
     private async Task ConfirmDeleteUser(int userId, string displayName)
