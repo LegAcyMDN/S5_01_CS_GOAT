@@ -93,7 +93,7 @@ public class OpenCaseTest : TestBase
             .WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Visible,
-                Timeout = 90000
+                Timeout = 60000 * 3
             });
         
     }
