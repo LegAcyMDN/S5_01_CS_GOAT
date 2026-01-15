@@ -1,0 +1,225 @@
+﻿@page "/faq"
+@using S5_01_Blazor_CS_GOAT.Layout
+
+<div class="faq-page">
+    <h1>FAQ</h1>
+
+    <div class="faq-content">
+
+        @* Section Général *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Général</h2>
+                <div class="toggle-icon" @onclick="ToggleGeneralFaq">
+                    @if (isGeneralFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isGeneralFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Qu'est-ce que CSGOAT ?</h3>
+                    <p>CSGOAT est une plateforme permettant d'ouvrir des caisses virtuelles pour obtenir des skins CS2/CS:GO, avec un système de tirage aléatoire vérifiable et des probabilités affichées pour chaque objet.</p>
+                </div>
+                <div class="section-content">
+                    <h3>Qui peut utiliser le site ?</h3>
+                    <p>L'accès et l'utilisation de CSGOAT sont strictement réservés aux personnes majeures selon la législation de leur pays, généralement 18 ans ou plus.</p>
+                </div>
+            }
+        </div>
+
+        @* Section Compte *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Compte</h2>
+                <div class="toggle-icon" @onclick="ToggleAccountFaq">
+                    @if (isAccountFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isAccountFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Comment créer un compte ?</h3>
+                    <p>Tu peux créer un compte en te connectant via Steam ou un identifiant, puis en acceptant nos conditions d'utilisation et notre politique de confidentialité.</p>
+                </div>
+                <div class="section-content">
+                    <h3>Je n'arrive pas à me connecter avec Steam, que faire ?</h3>
+                    <p>Vérifie que Steam Guard est activé, que ton profil n'est pas limité, et que tu acceptes bien la fenêtre de connexion officielle Steam sans bloquer les pop-ups.</p>
+                </div>
+            }
+        </div>
+
+        @* Section Dépôts et retraits *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Dépôts et retraits</h2>
+                <div class="toggle-icon" @onclick="TogglePaymentsFaq">
+                    @if (isPaymentsFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isPaymentsFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Quels moyens de paiement acceptez-vous ?</h3>
+                    <p>CSGOAT accepte les paiements par Stripe ou par PayPal comme méthode de dépot.</p>
+                </div>
+                <div class="section-content">
+                    <h3>Combien de temps prend un retrait ?</h3>
+                    <p>Les retraits d'argent réel peuvent prendre de quelques minutes à plusieurs jours selon la méthode et les vérifications nécessaires.</p>
+                </div>
+            }
+        </div>
+
+        @* Section Caisses et skins *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Caisses et skins</h2>
+                <div class="toggle-icon" @onclick="ToggleCasesFaq">
+                    @if (isCasesFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isCasesFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Comment ouvrir une caisse ?</h3>
+                    <p>Tu choisis une caisse, confirmes le paiement ou l'utilisation de ton solde, puis l'animation de tirage démarre et affiche le skin gagné, qui sera ajouté à ton inventaire sur le site.</p>
+                </div>
+                <div class="section-content">
+                    <h3>Puis-je revendre mes skins directement sur le site ?</h3>
+                    <p>CSGOAT permet de revendre instantanément tes skins pour du solde interne, avec une valeur déterminée par le marché.</p>
+                </div>
+            }
+        </div>
+
+        @* Section Sécurité & jeu responsable *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Sécurité & jeu responsable</h2>
+                <div class="toggle-icon" @onclick="ToggleSecurityFaq">
+                    @if (isSecurityFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isSecurityFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Comment puis-je vérifier l'équité des tirages ?</h3>
+                    <p>Le système de tirage utilise un algorithme de hasard contrôlé et transparent (provably fair), avec des hash/seed que tu peux contrôler pour vérifier que les résultats n'ont pas été modifiés après coup.</p>
+                </div>
+                <div class="section-content">
+                    <h3>Que faites-vous pour le jeu responsable ?</h3>
+                    <p>CSGOAT permet de fixer des limites de dépenses, dépôt, ouvertures et améliorations.</p>
+                </div>
+            }
+        </div>
+
+        @* Section Support *@
+        <div class="faq-section">
+            <div class="section-header">
+                <h2>Support</h2>
+                <div class="toggle-icon" @onclick="ToggleSupportFaq">
+                    @if (isSupportFaqExpanded)
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M18 17.5L12.2907 11.7907V11.7907C12.1302 11.6302 11.8698 11.6302 11.7093 11.7907V11.7907L6 17.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M18 12.5L12.2508 6.75078V6.75078C12.1123 6.61228 11.8877 6.61228 11.7492 6.75078V6.75078L6 12.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff">
+                            <path d="M6.5 6.5L12.2093 12.2093V12.2093C12.3698 12.3698 12.6302 12.3698 12.7907 12.2093V12.2093L18.5 6.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            <path d="M6.5 11.5L12.2492 17.2492V17.2492C12.3877 17.3877 12.6123 17.3877 12.7508 17.2492V17.2492L18.5 11.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                    }
+                </div>
+            </div>
+            @if (isSupportFaqExpanded)
+            {
+                <div class="section-content">
+                    <h3>Comment contacter le support ?</h3>
+                    <p>Tu peux contacter le support via un formulaire de contact ou par e-mail ; le service est généralement disponible 24/7 ou durant des plages horaires indiquées sur le site.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isGeneralFaqExpanded = true;
+    private bool isAccountFaqExpanded;
+    private bool isPaymentsFaqExpanded;
+    private bool isCasesFaqExpanded;
+    private bool isSecurityFaqExpanded;
+    private bool isSupportFaqExpanded;
+
+    private void ToggleGeneralFaq() => isGeneralFaqExpanded = !isGeneralFaqExpanded;
+    private void ToggleAccountFaq() => isAccountFaqExpanded = !isAccountFaqExpanded;
+    private void TogglePaymentsFaq() => isPaymentsFaqExpanded = !isPaymentsFaqExpanded;
+    private void ToggleCasesFaq() => isCasesFaqExpanded = !isCasesFaqExpanded;
+    private void ToggleSecurityFaq() => isSecurityFaqExpanded = !isSecurityFaqExpanded;
+    private void ToggleSupportFaq() => isSupportFaqExpanded = !isSupportFaqExpanded;
+}
