@@ -8,7 +8,7 @@ on:
 
 env:
   DOTNET_VERSION: '8.x'
-  AZURE_WEBAPP_NAME: 'apicsgoat'
+  AZURE_WEBAPP_NAME: 'apicsgoat2'
   API_PROJECT_PATH: 'S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj'
   TEST_PROJECT_PATH: 'S5_01_App_CS_GOATTests/S5_01_App_CS_GOATTests.csproj'
 
@@ -100,7 +100,7 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net
+      url: https://apicsgoat2-cfg4eubebtbfa6g3.francecentral-01.azurewebsites.net
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -130,7 +130,7 @@ jobs:
       - name: Check if app is responding
         run: |
           echo "🔍 Testing API health..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net || echo "000")
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat2-cfg4eubebtbfa6g3.francecentral-01.azurewebsites.net || echo "000")
           echo "Status code: $STATUS"
           if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
             echo "✅ App is running (even if endpoint returns 404, the app started)"
@@ -138,3 +138,4 @@ jobs:
             echo "⚠️ App may not have started properly. Status: $STATUS"
             echo "Check Azure Portal logs for details"
           fi
+
