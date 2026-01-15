@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using S5_01_Blazor_CS_GOAT.Service;
 using Shared.DTO;
 using System.Net.Http.Json;
@@ -258,6 +259,26 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public async Task RefreshDataAsync()
         {
             await LoadWalletDataAsync();
+        }
+        
+        public async Task WithdrawFundsPayPal(double amount, string? paypalEmail)
+        {
+            // ... validation code ...
+
+            if (paypalEmail == null)
+            {
+                _navigationService.NavigateTo("/needEmail");
+            }
+
+            var jwtToken = await _authService.GetTokenAsync();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            var response = await _httpClient.PostAsJsonAsync("paypal/withdraw", new 
+            { 
+                amount = (decimal)amount,
+                paypalEmail = paypalEmail
+            });
+
+            // ... handle response ...
         }
 
         // DTO pour la réponse PayPal

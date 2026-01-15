@@ -19,11 +19,13 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         private string _identifierError = string.Empty;
         private string _passwordError = string.Empty;
         private bool _isLoading = false;
+        private string _apiBaseUrl;
 
-        public LoginViewModel(AuthService authService, NavigationService navigationService)
+        public LoginViewModel(AuthService authService, NavigationService navigationService, IConfiguration configuration)
         {
             _authService = authService;
             _navigationService = navigationService;
+            _apiBaseUrl = configuration["ApiBaseUrl"];
         }
 
         public string Identifier
@@ -161,7 +163,7 @@ namespace S5_01_Blazor_CS_GOAT.ViewModels
         public void LoginWithSteam()
         {
             // Redirige vers votre endpoint d'authentification Steam
-            var steamLoginUrl = "https://localhost:7009/api/steam/login";
+            var steamLoginUrl = _apiBaseUrl + "steam/login";
             _navigationService.NavigateTo(steamLoginUrl, forceLoad: true);
         }
     }
