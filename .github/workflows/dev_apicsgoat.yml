@@ -1,142 +1,55 @@
-# name: Build and deploy ASP.Net Core API to Azure
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
 
-# on:
-#   push:
-#     branches:
-#       - dev
-#   workflow_dispatch:
+name: Build and deploy ASP.Net Core app to Azure Web App - apicsgoat
 
-# env:
-#   DOTNET_VERSION: '8.x'
-#   AZURE_WEBAPP_NAME: 'apicsgoat'
-#   API_PROJECT_PATH: 'S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj'
-#   TEST_PROJECT_PATH: 'S5_01_App_CS_GOATTests/S5_01_App_CS_GOATTests.csproj'
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
 
-# jobs:
-#   build:
-#     name: Build and Test API
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-      
-#       - name: Set up .NET Core
-#         uses: actions/setup-dotnet@v4
-#         with:
-#           dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-#       - name: Restore API dependencies
-#         run: dotnet restore ${{ env.API_PROJECT_PATH }}
-      
-#       - name: Build API
-#         run: dotnet build ${{ env.API_PROJECT_PATH }} --configuration Release --no-restore
-      
-#       - name: Restore test dependencies
-#         run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
-      
-#       - name: Build tests
-#         run: dotnet build ${{ env.TEST_PROJECT_PATH }} --configuration Release --no-restore
-      
-#       - name: Run API tests
-#         run: |
-#           echo "🧪 Running API tests..."
-#           dotnet test ${{ env.TEST_PROJECT_PATH }} \
-#             --configuration Release \
-#             --no-build \
-#             --logger "trx;LogFileName=test-results.trx" \
-#             --logger "console;verbosity=detailed" \
-#             --results-directory ./TestResults
-#         continue-on-error: false
-      
-#       - name: Upload test results
-#         if: always()
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: test-results
-#           path: './TestResults/*.trx'
-      
-#       - name: Create web.config for Azure
-#         run: |
-#           cat > S5_01_App_CS_GOAT/web.config << 'EOF'
-#           <?xml version="1.0" encoding="utf-8"?>
-#           <configuration>
-#             <location path="." inheritInChildApplications="false">
-#               <system.webServer>
-#                 <handlers>
-#                   <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
-#                 </handlers>
-#                 <aspNetCore processPath="dotnet"
-#                            arguments=".\S5_01_App_CS_GOAT.dll"
-#                            stdoutLogEnabled="true"
-#                            stdoutLogFile=".\logs\stdout"
-#                            hostingModel="inprocess" />
-#               </system.webServer>
-#             </location>
-#           </configuration>
-#           EOF
-      
-#       - name: Publish API
-#         run: dotnet publish ${{ env.API_PROJECT_PATH }} --configuration Release --output ./publish
-      
-#       - name: Verify publish output
-#         run: |
-#           echo "📦 Published files:"
-#           ls -la ./publish
-#           echo ""
-#           echo "🔍 Looking for DLL files:"
-#           find ./publish -name "*.dll" -type f
-#           echo ""
-#           echo "🔍 Total file count:"
-#           find ./publish -type f | wc -l
-      
-#       - name: Upload artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: api-app
-#           path: ./publish
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read #This is required for actions/checkout
 
-#   deploy:
-#     name: Deploy to Azure
-#     runs-on: ubuntu-latest
-#     needs: build
-#     environment:
-#       name: 'Production'
-#       url: https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net
-#     steps:
-#       - name: Download artifact
-#         uses: actions/download-artifact@v4
-#         with:
-#           name: api-app
-#           path: ./deploy
-      
-#       - name: Verify deployment package
-#         run: |
-#           echo "📦 Deployment package contents:"
-#           ls -la ./deploy
-#           echo ""
-#           echo "🔍 DLL files:"
-#           find ./deploy -name "*.dll"
-      
-#       - name: Deploy to Azure Web App
-#         uses: azure/webapps-deploy@v3
-#         with:
-#           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-#           slot-name: 'Production'
-#           package: ./deploy
-#           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0F174ECCD58449D69FC6568F12FE72C6 }}
-      
-#       - name: Wait for deployment to complete
-#         run: sleep 30
-      
-#       - name: Check if app is responding
-#         run: |
-#           echo "🔍 Testing API health..."
-#           STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net || echo "000")
-#           echo "Status code: $STATUS"
-#           if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
-#             echo "✅ App is running (even if endpoint returns 404, the app started)"
-#           else
-#             echo "⚠️ App may not have started properly. Status: $STATUS"
-#             echo "Check Azure Portal logs for details"
-#           fi
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
 
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'apicsgoat'
+          slot-name: 'Production'
+          package: .
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_54AAA14470C04F4FA08E66C4A3FF6934 }}
