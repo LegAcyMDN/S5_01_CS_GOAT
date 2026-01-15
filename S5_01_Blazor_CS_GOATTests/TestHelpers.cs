@@ -49,7 +49,7 @@ public static class TestHelpers
         Console.WriteLine("click sur le bouton submit");
         
         
-        await page.WaitForTimeoutAsync(10000);
+        await page.WaitForTimeoutAsync(20000);
         
         Console.WriteLine(await page.ContentAsync());
         

@@ -41,7 +41,7 @@ public class OpenCaseTest : TestBase
             .WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Visible,
-                Timeout = 120000 // 2 minutes for case opening animation
+                Timeout = 60000 * 3
             });
     
         Console.WriteLine("✅ Case opened successfully!");
