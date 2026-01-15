@@ -49,9 +49,9 @@ public static class TestHelpers
         Console.WriteLine("click sur le bouton submit");
         
         
-        // await page.WaitForTimeoutAsync(10000);
-        //
-        // Console.WriteLine(await page.ContentAsync());
+        await page.WaitForTimeoutAsync(10000);
+        
+        Console.WriteLine(await page.ContentAsync());
         
         // Wait to get redirected to the home page
         await page.WaitForURLAsync($"{baseUrl}/", new PageWaitForURLOptions 
