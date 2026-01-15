@@ -10,8 +10,8 @@ env:
   DOTNET_VERSION: '8.x'
   BLAZOR_PROJECT_PATH: 'S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj'
   TEST_PROJECT_PATH: 'S5_01_Blazor_CS_GOATTests/S5_01_Blazor_CS_GOATTests.csproj'
-  AZURE_WEBAPP_NAME: 'blazorcsgoat'
-  AZURE_WEBAPP_URL: 'https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net'
+  AZURE_WEBAPP_NAME: 'blazorcsgoat2'
+  AZURE_WEBAPP_URL: 'https://blazorcsgoat2-bgh8degrgxagfkcg.francecentral-01.azurewebsites.net'
 
 jobs:
   build:
@@ -263,3 +263,4 @@ jobs:
 #          path: '**/TestResults/*.trx'
 #          reporter: dotnet-trx
 #          fail-on-error: true
+
