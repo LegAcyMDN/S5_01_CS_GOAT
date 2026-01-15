@@ -57,7 +57,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             Console.WriteLine("User ID: " + userId);
             Console.WriteLine("Amount requested: " + request.Amount + " EUR");
 
-            if (request.Amount <= 0 || request.Amount > 1000)
+            if (request.Amount <= 0)
             {
                 Console.WriteLine("Invalid amount: " + request.Amount);
                 return BadRequest(new ErrorResponse
@@ -347,7 +347,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 Console.WriteLine("Requesting payout from PayPal...");
                 Console.WriteLine("IMPORTANT: Payout is attempted BEFORE deducting from wallet");
 
-                // CRITICAL: On essaie le payout AVANT de déduire l'argent
+                // CRITICAL: On essaie le payout AVANT de dï¿½duire l'argent
                 var payoutResponse = await _payPalService.CreatePayoutAsync(
                     request.Amount,
                     userId,
@@ -357,7 +357,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 Console.WriteLine("Payout Batch ID: " + payoutResponse.PayoutBatchId);
                 Console.WriteLine("Status: " + payoutResponse.Status);
 
-                // SEULEMENT MAINTENANT on déduit l'argent du wallet
+                // SEULEMENT MAINTENANT on dï¿½duit l'argent du wallet
                 Console.WriteLine("Deducting amount from wallet...");
                 double oldWallet = user.Wallet;
                 user.Wallet -= (double)request.Amount;
