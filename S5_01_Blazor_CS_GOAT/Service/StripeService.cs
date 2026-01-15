@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using S5_01_Blazor_CS_GOAT.Service;
 
 public class StripeService
@@ -53,9 +54,19 @@ public class StripeService
         
         if (userId == null)
         {
-            Console.WriteLine("User not authenticated");
+            Console.WriteLine("❌ User not authenticated");
             return null;
         }
+        
+        // ✅ AJOUTER LE TOKEN JWT
+        var token = await _authService.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Console.WriteLine("❌ No JWT token available");
+            return null;
+        }
+        
+        Console.WriteLine($"🔑 Using JWT token for withdrawal request");
         
         var request = new
         {
@@ -70,12 +81,29 @@ public class StripeService
 #endif
         };
 
-        var response = await _httpClient.PostAsJsonAsync("stripe/create-payout-session", request);
+        // ✅ Créer une nouvelle requête avec le header Authorization
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "stripe/create-payout-session")
+        {
+            Content = JsonContent.Create(request),
+            Headers =
+            {
+                Authorization = new AuthenticationHeaderValue("Bearer", token)
+            }
+        };
+
+        var response = await _httpClient.SendAsync(requestMessage);
         
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<CheckoutResponse>();
+            Console.WriteLine($"✅ Withdrawal session created: {result?.Url}");
             return result?.Url;
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"❌ Failed to create withdrawal session: {response.StatusCode}");
+            Console.WriteLine($"Error: {errorContent}");
         }
 
         return null;

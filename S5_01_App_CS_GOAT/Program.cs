@@ -59,6 +59,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+// Add HttpClientFactory for PayPal payouts
+builder.Services.AddHttpClient();
 
 // Add PayPalService
 builder.Services.AddScoped<PayPalService>();
