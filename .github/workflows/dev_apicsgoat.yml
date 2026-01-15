@@ -54,15 +54,6 @@ jobs:
           name: test-results
           path: './TestResults/*.trx'
       
-      - name: Publish Test Results
-        if: always()
-        uses: dorny/test-reporter@v1
-        with:
-          name: API Test Results
-          path: './TestResults/*.trx'
-          reporter: dotnet-trx
-          fail-on-error: true
-      
       - name: Create web.config for Azure
         run: |
           cat > S5_01_App_CS_GOAT/web.config << 'EOF'
@@ -147,3 +138,4 @@ jobs:
             echo "⚠️ App may not have started properly. Status: $STATUS"
             echo "Check Azure Portal logs for details"
           fi
+
