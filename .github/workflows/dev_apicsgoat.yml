@@ -45,6 +45,9 @@ jobs:
           </configuration>
           EOF
 
+      - name: Run tests
+        run: dotnet test --no-build
+
       - name: Publish
         run: dotnet publish S5_01_App_CS_GOAT/S5_01_App_CS_GOAT.csproj --configuration Release --output ./publish
 
@@ -111,3 +114,4 @@ jobs:
             echo "⚠️ App may not have started properly. Status: $STATUS"
             echo "Check Azure Portal logs for details"
           fi
+
