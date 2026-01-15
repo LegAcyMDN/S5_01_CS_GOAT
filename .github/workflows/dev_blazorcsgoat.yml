@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - blazorcsgoat
+name: Build, Test, and Deploy Blazor to Azure
 
 on:
   push:
@@ -9,47 +6,260 @@ on:
       - dev
   workflow_dispatch:
 
+env:
+  DOTNET_VERSION: '8.x'
+  BLAZOR_PROJECT_PATH: 'S5_01_Blazor_CS_GOAT/S5_01_Blazor_CS_GOAT.csproj'
+  TEST_PROJECT_PATH: 'S5_01_Blazor_CS_GOATTests/S5_01_Blazor_CS_GOATTests.csproj'
+  AZURE_WEBAPP_NAME: 'blazorcsgoat'
+  AZURE_WEBAPP_URL: 'https://blazorcsgoat-hpbpdkhmadduekef.francecentral-01.azurewebsites.net'
+
 jobs:
   build:
-    runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
-
+    name: Build Application
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
+      - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+      - name: Build
+        run: dotnet build ${{ env.BLAZOR_PROJECT_PATH }} -c Release --no-restore
 
-      - name: Upload artifact for deployment job
+      - name: Publish
+        run: dotnet publish ${{ env.BLAZOR_PROJECT_PATH }} -c Release -o ./publish
+
+      - name: Verify Release build uses production API
+        run: |
+          echo "🔍 Checking Blazor WebAssembly files for API URLs..."
+          cd ./publish/wwwroot/_framework
+          for file in *.dll.br *.dll.gz *.dll; do
+            if [ -f "$file" ]; then
+              # Try to find localhost reference
+              if strings "$file" 2>/dev/null | grep -q "localhost:7009"; then
+                echo "⚠️ Found localhost:7009 in $file"
+              fi
+              # Try to find production URL
+              if strings "$file" 2>/dev/null | grep -q "apicsgoat"; then
+                echo "✅ Found production API URL in $file"
+              fi
+            fi
+          done
+          cd ../../..
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: blazor-app
+          path: ./publish/wwwroot
 
-  deploy:
-    runs-on: windows-latest
+  test-local:
+    name: Run E2E Tests (Local)
+    runs-on: ubuntu-latest
     needs: build
-    
     steps:
-      - name: Download artifact from build job
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Blazor project
+        run: dotnet restore ${{ env.BLAZOR_PROJECT_PATH }}
+
+      - name: Restore test dependencies
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build test project
+        run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
+
+      - name: Install Playwright browsers
+        run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Download build artifact for serving
         uses: actions/download-artifact@v4
         with:
-          name: .net-app
-      
+          name: blazor-app
+          path: ./wwwroot
+
+      - name: Install dotnet-serve
+        run: dotnet tool install --global dotnet-serve
+
+      - name: Generate dev certificate
+        run: |
+          mkdir -p $HOME/.aspnet/https
+          dotnet dev-certs https --clean
+          dotnet dev-certs https -ep $HOME/.aspnet/https/aspnetapp.pfx -p "DevPassword123"
+          dotnet dev-certs https --check
+
+      - name: Serve Blazor WASM with HTTPS
+        run: |
+          cd wwwroot
+          dotnet serve -S -p 7030 > ../serve.log 2>&1 &
+          echo $! > ../server.pid
+          cd ..
+          sleep 5
+
+      - name: Debug server startup
+        run: |
+          echo "=== Server Logs ==="
+          cat serve.log || echo "No logs yet"
+          echo ""
+          echo "=== Process Check ==="
+          ps aux | grep dotnet-serve || echo "No dotnet-serve process"
+          echo ""
+          echo "=== Port Check ==="
+          netstat -tuln | grep 7030 || echo "Port 7030 not listening"
+
+      - name: Wait for server
+        run: |
+          echo "Waiting for HTTPS server..."
+
+          for i in {1..30}; do
+            if curl -k -s -f https://localhost:7030 > /dev/null 2>&1; then
+              echo "✅ Server is responding on HTTPS!"
+              curl -k -I https://localhost:7030
+              exit 0
+            fi
+            echo "⏳ Attempt $i/30..."
+
+            # Show logs on every 5th attempt
+            if [ $((i % 5)) -eq 0 ]; then
+              echo "--- Recent logs ---"
+              tail -n 10 serve.log 2>/dev/null || echo "No logs"
+            fi
+
+            sleep 2
+          done
+
+          echo "❌ Server failed to respond"
+          echo "=== Final logs ==="
+          cat serve.log || echo "No logs"
+          exit 1
+
+      - name: Run E2E Tests
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed"
+        env:
+          TEST_ENVIRONMENT: Local
+          NODE_TLS_REJECT_UNAUTHORIZED: 0
+        timeout-minutes: 15
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) 2>/dev/null || true
+          fi
+
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-results-local
+#          path: '**/TestResults/*.trx'
+#
+#      - name: Upload Playwright traces
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: playwright-traces-local
+#          path: '**/test-results/**'
+#          retention-days: 7
+#
+#      - name: Publish test report
+#        if: always()
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: E2E Test Results (Local)
+#          path: '**/TestResults/*.trx'
+#          reporter: dotnet-trx
+#          fail-on-error: true
+
+  deploy:
+    name: Deploy to Azure
+    runs-on: ubuntu-latest
+    needs: [build, test-local]
+    environment:
+      name: 'Production'
+      url: ${{ env.AZURE_WEBAPP_URL }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: blazor-app
+          path: ./deploy
+
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'blazorcsgoat'
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
-          package: .
+          package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_160B6263331648EBBD0B84B6B6F31B17 }}
+
+  test-azure:
+    name: Run E2E Tests (Azure)
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore test dependencies
+        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+
+      - name: Build test project
+        run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
+
+      - name: Install Playwright browsers
+        run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E Tests against Azure
+        run: |
+          dotnet test ${{ env.TEST_PROJECT_PATH }} \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed"
+        env:
+          TEST_ENVIRONMENT: Azure
+        timeout-minutes: 15
+
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: test-results-azure
+#          path: '**/TestResults/*.trx'
+#
+#      - name: Upload Playwright traces
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: playwright-traces-azure
+#          path: '**/test-results/**'
+#          retention-days: 7
+#
+#      - name: Publish test report
+#        if: always()
+#        uses: dorny/test-reporter@v1
+#        with:
+#          name: E2E Test Results (Azure)
+#          path: '**/TestResults/*.trx'
+#          reporter: dotnet-trx
+#          fail-on-error: true
