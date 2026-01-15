@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Shared.DTO;
+using Shared.Enum;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using S5_01_App_CS_GOAT.Models.Partials;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {

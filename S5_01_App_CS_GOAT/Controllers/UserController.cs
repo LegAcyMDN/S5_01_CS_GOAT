@@ -42,6 +42,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
+        /// Get the number of connected users
+        /// </summary>
+        /// <returns>Count of connected users</returns>
+        [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCount()
+        {
+            QueryOptions<User> options = new QueryOptions<User>()
+                .Before(u => u.LastLogin > DateTime.UtcNow.AddMinutes(-15));
+            IEnumerable<User> users = await manager.GetAllAsyncNew(options);
+            return Ok(users.Count());
+        }
+
+        /// <summary>
         /// Get user details by ID
         /// </summary>
         /// <param name="id">The ID of the user</param>
