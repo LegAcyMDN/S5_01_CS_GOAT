@@ -100,7 +100,7 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: https://apicsgoat-h7bhhpd4e7bnc9bh.francecentral-01.azurewebsites.net
+      url: https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -122,7 +122,7 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           slot-name: 'Production'
           package: ./deploy
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_54AAA14470C04F4FA08E66C4A3FF6934 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0F174ECCD58449D69FC6568F12FE72C6 }}
       
       - name: Wait for deployment to complete
         run: sleep 30
@@ -130,7 +130,7 @@ jobs:
       - name: Check if app is responding
         run: |
           echo "🔍 Testing API health..."
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat-h7bhhpd4e7bnc9bh.francecentral-01.azurewebsites.net || echo "000")
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://apicsgoat-h7bhhpd4e7bnc9bh.eastus-01.azurewebsites.net || echo "000")
           echo "Status code: $STATUS"
           if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ]; then
             echo "✅ App is running (even if endpoint returns 404, the app started)"
