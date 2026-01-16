@@ -10,6 +10,10 @@ public class OpenCaseTest : TestBase
     public async Task CanFastOpenCase()
     {
         await TestHelpers.LoginAsync(Page, BaseUrl, "caseOpener69", "Jordan123%");
+        
+        
+        // wait for all cases to load properly
+        await Page.WaitForTimeoutAsync(20000);
     
         // Click the first case in the list
         await Page.Locator(".case-content").First.ClickAsync();
@@ -19,6 +23,9 @@ public class OpenCaseTest : TestBase
         {
             Timeout = 60000
         });
+        
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
     
         Console.WriteLine("📦 On case page, clicking ACHETER button...");
         await Page.GetByText("ACHETER").First.ClickAsync();
@@ -36,6 +43,10 @@ public class OpenCaseTest : TestBase
     
         Console.WriteLine("🔘 Clicked Confirmer, waiting for case opening...");
     
+        
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
+        
         // Wait for the result
         await Page.GetByText("Tu as obtenu :")
             .WaitForAsync(new LocatorWaitForOptions
@@ -60,6 +71,8 @@ public class OpenCaseTest : TestBase
         
         await TestHelpers.LoginAsync(Page, BaseUrl, "caseOpener69", "Jordan123%");
         
+        // wait for all cases to load properly
+        await Page.WaitForTimeoutAsync(20000);
         
         // Click the first case in the list
         await Page.Locator(".case-content").First.ClickAsync();
@@ -70,6 +83,8 @@ public class OpenCaseTest : TestBase
             Timeout = 60000
         });
         
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
         
         
         // Click the slider to put the case in esthetic mode
@@ -88,6 +103,9 @@ public class OpenCaseTest : TestBase
         await confirmButton.ClickAsync();
         
         // await Page.Locator(".case-content").First.ClickAsync();
+        
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
         
         await Page.GetByText("Tu as obtenu :")
             .WaitForAsync(new LocatorWaitForOptions
@@ -111,9 +129,13 @@ public class OpenCaseTest : TestBase
         
         await TestHelpers.LoginAsync(Page, BaseUrl, "caseOpener69", "Jordan123%");
         
+        // wait for all cases to load properly
+        await Page.WaitForTimeoutAsync(20000);
         
         // Click the first case in the list
         await Page.Locator(".case-content").First.ClickAsync();
+        
+
         
         // Wait for case page to load
         await Page.WaitForURLAsync($"{BaseUrl}/caseview/**", new PageWaitForURLOptions 
@@ -121,6 +143,8 @@ public class OpenCaseTest : TestBase
             Timeout = 60000
         });
         
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
         
         
         // Click the slider to put the case in esthetic mode
@@ -142,6 +166,9 @@ public class OpenCaseTest : TestBase
         await confirmButton.ClickAsync();
         
         // await Page.Locator(".case-content").First.ClickAsync();
+        
+        // wait for safety
+        await Page.WaitForTimeoutAsync(20000);
         
         await Page.GetByText("Tu as obtenu :")
             .WaitForAsync(new LocatorWaitForOptions
