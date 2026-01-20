@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using S5_01_App_CS_GOAT.Models.DataManager;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -11,9 +12,10 @@ namespace S5_01_App_CS_GOAT.Controllers
     [Route("api/steam")]
     [ApiController]
     [SetThreadPrincipal]
-    public class SteamLoginController(
+    public class SteamController(
         IUserRepository userRepository,
-        IConfiguration configuration
+        IConfiguration configuration,
+        ISteamRepository steamRepository
     ) : ControllerBase
     {
 
@@ -33,9 +35,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             string? redirectUri = Url.Action(nameof(Callback));
 
             if (!string.IsNullOrEmpty(linkUserId))
-            {
                 redirectUri += $"?linkUserId={linkUserId}";
-            }
 
             AuthenticationProperties properties = new AuthenticationProperties 
             { 
@@ -47,10 +47,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             };
             
             if (!string.IsNullOrEmpty(linkUserId))
-            {
                 properties.Items["linkUserId"] = linkUserId;
-            }
-            
+
             return Challenge(properties, "Steam");
         }
 
@@ -61,7 +59,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpGet("callback")]
         public async Task<IActionResult> Callback()
         {
-            AuthenticateResult? authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            AuthenticateResult? authenticateResult =
+                await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             
             if (!authenticateResult.Succeeded)
                 return Redirect($"{URL}?error=authentication_failed");
@@ -70,6 +69,11 @@ namespace S5_01_App_CS_GOAT.Controllers
             
             if (string.IsNullOrEmpty(steamId))
                 return Redirect($"{URL}?error=missing_user_id");
+
+            SteamUserData? steamProfile = await steamRepository.GetSteamUserDataAsync(steamId);
+
+            if (steamProfile == null)
+                return Redirect($"{URL}?error=steam_profile_not_found");
 
             string? existingUserId = Request.Query["linkUserId"].ToString();
             
@@ -97,7 +101,11 @@ namespace S5_01_App_CS_GOAT.Controllers
 
                 AuthDTO? authDTO = await userRepository.Auth(user, configuration, remember: 7);
 
-                return Redirect($"{URL}/auth-callback?token={authDTO.JwtToken}&userId={authDTO.UserId}&displayName={Uri.EscapeDataString(user.DisplayName)}");
+                string displayName = string.IsNullOrEmpty(user.DisplayName)
+                    ? steamProfile.Username
+                    : user.DisplayName;
+
+                return Redirect($"{URL}/auth-callback?token={authDTO.JwtToken}&userId={authDTO.UserId}&displayName={Uri.EscapeDataString(displayName)}");
             }
         }
         
@@ -130,7 +138,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return NotFound();
 
             if (string.IsNullOrEmpty(user.SteamId))
-                return BadRequest("Aucun compte Steam n'est lié à cet utilisateur.");
+                return BadRequest("No Steam account linked to this user.");
 
             user.SteamId = null;
             await userRepository.UpdateAsync(user);

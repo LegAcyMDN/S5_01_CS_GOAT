@@ -84,10 +84,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             double p = targetSkinPrice.AveragePrice;
             double t = invItemPrice.TotalPrice + monetaryValue;
-            // \left(\frac{1}{\left(t+1\right)^{2}+p^{2}-1}p^{2}\right)
+            // \frac{p^{2}}{\left(t+1\right)^{2}+p^{2}-1}
             double probDestroy = Math.Max(0.0, Math.Min(1.0,
-                1 / (Math.Pow((t + 1), 2) + Math.Pow(p, 1.75))
-                * Math.Pow(p, 2)
+                Math.Pow(p, 2) / (Math.Pow((t + 1), 2) + Math.Pow(p, 1.75) - 1)
             ));
             return probDestroy;
         }

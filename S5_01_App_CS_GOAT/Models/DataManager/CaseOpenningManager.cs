@@ -60,7 +60,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             if (caseOpenningDTO.Quantity <= 0) throw new Exception("Quantity must be greater than zero.");
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
-
             QueryOptions<Case> options = new QueryOptions<Case>()
                 .Before("CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item.ItemType",

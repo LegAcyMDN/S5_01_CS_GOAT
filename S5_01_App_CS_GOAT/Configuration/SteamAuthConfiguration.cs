@@ -4,6 +4,8 @@ using System.Security.Claims;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using S5_01_App_CS_GOAT.Models.DataManager;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Configuration
 {
@@ -37,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Configuration
                             return;
                         }
                         
-                        SteamUserService steamService = httpContext.RequestServices.GetRequiredService<SteamUserService>();
+                        SteamManager steamService = httpContext.RequestServices.GetRequiredService<SteamManager>();
                         IUserRepository userRepository = httpContext.RequestServices.GetRequiredService<IUserRepository>();
                         
                         SteamUserData? steamUserData = await steamService.GetSteamUserDataAsync(steamId);
@@ -93,7 +95,12 @@ namespace S5_01_App_CS_GOAT.Configuration
                     OnRemoteFailure = context =>
                     {
                         context.HandleResponse();
-                        context.Response.Redirect("https://localhost:7030?error=steam_auth_failed");
+#if DEBUG
+                        string URL = "https://localhost:7030";
+#else
+                        string URL = "https://blazorcsgoat-a4gke7edayahgcef.eastus-01.azurewebsites.net";
+#endif
+                        context.Response.Redirect($"{URL}?error=steam_auth_failed");
                         return Task.CompletedTask;
                     }
                 };

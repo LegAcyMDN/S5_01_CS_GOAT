@@ -6,17 +6,19 @@ using PayPalCheckoutSdk.Payments;
 using PayPalHttp;
 using System.Text.Json.Serialization;
 
-namespace S5_01_App_CS_GOAT.Services
+using S5_01_App_CS_GOAT.Models.Repository;
+
+namespace S5_01_App_CS_GOAT.Models.DataManager
 {
     /// <summary>
     /// Provides integration with PayPal Checkout API for payment processing
     /// </summary>
-    public class PayPalService
+    public class PayPalManager : IPayPalRepository
     {
         private readonly PayPalHttpClient _client;
         private readonly IConfiguration _configuration;
 
-        public PayPalService(IConfiguration configuration)
+        public PayPalManager(IConfiguration configuration)
         {
             _configuration = configuration;
             
@@ -29,14 +31,12 @@ namespace S5_01_App_CS_GOAT.Services
         /// </summary>
         private PayPalEnvironment GetEnvironment()
         {
-            string clientId = _configuration["PayPal:ClientId"];
-            string clientSecret = _configuration["PayPal:ClientSecret"];
-            string mode = _configuration["PayPal:Mode"];
+            string? clientId = _configuration["PayPal:ClientId"];
+            string? clientSecret = _configuration["PayPal:ClientSecret"];
+            string? mode = _configuration["PayPal:Mode"];
 
             if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-            {
                 throw new Exception("PayPal credentials not configured");
-            }
 
             return mode?.ToLower() == "live"
                 ? new LiveEnvironment(clientId, clientSecret)
@@ -58,8 +58,9 @@ namespace S5_01_App_CS_GOAT.Services
                 Order result = response.Result<Order>();
 
                 string approvalUrl = result.Links
-                    .FirstOrDefault(link => link.Rel.Equals("approve", StringComparison.OrdinalIgnoreCase))
-                    ?.Href;
+                    .FirstOrDefault(link => link.Rel.Equals(
+                        "approve", StringComparison.OrdinalIgnoreCase))
+                    ?.Href!;
 
                 return new PayPalOrderResponse
                 {
@@ -71,7 +72,6 @@ namespace S5_01_App_CS_GOAT.Services
             catch (HttpException ex)
             {
                 string error = ex.Message;
-                Console.WriteLine("PayPal Error: " + error);
                 throw new Exception("Failed to create PayPal order: " + error);
             }
         }
@@ -103,7 +103,6 @@ namespace S5_01_App_CS_GOAT.Services
             catch (HttpException ex)
             {
                 string error = ex.Message;
-                Console.WriteLine("PayPal Capture Error: " + error);
                 throw new Exception("Failed to capture PayPal order: " + error);
             }
         }
@@ -158,7 +157,6 @@ namespace S5_01_App_CS_GOAT.Services
             }
             catch (HttpException ex)
             {
-                Console.WriteLine("PayPal Error: " + ex.Message);
                 throw new Exception("Failed to get order details: " + ex.Message);
             }
         }
@@ -180,14 +178,6 @@ namespace S5_01_App_CS_GOAT.Services
             {
                 senderItemId = senderItemId.Substring(0, 64);
             }
-
-            Console.WriteLine("========================================");
-            Console.WriteLine("CREATING PAYOUT");
-            Console.WriteLine("========================================");
-            Console.WriteLine("Batch ID: " + payoutBatchId);
-            Console.WriteLine("Item ID: " + senderItemId);
-            Console.WriteLine("Recipient: " + paypalEmail);
-            Console.WriteLine("Amount: " + amount + " EUR");
 
             PayoutRequestDto body = new PayoutRequestDto
             {
@@ -223,24 +213,13 @@ namespace S5_01_App_CS_GOAT.Services
 
             try
             {
-                Console.WriteLine("Sending payout request to PayPal API...");
                 PayPalHttp.HttpResponse response = await _client.Execute(request);
                 JsonElement result = response.Result<JsonElement>();
 
-                Console.WriteLine("PayPal Response Received:");
-                Console.WriteLine(result.ToString());
-
                 if (result.TryGetProperty("batch_header", out JsonElement batchHeader))
                 {
-                    string createdBatchId = batchHeader.GetProperty("payout_batch_id").GetString();
-                    string batchStatus = batchHeader.GetProperty("batch_status").GetString();
-                    
-                    Console.WriteLine("========================================");
-                    Console.WriteLine("PAYOUT CREATED SUCCESSFULLY");
-                    Console.WriteLine("========================================");
-                    Console.WriteLine("PayPal Batch ID: " + createdBatchId);
-                    Console.WriteLine("Status: " + batchStatus);
-                    Console.WriteLine("========================================");
+                    string createdBatchId = batchHeader.GetProperty("payout_batch_id").GetString()!;
+                    string batchStatus = batchHeader.GetProperty("batch_status").GetString()!;
                     
                     return new PayPalPayoutResponse 
                     { 
@@ -249,26 +228,15 @@ namespace S5_01_App_CS_GOAT.Services
                     };
                 }
 
-                Console.WriteLine("ERROR: Unexpected response structure from PayPal");
                 throw new Exception("Unexpected PayPal payout response structure");
             }
             catch (HttpException httpEx)
             {
                 string message = httpEx.Message ?? string.Empty;
-                
-                Console.WriteLine("========================================");
-                Console.WriteLine("PAYPAL HTTP ERROR");
-                Console.WriteLine("========================================");
-                Console.WriteLine("Status Code: " + httpEx.StatusCode);
-                Console.WriteLine("Message: " + message);
-                Console.WriteLine("========================================");
 
                 if (httpEx.StatusCode == HttpStatusCode.GatewayTimeout ||
                     message.IndexOf("GATEWAY_TIMEOUT", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    Console.WriteLine("GATEWAY TIMEOUT DETECTED");
-                    Console.WriteLine("Attempting to verify payout was created...");
-                    
                     await Task.Delay(50000);
                     
                     try
@@ -283,12 +251,8 @@ namespace S5_01_App_CS_GOAT.Services
 
                         if (checkJson.TryGetProperty("batch_header", out JsonElement bh))
                         {
-                            string id = bh.GetProperty("payout_batch_id").GetString();
-                            string status = bh.GetProperty("batch_status").GetString();
-                            
-                            Console.WriteLine("SUCCESS: Payout was created despite timeout!");
-                            Console.WriteLine("Batch ID: " + id);
-                            Console.WriteLine("Status: " + status);
+                            string id = bh.GetProperty("payout_batch_id").GetString()!;
+                            string status = bh.GetProperty("batch_status").GetString()!;
                             
                             return new PayPalPayoutResponse 
                             { 
@@ -297,92 +261,39 @@ namespace S5_01_App_CS_GOAT.Services
                             };
                         }
                     }
-                    catch (Exception verifyEx)
+                    catch (Exception)
                     {
-                        Console.WriteLine("Could not verify payout: " + verifyEx.Message);
+                        throw new PayPalTimeoutException(
+                            "PayPal is processing your withdrawal. This may take a few minutes. " +
+                            "Please check your PayPal account in 5-10 minutes. " +
+                            "If you don't receive the money within 24 hours, contact support with batch ID: " + payoutBatchId,
+                            payoutBatchId
+                        );
                     }
-                    
-                    Console.WriteLine("DO NOT DEDUCT MONEY - Wait for manual verification");
-                    throw new PayPalTimeoutException(
-                        "PayPal is processing your withdrawal. This may take a few minutes. " +
-                        "Please check your PayPal account in 5-10 minutes. " +
-                        "If you don't receive the money within 24 hours, contact support with batch ID: " + payoutBatchId,
-                        payoutBatchId
-                    );
                 }
 
-                try
+                JsonDocument doc = JsonDocument.Parse(message);
+                string errorName = doc.RootElement.GetProperty("name").GetString() ?? "UNKNOWN";
+                string errorMessage = doc.RootElement.GetProperty("message").GetString() ?? "Unknown error";
+                string errorDebugId = doc.RootElement.GetProperty("debug_id").GetString() ?? "N/A";
+                string errorDetails = doc.RootElement.TryGetProperty("details", out JsonElement detailsElement) ? detailsElement.ToString() : "";
+
+                switch (errorName)
                 {
-                    JsonDocument doc = JsonDocument.Parse(message);
-                    string errorName = "UNKNOWN";
-                    string errorMessage = "Unknown error";
-                    string errorDebugId = "N/A";
-                    string errorDetails = "";
-
-                    if (doc.RootElement.TryGetProperty("name", out JsonElement nameElement))
-                    {
-                        errorName = nameElement.GetString() ?? "UNKNOWN";
-                    }
-                    if (doc.RootElement.TryGetProperty("message", out JsonElement msgElement))
-                    {
-                        errorMessage = msgElement.GetString() ?? "Unknown error";
-                    }
-                    if (doc.RootElement.TryGetProperty("debug_id", out JsonElement debugElement))
-                    {
-                        errorDebugId = debugElement.GetString() ?? "N/A";
-                    }
-                    if (doc.RootElement.TryGetProperty("details", out JsonElement detailsElement))
-                    {
-                        errorDetails = detailsElement.ToString();
-                    }
-
-                    Console.WriteLine("PayPal Error Details:");
-                    Console.WriteLine("- Name: " + errorName);
-                    Console.WriteLine("- Message: " + errorMessage);
-                    Console.WriteLine("- Debug ID: " + errorDebugId);
-                    if (!string.IsNullOrEmpty(errorDetails))
-                    {
-                        Console.WriteLine("- Details: " + errorDetails);
-                    }
-
-                    if (errorName == "INSUFFICIENT_FUNDS")
-                    {
+                    case "INSUFFICIENT_FUNDS":
                         throw new Exception("Your PayPal Business account has insufficient funds. Please add money to your PayPal account to process payouts.");
-                    }
-                    if (errorName == "PERMISSION_DENIED" || errorName == "UNAUTHORIZED")
-                    {
+                    case "PERMISSION_DENIED":
+                    case "UNAUTHORIZED":
                         throw new Exception("Payouts feature is not enabled for your PayPal account. Please contact PayPal to enable Payouts API access.");
-                    }
-                    if (errorName == "INVALID_ACCOUNT_STATUS")
-                    {
+                    case "INVALID_ACCOUNT_STATUS":
                         throw new Exception("The recipient's PayPal account (" + paypalEmail + ") cannot receive money. The account may be unverified, limited, or restricted.");
-                    }
-                    if (errorName == "RECEIVER_UNREGISTERED")
-                    {
+                    case "RECEIVER_UNREGISTERED":
                         throw new Exception("The PayPal account (" + paypalEmail + ") does not exist or is not registered.");
-                    }
-                    if (errorName == "VALIDATION_ERROR")
-                    {
+                    case "VALIDATION_ERROR":
                         throw new Exception("PayPal validation error: " + errorMessage + ". Details: " + errorDetails);
-                    }
-
-                    throw new Exception("PayPal Error [" + errorName + "]: " + errorMessage + " (Debug ID: " + errorDebugId + ")");
+                    default:
+                        throw new Exception("PayPal Error [" + errorName + "]: " + errorMessage + " (Debug ID: " + errorDebugId + ")");
                 }
-                catch (JsonException)
-                {
-                    throw new Exception("PayPal API Error: " + message);
-                }
-            }
-            catch (Exception ex) when (ex is not PayPalTimeoutException)
-            {
-                Console.WriteLine("========================================");
-                Console.WriteLine("UNEXPECTED ERROR");
-                Console.WriteLine("========================================");
-                Console.WriteLine("Type: " + ex.GetType().Name);
-                Console.WriteLine("Message: " + ex.Message);
-                Console.WriteLine("Stack Trace: " + ex.StackTrace);
-                Console.WriteLine("========================================");
-                throw;
             }
         }
     }

@@ -16,17 +16,8 @@ public class StripeService
 
     public async Task<string?> CreateCheckoutSessionAsync(double amount)
     {
-        int? userId = await _authService.GetUserIdAsync();
-        
-        if (userId == null)
-        {
-            Console.WriteLine("User not authenticated");
-            return null;
-        }
-        
         var request = new
         {
-            userId = userId.Value,
             amount = amount,
             #if DEBUG
             successUrl = "https://localhost:7030/payment-success",
@@ -50,27 +41,11 @@ public class StripeService
     
     public async Task<string?> CreateWithdrawalSessionAsync(double amount)
     {
-        int? userId = await _authService.GetUserIdAsync();
-        
-        if (userId == null)
-        {
-            Console.WriteLine("❌ User not authenticated");
-            return null;
-        }
-        
-        // ✅ AJOUTER LE TOKEN JWT
         var token = await _authService.GetTokenAsync();
-        if (string.IsNullOrEmpty(token))
-        {
-            Console.WriteLine("❌ No JWT token available");
-            return null;
-        }
-        
-        Console.WriteLine($"🔑 Using JWT token for withdrawal request");
+        if (string.IsNullOrEmpty(token)) return null;
         
         var request = new
         {
-            userId = userId.Value,
             amount = amount,
 #if DEBUG
             successUrl = "https://localhost:7030/withdrawal-success",
@@ -81,7 +56,6 @@ public class StripeService
 #endif
         };
 
-        // ✅ Créer une nouvelle requête avec le header Authorization
         var requestMessage = new HttpRequestMessage(HttpMethod.Post, "stripe/create-payout-session")
         {
             Content = JsonContent.Create(request),
@@ -96,14 +70,11 @@ public class StripeService
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<CheckoutResponse>();
-            Console.WriteLine($"✅ Withdrawal session created: {result?.Url}");
             return result?.Url;
         }
         else
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"❌ Failed to create withdrawal session: {response.StatusCode}");
-            Console.WriteLine($"Error: {errorContent}");
         }
 
         return null;

@@ -44,8 +44,6 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.Secure = CookieSecurePolicy.Always; // Use HTTPS
 });
 
-builder.Services.AddHttpClient<SteamUserService>();
-
 // Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -61,9 +59,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Add HttpClientFactory for PayPal payouts
 builder.Services.AddHttpClient();
-
-// Add PayPalService
-builder.Services.AddScoped<PayPalService>();
 
 // Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, ReadRepository<Case>>();
@@ -98,12 +93,14 @@ builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepositor
 builder.Services.AddScoped<ICaseOpenningRepository, CaseOpenningManager>();
 builder.Services.AddScoped<IFairRandomRepository, FairRandomManager>();
 builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryManager>();
+builder.Services.AddScoped<IPayPalRepository, PayPalManager>();
 builder.Services.AddScoped<IPromoCodeRepository, PromoCodeManager>();
 builder.Services.AddScoped<IUserRepository, UserManager>();
 builder.Services.AddScoped<ISellingRepository, SellingManager>();
 builder.Services.AddScoped<ISendingRepository, SendingManager>();
+builder.Services.AddHttpClient<ISteamRepository, SteamManager>();
+builder.Services.AddScoped<IStripeRepository, StripeManager>();
 builder.Services.AddScoped<IUpgradeRepository, UpgradeManager>();
-
 
 // Timed services
 builder.Services.AddHostedService<TimedActionService<IDataRepository<Token, int>, Token, int>>();
