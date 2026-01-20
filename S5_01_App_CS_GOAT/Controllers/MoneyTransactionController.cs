@@ -30,7 +30,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false, null, "PaymentMethod");
+            QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
+                .Before(e => e.PaymentMethod);
+            IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false, queryOptions);
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }
@@ -50,7 +52,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
             
-            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsyncOld(null, "PaymentMethod");
+            QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
+                .Before(e => e.PaymentMethod);
+            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync(queryOptions);
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }

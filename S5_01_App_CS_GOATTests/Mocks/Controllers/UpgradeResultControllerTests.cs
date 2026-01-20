@@ -75,7 +75,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 UpgradeResults = upgradeResults.Where(ur => ur.InventoryItemId == inventoryItemId).ToList()
             };
 
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(inventoryItemId, It.IsAny<QueryOptions<InventoryItem>>()))
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync(inventoryItem);
             mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults))
                        .Returns(upgradeResultDTOs);
@@ -111,7 +111,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 UpgradeResults = upgradeResults.Where(ur => ur.TransactionId == transactionId).ToList()
             };
 
-            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(transactionId, It.IsAny<QueryOptions<RandomTransaction>>()))
+            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<RandomTransaction>>()))
                                            .ReturnsAsync(randomTransaction);
             mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults))
                        .Returns(upgradeResultDTOs);
@@ -137,7 +137,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(999, It.IsAny<QueryOptions<InventoryItem>>()))
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync((InventoryItem?)null);
 
             // When
@@ -151,7 +151,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_NegativeId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsyncNew(-1, It.IsAny<QueryOptions<InventoryItem>>()))
+            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(-1, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync((InventoryItem?)null);
 
             // When
@@ -165,7 +165,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByRandomTransaction_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsyncNew(999, It.IsAny<QueryOptions<RandomTransaction>>()))
+            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<RandomTransaction>>()))
                                            .ReturnsAsync((RandomTransaction?)null);
 
             // When

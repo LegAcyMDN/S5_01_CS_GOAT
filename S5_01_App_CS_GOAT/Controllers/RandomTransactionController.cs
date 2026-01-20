@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsyncOld();
+            IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsync();
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
             return Ok(new GetOptions<RandomTransactionDTO>(Request, transactionsDTO));
         }
@@ -68,11 +68,14 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            RandomTransaction? result = await manager.GetByIdAsyncOld(id,
-                "Case",
-                "InventoryItem.Wear.WearType",
-                "InventoryItem.Wear.Skin.Rarity",
-                "InventoryItem.Wear.Skin.Item.ItemType");
+            QueryOptions<RandomTransaction> queryOptions = new QueryOptions<RandomTransaction>()
+                .Before(
+                    rt => rt.Case,
+                    rt => rt.InventoryItem.Wear.WearType,
+                    rt => rt.InventoryItem.Wear.Skin.Rarity,
+                    rt => rt.InventoryItem.Wear.Skin.Item.ItemType
+                );
+            RandomTransaction? result = await manager.GetByIdAsync(id, queryOptions);
             if (result == null) return NotFound();
             return Ok(mapper.Map<RandomTransactionDetailDTO>(result));
         }
@@ -93,7 +96,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     rt => rt.InventoryItem.Wear.Skin.Item
                 );
 
-            var transactions = await manager.GetAllAsyncNew(queryOptions);
+            var transactions = await manager.GetAllAsync(queryOptions);
             var liveFeedDTOs = mapper.Map<IEnumerable<LiveFeedDTO>>(transactions);
             return Ok(new GetOptions<LiveFeedDTO>(Request, liveFeedDTOs));
         }

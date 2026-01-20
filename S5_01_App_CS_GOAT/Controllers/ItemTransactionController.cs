@@ -34,8 +34,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             if(!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsyncOld();
-             IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
+            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsync();
+            IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
             return Ok(new GetOptions<ItemTransactionDTO>(Request, promoCodesDTO));
         }
 
@@ -53,7 +53,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            ItemTransaction? itemTransaction = await manager.GetByIdAsyncNew(id);
+            ItemTransaction? itemTransaction = await manager.GetByIdAsync(id);
             if (itemTransaction == null) return NotFound();
             if (authResult.AuthUserId != itemTransaction.DependantUserId && !authResult.IsAdmin)
                 return Forbid();
@@ -74,15 +74,13 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
+            QueryOptions<ItemTransaction> queryOptions = new QueryOptions<ItemTransaction>()
+                .Before(it => it.InventoryItem.Wear.Skin.Item.ItemType,
+                        it => it.InventoryItem.Wear.Skin.Rarity,
+                        it => it.InventoryItem.Wear.WearType);
             IEnumerable<ItemTransaction> itemTransactions = await authResult.GetByUser(
-                manager, 
-                false,
-                null,
-                "InventoryItem.Wear.Skin.Item.ItemType",
-                "InventoryItem.Wear.Skin.Rarity",
-                "InventoryItem.Wear.WearType"
-            );
-            IEnumerable<ItemTransactionDetailDTO> itemTransactionDetailDTO = mapper.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions);
+                manager, false, queryOptions);
+            IEnumerable <ItemTransactionDetailDTO> itemTransactionDetailDTO = mapper.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions);
             return Ok(new GetOptions<ItemTransactionDetailDTO>(Request, itemTransactionDetailDTO));
         }
     }

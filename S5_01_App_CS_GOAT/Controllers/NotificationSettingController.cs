@@ -29,7 +29,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<NotificationSetting> userSettings = await authResult.GetByUser(manager, false, null, "NotificationType");
+            QueryOptions<NotificationSetting> queryOptions = new QueryOptions<NotificationSetting>()
+                .Before(ns => ns.NotificationType);
+            IEnumerable<NotificationSetting> userSettings = await authResult.GetByUser(manager, false, queryOptions);
             IEnumerable<NotificationSettingDTO> dtoSettings = mapper.Map<IEnumerable<NotificationSettingDTO>>(userSettings);
 
             return Ok(dtoSettings);

@@ -34,9 +34,8 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
             
-            IEnumerable<Notification> notifications = await manager.GetAllAsyncOld();
-            if (!notifications.Any())
-                return NotFound();
+            IEnumerable<Notification> notifications = await manager.GetAllAsync();
+            if (!notifications.Any()) return NotFound();
 
             IEnumerable<NotificationDTO> notificationsDTO = mapper.Map<IEnumerable<NotificationDTO>>(notifications);
             return Ok(new GetOptions<NotificationDTO>(Request, notificationsDTO));
@@ -57,7 +56,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<GlobalNotification> globalNotifications = await globalNotificationManager.GetAllAsyncOld();
+            IEnumerable<GlobalNotification> globalNotifications = await globalNotificationManager.GetAllAsync();
             IEnumerable<UserNotification> userNotifications = await authResult.GetByUser(userNotificationManager, false);
 
             List<Notification> allRelevantNotifications =
@@ -80,7 +79,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDetails(int id)
         {
-            Notification? notification = await manager.GetByIdAsyncNew(id);
+            Notification? notification = await manager.GetByIdAsync(id);
             if (notification == null)
                 return NotFound();
 

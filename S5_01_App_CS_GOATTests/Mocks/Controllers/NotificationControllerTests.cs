@@ -82,7 +82,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            notificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
+            notificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -96,7 +96,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            notificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
+            notificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -104,7 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
                                       .ReturnsAsync(allNotifications);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(allNotifications))
                       .Returns(notificationDTOs);
@@ -114,7 +114,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            notificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()), Times.Once);
         }
 
         [TestMethod]
@@ -122,7 +122,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
                                       .ReturnsAsync(new List<Notification>());
 
             // When
@@ -130,7 +130,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            notificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            notificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()), Times.Once);
         }
 
         #endregion
@@ -145,8 +145,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            globalNotificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
-            userNotificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Never);
+            globalNotificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<GlobalNotification>?>()), Times.Never);
+            userNotificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<UserNotification>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -154,9 +154,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            globalNotificationRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            globalNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<GlobalNotification>?>()))
                                             .ReturnsAsync(globalNotifications);
-            userNotificationRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            userNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<UserNotification>?>()))
                                           .ReturnsAsync(userNotifications);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(It.IsAny<List<Notification>>()))
                       .Returns(notificationDTOs);
@@ -166,8 +166,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            globalNotificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
-            userNotificationRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            globalNotificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<GlobalNotification>?>()), Times.Once);
+            userNotificationRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<UserNotification>?>()), Times.Once);
         }
 
         #endregion
@@ -179,7 +179,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             int notificationId = 1;
-            notificationRepositoryMock.Setup(r => r.GetByIdAsyncNew(notificationId, It.IsAny<QueryOptions<Notification>>()))
+            notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
                                       .ReturnsAsync(globalNotification);
             mapperMock.Setup(m => m.Map<NotificationDTO>(globalNotification))
                       .Returns(notificationDTO);
@@ -189,7 +189,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationRepositoryMock.Verify(r => r.GetByIdAsyncNew(notificationId, It.IsAny<QueryOptions<Notification>>()), Times.Once);
+            notificationRepositoryMock.Verify(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()), Times.Once);
         }
 
         [TestMethod]
@@ -197,7 +197,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             int notificationId = 999;
-            notificationRepositoryMock.Setup(r => r.GetByIdAsyncNew(notificationId, It.IsAny<QueryOptions<Notification>>()))
+            notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
                                       .ReturnsAsync((Notification?)null);
 
             // When
@@ -205,7 +205,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            notificationRepositoryMock.Verify(r => r.GetByIdAsyncNew(notificationId, It.IsAny<QueryOptions<Notification>>()), Times.Once);
+            notificationRepositoryMock.Verify(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()), Times.Once);
         }
 
         #endregion

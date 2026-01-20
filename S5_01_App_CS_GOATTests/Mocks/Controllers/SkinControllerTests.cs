@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_ValidCaseId_ReturnsOk()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 1,
                 It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync(caseWithSkins);
@@ -69,7 +69,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
             OkObjectResult okResult = (OkObjectResult)result;
             Assert.IsNotNull(okResult.Value);
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 1,
                 It.IsAny<QueryOptions<Case>>()
             ), Times.Once);
@@ -78,7 +78,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_InvalidCaseId_ReturnsNotFound()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 999,
                 It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync((Case?)null);
@@ -88,7 +88,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 999,
                 It.IsAny<QueryOptions<Case>>()
             ), Times.Once);
@@ -97,7 +97,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_NegativeCaseId_ReturnsNotFound()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 -1,
                 It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync((Case?)null);
@@ -112,7 +112,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_ZeroCaseId_ReturnsNotFound()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 0,
                 It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync((Case?)null);
@@ -135,7 +135,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 CaseContents = emptyCaseContents
             };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncNew(
+            caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 1,
                 It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync(caseWithNoSkins);

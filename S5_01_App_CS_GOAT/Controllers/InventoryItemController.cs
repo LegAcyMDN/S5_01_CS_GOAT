@@ -32,8 +32,11 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
+            QueryOptions<InventoryItem> queryOptions = new QueryOptions<InventoryItem>()
+                .Before(i => i.RemovedOn == null)
+                .Before(i => i.Wear.Skin.Rarity);
             IEnumerable<InventoryItem> inventoryItems = await authResult.GetByUser(
-                manager, false, i => i.RemovedOn == null, "Wear.Skin.Rarity");
+                manager, false, queryOptions);
             IEnumerable<InventoryItemDTO> inventory = mapper.Map<IEnumerable<InventoryItemDTO>>(inventoryItems);
             return Ok(new GetOptions<InventoryItemDTO>(Request, inventory));
         }
@@ -58,7 +61,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     i => i.Wear.Skin.Item.ItemType,
                     i => i.Wear.WearType)
                 .After(i => i.Wear.WearClass.PriceHistories);
-            InventoryItem? item = await manager.GetByIdAsyncNew(inventoryItemId, options);
+            InventoryItem? item = await manager.GetByIdAsync(inventoryItemId, options);
             if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
 
             InventoryItemDetailDTO? inventory = mapper.Map<InventoryItemDetailDTO>(item);
@@ -102,7 +105,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? inventory = await manager.GetByIdAsyncNew(inventoryItemId);
+            InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null) return NotFound();
             if (inventory.UserId != authResult.AuthUserId) return Forbid();
 
@@ -125,7 +128,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            InventoryItem? inventory = await manager.GetByIdAsyncNew(inventoryItemId);
+            InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
             if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
 
             int responseCode = await sellingService.SellAsync(inventoryItemId);

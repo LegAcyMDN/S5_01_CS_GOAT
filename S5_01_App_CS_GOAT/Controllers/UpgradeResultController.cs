@@ -33,7 +33,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                 .Before(i => i.UpgradeResults);
-            InventoryItem? inventoryItem = await invItemManager.GetByIdAsyncNew(inventoryItemId, options);
+            InventoryItem? inventoryItem = await invItemManager.GetByIdAsync(inventoryItemId, options);
             if (inventoryItem == null || inventoryItem.DependantUserId != authResult.AuthUserId) return NotFound();
 
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults);
@@ -56,7 +56,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             QueryOptions<RandomTransaction> options = new QueryOptions<RandomTransaction>()
                 .Before(rt => rt.UpgradeResults);
-            RandomTransaction? randomTransaction = await randTransManager.GetByIdAsyncNew(transactionId, options);
+            RandomTransaction? randomTransaction = await randTransManager.GetByIdAsync(transactionId, options);
             if (randomTransaction == null || randomTransaction.DependantUserId != authResult.AuthUserId) return NotFound();
 
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults);

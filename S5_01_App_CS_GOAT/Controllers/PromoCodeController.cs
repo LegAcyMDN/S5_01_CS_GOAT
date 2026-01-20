@@ -37,7 +37,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             Case? targetCase = null;
             if (caseId != null)
             {
-                targetCase = await caseRepository.GetByIdAsyncNew(caseId.Value);
+                targetCase = await caseRepository.GetByIdAsync(caseId.Value);
                 if (targetCase == null) return NotFound();
             }
             PromoCode? promoCode = await manager.Check(
@@ -71,13 +71,12 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
 
-            var promoCodes = await manager.GetAllAsyncOld(
-                where: null,
-                includes: new[] { "Case", "User" }
-            );
+            QueryOptions<PromoCode> queryOptions = new QueryOptions<PromoCode>()
+                .Before(p => p.User, p => p.Case);
+            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsync(queryOptions);
+            IEnumerable<PromoCodeDTO> promoCodeDtos = promoCodes
+                .Select(pc => mapper.Map<PromoCodeDTO>(pc));
 
-            var promoCodeDtos = mapper.Map<IEnumerable<PromoCodeDTO>>(promoCodes);            
-            
             return Ok(new GetOptions<PromoCodeDTO>(Request, promoCodeDtos));
         }
 
@@ -129,7 +128,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
 
-            PromoCode? existingPromoCode = await manager.GetByIdAsyncNew(id);
+            PromoCode? existingPromoCode = await manager.GetByIdAsync(id);
             if (existingPromoCode == null) return NotFound();
 
             // Mapper les modifications du DTO vers l'entité existante
@@ -154,7 +153,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             if (!authResult.IsAdmin)
                 return Forbid();
-            var promoCode = await manager.GetByIdAsyncNew(id);
+            var promoCode = await manager.GetByIdAsync(id);
             if (promoCode == null) 
                 return NotFound();
 

@@ -114,7 +114,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             var adminUser = UserFixture.GetAdminUser();
 
             JwtService.AuthentifyController(controller!, adminUser);
-            userRepositoryMock!.Setup(r => r.GetByIdAsyncNew(2, null)).ReturnsAsync(user);
+            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
             mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
 
             // When
@@ -132,7 +132,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             var userDTO = UserFixture.GetNormalUserDTO();
 
             JwtService.AuthentifyController(controller!, user);
-            userRepositoryMock!.Setup(r => r.GetByIdAsyncNew(2, null)).ReturnsAsync(user);
+            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
             mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
 
             // When
@@ -162,7 +162,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             var adminUser = UserFixture.GetAdminUser();
             JwtService.AuthentifyController(controller!, adminUser);
-            userRepositoryMock!.Setup(r => r.GetByIdAsyncNew(999, null)).ReturnsAsync((User?)null);
+            userRepositoryMock!.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<User>>())).ReturnsAsync((User?)null);
 
             // When
             IActionResult? result = controller!.Get(999).GetAwaiter().GetResult();
@@ -193,7 +193,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             JwtService.AuthentifyController(controller!, UserFixture.GetAdminUser());
 
-            userRepositoryMock!.Setup(r => r.GetByIdAsyncNew(2, null))
+            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(user);
             mapperMock!.Setup(m => m.Map<UserDTO>(user))
                 .Returns(userDTO);
@@ -214,7 +214,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             JwtService.AuthentifyController(controller!, UserFixture.GetNormalUser());
 
-            userRepositoryMock!.Setup(r => r.GetByIdAsyncNew(2, null))
+            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(user);
             mapperMock!.Setup(m => m.Map<UserDTO>(user))
                 .Returns(userDTO);
@@ -240,7 +240,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 3, Login = "user3", LastLogin = DateTime.UtcNow.AddMinutes(-14) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsyncNew(null))
+            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(recentUsers);
 
             // When
@@ -257,7 +257,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             var emptyList = new List<User>();
-            userRepositoryMock!.Setup(r => r.GetAllAsyncNew(null))
+            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(emptyList);
 
             // When
@@ -279,7 +279,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 2, Login = "user2", LastLogin = DateTime.UtcNow.AddMinutes(-30) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsyncNew(null))
+            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(new List<User>());
 
             // When
@@ -296,7 +296,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetCount_RepositoryThrowsException_ThrowsException()
         {
             // Given
-            userRepositoryMock!.Setup(r => r.GetAllAsyncNew(It.IsAny<QueryOptions<User>?>()))
+            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
                 .ThrowsAsync(new Exception("Database error"));
 
             // When
@@ -312,7 +312,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 1, Login = "user1", LastLogin = DateTime.UtcNow.AddMinutes(-1) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsyncNew(It.IsAny<QueryOptions<User>?>()))
+            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
                 .ReturnsAsync(singleUser);
 
             // When

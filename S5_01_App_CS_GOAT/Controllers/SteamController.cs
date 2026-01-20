@@ -133,7 +133,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!auth.IsAuthenticated)
                 return Unauthorized();
 
-            User? user = await userRepository.GetByIdAsyncNew((int)auth.AuthUserId!);
+            User? user = await userRepository.GetByIdAsync((int)auth.AuthUserId!);
             if (user == null)
                 return NotFound();
 

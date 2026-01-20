@@ -28,7 +28,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             QueryOptions<Wear> options =
                 new QueryOptions<Wear>()
                 .After(w => w.WearClass.PriceHistories);
-            Wear? wear = await wearManager.GetByIdAsyncNew(wearId, options);
+            Wear? wear = await wearManager.GetByIdAsync(wearId, options);
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory> result = wear.PriceHistories(false);
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
@@ -50,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             QueryOptions<Wear> options =
                 new QueryOptions<Wear>()
                 .After(w => w.WearClass.PriceHistories);
-            Wear? wear = await wearManager.GetByIdAsyncNew(wearId, options);
+            Wear? wear = await wearManager.GetByIdAsync(wearId, options);
             if (wear == null) return NotFound();
             IEnumerable<PriceHistory>? result = await manager.PredictWithAI(wear);
             if (result == null) return StatusCode(StatusCodes.Status503ServiceUnavailable);

@@ -31,7 +31,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<Limit> limits = await authResult.GetByUser(manager, false, null, "LimitType");
+            QueryOptions<Limit> options = new QueryOptions<Limit>()
+                .Before(l => l.LimitType);
+            IEnumerable<Limit> limits = await authResult.GetByUser(manager, false, options);
 
             IEnumerable<LimitDTO> limitsDTO = mapper.Map<IEnumerable<LimitDTO>>(limits);
             return Ok(new GetOptions<LimitDTO>(Request, limitsDTO));

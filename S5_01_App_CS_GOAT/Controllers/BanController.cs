@@ -32,7 +32,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
             
-            IEnumerable<Ban> bans = await manager.GetAllAsyncOld(null, "BanType");
+            QueryOptions<Ban> options = new QueryOptions<Ban>()
+                .Before(b => b.BanType);
+            IEnumerable<Ban> bans = await manager.GetAllAsync(options);
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(new GetOptions<BanDTO>(Request, bansDTO));
         }
@@ -49,7 +51,9 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
 
-            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, null, "BanType");
+            QueryOptions<Ban> queryOptions = new QueryOptions<Ban>()
+                .Before(b => b.BanType);
+            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, queryOptions);
             IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(new GetOptions<BanDTO>(Request, userBansDTO));
         }
@@ -105,7 +109,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            Ban? banToUpdate = await manager.GetByIdAsyncNew(id);
+            Ban? banToUpdate = await manager.GetByIdAsync(id);
             if (banToUpdate == null) return NotFound();
 
             Ban ban = mapper.Map<Ban>(banDTO);

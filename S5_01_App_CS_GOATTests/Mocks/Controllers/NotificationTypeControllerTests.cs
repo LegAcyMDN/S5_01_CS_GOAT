@@ -9,6 +9,7 @@ using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOATTests.Fixtures;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -43,7 +44,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationType>?>()))
                                           .ReturnsAsync(notificationTypes);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
                       .Returns(notificationTypeDTOs);
@@ -53,7 +54,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            notificationTypeRepositoryMock.Verify(r => r.GetAllAsyncOld(null), Times.Once);
+            notificationTypeRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationType>?>()), Times.Once);
         }
 
         [TestMethod]
@@ -62,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             var emptyList = new List<NotificationType>();
             var emptyDTOList = new List<NotificationTypeDTO>();
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationType>?>()))
                                           .ReturnsAsync(emptyList);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(emptyList))
                       .Returns(emptyDTOList);
@@ -81,7 +82,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_RepositoryThrowsException_ReturnsOkWithEmptyResult()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationType>?>()))
                                           .ThrowsAsync(new Exception("Database error"));
 
             // When & Then
@@ -100,7 +101,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_MappingFails_StillReturnsOk()
         {
             // Given
-            notificationTypeRepositoryMock.Setup(r => r.GetAllAsyncOld(null))
+            notificationTypeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationType>?>()))
                                           .ReturnsAsync(notificationTypes);
             mapperMock.Setup(m => m.Map<IEnumerable<NotificationTypeDTO>>(notificationTypes))
                       .Throws(new AutoMapperMappingException("Mapping failed"));

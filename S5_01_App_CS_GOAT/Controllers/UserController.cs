@@ -36,7 +36,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!authResult.IsAdmin)
                 return Forbid();
 
-            IEnumerable<User> users = await manager.GetAllAsyncOld();
+            IEnumerable<User> users = await manager.GetAllAsync();
             IEnumerable<UserDTO> dtos = mapper.Map<IEnumerable<UserDTO>>(users);
             return Ok(new GetOptions<UserDTO>(Request, dtos));
         }
@@ -51,7 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             QueryOptions<User> options = new QueryOptions<User>()
                 .Before(u => u.LastLogin > DateTime.UtcNow.AddMinutes(-15));
-            IEnumerable<User> users = await manager.GetAllAsyncNew(options);
+            IEnumerable<User> users = await manager.GetAllAsync(options);
             return Ok(users.Count());
         }
 
@@ -71,7 +71,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!auth.IsAdmin && auth.AuthUserId != id)
                 return Forbid();
 
-            User? user = await manager.GetByIdAsyncNew(id);
+            User? user = await manager.GetByIdAsync(id);
             if (user == null)
                 return NotFound();
 
@@ -123,7 +123,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            User? existing = await manager.GetByIdAsyncNew((int)auth.AuthUserId!);
+            User? existing = await manager.GetByIdAsync((int)auth.AuthUserId!);
             if (existing == null)
                 return NotFound();
 
@@ -224,7 +224,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
                 return Unauthorized();
-            User user = (await manager.GetByIdAsyncNew((int)auth.AuthUserId!))!;
+            User user = (await manager.GetByIdAsync((int)auth.AuthUserId!))!;
             int response = (contact, code) switch
             {
                 ("sms", not null) => await sendingManager.VerifySmsAsync(user, code),
@@ -252,7 +252,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             if (!auth.IsAdmin && auth.AuthUserId != userId)
                 return Forbid();
 
-            User? user = await manager.GetByIdAsyncNew(userId);
+            User? user = await manager.GetByIdAsync(userId);
             if (user == null) return NotFound();
 
             try

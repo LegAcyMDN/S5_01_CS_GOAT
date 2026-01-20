@@ -104,7 +104,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 if (captureResponse.Status != "COMPLETED")
                     return BadRequest("Payment was not completed");
 
-                User? user = await _userRepository.GetByIdAsyncNew(userId);
+                User? user = await _userRepository.GetByIdAsync(userId);
                 if (user == null) return NotFound();
 
                 double oldWallet = user.Wallet;
@@ -177,7 +177,7 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             try
             {
-                User? user = await _userRepository.GetByIdAsyncNew(userId);
+                User? user = await _userRepository.GetByIdAsync(userId);
                 if (user == null) return NotFound();
 
                 if (user.Wallet < (double)request.Amount)

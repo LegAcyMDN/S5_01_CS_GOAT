@@ -67,7 +67,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -75,7 +75,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(moneyTransactions);
 
             // When
@@ -83,7 +83,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Once);
         }
 
         #endregion
@@ -98,7 +98,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>>()), Times.Never);
         }
 
         [TestMethod]
@@ -112,7 +112,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -120,7 +120,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(allMoneyTransactions);
 
             // When
@@ -128,7 +128,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Once);
         }
 
         [TestMethod]
@@ -137,7 +137,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             var emptyList = new List<MoneyTransaction>();
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(emptyList);
 
             // When
@@ -153,7 +153,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             var emptyList = new List<MoneyTransaction>();
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(emptyList);
 
             // When

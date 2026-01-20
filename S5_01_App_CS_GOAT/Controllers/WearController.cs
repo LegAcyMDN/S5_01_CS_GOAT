@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -24,7 +25,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get3dModelByWear(int wearId)
         {
-            Wear? wear = await manager.GetByIdAsyncOld(wearId, "Skin.Item");
+            QueryOptions<Wear> options = new QueryOptions<Wear>()
+                .Before(w => w.Skin.Item);
+            Wear? wear = await manager.GetByIdAsync(wearId, options);
             if (wear == null) return NotFound();
             ModelDTO modelDto = mapper.Map<ModelDTO>(wear);
             return Ok(modelDto);

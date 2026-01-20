@@ -25,7 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult authResult = JwtService.JwtAuth(config);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            User? user = await userRepository.GetByIdAsyncNew((int)authResult.AuthUserId!);
+            User? user = await userRepository.GetByIdAsync((int)authResult.AuthUserId!);
             if (user == null) return NotFound();
 
             try      
@@ -103,7 +103,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             AuthResult authResult = JwtService.JwtAuth(config);
             if (!authResult.IsAuthenticated)
                 return Unauthorized();
-            User? user = await userRepository.GetByIdAsyncNew((int)authResult.AuthUserId!);
+            User? user = await userRepository.GetByIdAsync((int)authResult.AuthUserId!);
             if (user == null) return NotFound();
 
             try

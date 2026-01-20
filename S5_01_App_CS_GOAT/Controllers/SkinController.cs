@@ -26,7 +26,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             QueryOptions<Skin> options = new QueryOptions<Skin>()
                 .Before(s => s.Wears, s => s.Rarity, s => s.Item);
-            IEnumerable<Skin> skinsEntity = await skinManager.GetAllAsyncNew(options);
+            IEnumerable<Skin> skinsEntity = await skinManager.GetAllAsync(options);
             IEnumerable<SkinDTO> skins = mapper.Map<IEnumerable<SkinDTO>>(skinsEntity);
             return Ok(new GetOptions<SkinDTO>(Request, skins));
         }
@@ -45,7 +45,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 .Before("CaseContents.Skin.Wears",
                         "CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item");
-            Case? _case = await caseManager.GetByIdAsyncNew(caseid, options);
+            Case? _case = await caseManager.GetByIdAsync(caseid, options);
             if (_case == null) return NotFound();
 
             IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 

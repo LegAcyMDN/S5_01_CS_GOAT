@@ -39,7 +39,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                 .Before(i => i.User)
                 .After(i => i.Wear.WearClass.PriceHistories);
-            InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsyncNew(
+            InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsync(
                 invItemId,
                 options
             );

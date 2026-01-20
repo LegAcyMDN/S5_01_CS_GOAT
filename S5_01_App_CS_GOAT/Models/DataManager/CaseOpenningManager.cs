@@ -48,7 +48,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             CaseOpenningDTO caseOpenningDTO,
             int userId)
         {
-            User? user = await _userRepository.GetByIdAsyncOld(userId, "FairRandom");
+            QueryOptions<User> options = new QueryOptions<User>()
+                .Before(u => u.FairRandom);
+            User? user = await _userRepository.GetByIdAsync(userId, options);
             if (user == null) throw new Exception("User not found.");
             return await OpenCaseAsync(caseOpenningDTO, user);
         }
@@ -64,7 +66,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .Before("CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item.ItemType",
                         "CaseContents.Skin.WearClasses.Wears.WearType");
-            Case? targetCase = await _caseRepository.GetByIdAsyncNew(
+            Case? targetCase = await _caseRepository.GetByIdAsync(
                 caseOpenningDTO.CaseId,
                 options
             );

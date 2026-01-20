@@ -130,12 +130,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             QueryOptions<User> options1 = new QueryOptions<User>()
                 .Before(u => u.FairRandom);
-            User? user = await _userRepository.GetByIdAsyncNew(userId, options1);
+            User? user = await _userRepository.GetByIdAsync(userId, options1);
             if (user == null) throw new Exception("User not found.");
 
             QueryOptions<Skin> option2 = new QueryOptions<Skin>()
                 .Before(s => s.Rarity, s => s.Item, s => s.Wears);
-            Skin? skin = await _skinRepository.GetByIdAsyncNew(dto.TargetSkinId, option2);
+            Skin? skin = await _skinRepository.GetByIdAsync(dto.TargetSkinId, option2);
             if (skin == null) throw new Exception("Skin not found.");
             IEnumerable<PriceHistory> priceHistories = _context.PriceHistories
                 .Where(ph => ph.SkinId == skin.SkinId).OrderByDescending(ph => ph.PriceDate).Take(skin.Wears.Count);
@@ -148,7 +148,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .Before(i => i.UserId == user.UserId)
                 .Before(i => i.RemovedOn == null)
                 .After(i => i.Wear.WearClass.PriceHistories);
-            IEnumerable<InventoryItem> invItems = await _inventoryItemRepository.GetAllAsyncNew(options2);
+            IEnumerable<InventoryItem> invItems = await _inventoryItemRepository.GetAllAsync(options2);
             if (invItems.Count() != dto.InventoryItemIds.Count)
                 throw new Exception("One or more inventory items not found.");
             PriceInfo invItemPrice = new PriceInfo(invItems.Select(i => i.Wear.CurrentPrice));
@@ -221,7 +221,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 await _inventoryItemRepository.UpdateAsync(invItem);
                 QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                     .Before(i => i.Wear.Skin.Rarity);
-                invItem = (await _inventoryItemRepository.GetByIdAsyncNew(invItem.InventoryItemId, options))!;
+                invItem = (await _inventoryItemRepository.GetByIdAsync(invItem.InventoryItemId, options))!;
                 tuple.InventoryItem = _mapper.Map<InventoryItemDTO>(invItem);
             }
             else
@@ -275,7 +275,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     .Before(i => i.Wear.Skin.Rarity, i => i.Wear.WearType,
                     i => i.Wear.Skin.Item.ItemType)
                     .After(i => i.Wear.WearClass.PriceHistories);
-                newItem = await _inventoryItemRepository.GetByIdAsyncNew(newItem.InventoryItemId, options);
+                newItem = await _inventoryItemRepository.GetByIdAsync(newItem.InventoryItemId, options);
                 dto.ItemResult = _mapper.Map<InventoryItemDetailDTO>(newItem);
             }
 

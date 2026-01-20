@@ -5,19 +5,9 @@ namespace S5_01_App_CS_GOAT.Models.Repository;
 
 public interface IReadableRepository<TEntity, TIdentifier> where TEntity : class
 {
-    Task<IEnumerable<TEntity>> GetAllAsyncNew(QueryOptions<TEntity>? options);
+    Task<IEnumerable<TEntity>> GetAllAsync(QueryOptions<TEntity>? options = null);
 
-    Task<IEnumerable<TEntity>> GetAllAsyncOld(
-        Expression<Func<TEntity, bool>>? where = null,
-        params string[] includes
-        );
-
-    Task<TEntity?> GetByIdAsyncOld(int id,
-        params string[] includes);
-
-    Task<TEntity?> GetByIdAsyncNew(TIdentifier id, QueryOptions<TEntity>? options = null);
-
-    Task<TEntity?> GetByIdAsync(TIdentifier id);
+    Task<TEntity?> GetByIdAsync(TIdentifier id, QueryOptions<TEntity>? options = null);
 }
 
 public interface IWriteRepository<TEntity>

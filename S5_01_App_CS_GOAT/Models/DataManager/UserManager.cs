@@ -414,7 +414,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             .Before("NotificationSettings.NotificationType",
                 "Limits.LimitType", "Bans.BanType")
             .Before(u => u.Favorites);
-        User? user = await GetByIdAsyncNew(userId, userOptions);
+        User? user = await GetByIdAsync(userId, userOptions);
         if (user == null) return null;
 
         dynamic exportUser = new ExpandoObject();

@@ -84,7 +84,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            limitRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Limit>>()), Times.Never);
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            limitRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "LimitType"))
+            limitRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync(limits);
             mapperMock.Setup(m => m.Map<IEnumerable<LimitDTO>>(limits))
                       .Returns(limitDTOs);
@@ -102,7 +102,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            limitRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "LimitType"), Times.Once);
+            limitRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<Limit>?>()), Times.Once);
         }
 
         #endregion
@@ -120,7 +120,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -130,7 +130,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int limitTypeId = 1;
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsync(limitKey))
+            limitRepositoryMock.Setup(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync(limit);
             limitRepositoryMock.Setup(r => r.PatchAsync(limit, It.IsAny<Dictionary<string, object>>()))
                                .Returns(Task.CompletedTask);
@@ -140,7 +140,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NoContentResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Once);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()), Times.Once);
         }
 
         [TestMethod]
@@ -151,7 +151,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int limitTypeId = 999;
             (int, int) nonExistingLimitKey = LimitFixture.GetLimitKey(normalUser.UserId, limitTypeId);
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingLimitKey))
+            limitRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingLimitKey, It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync((Limit?)null);
 
             // When
@@ -159,7 +159,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingLimitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(nonExistingLimitKey, It.IsAny<QueryOptions<Limit>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -175,7 +175,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
-            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey), Times.Never);
+            limitRepositoryMock.Verify(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()), Times.Never);
         }
 
         #endregion

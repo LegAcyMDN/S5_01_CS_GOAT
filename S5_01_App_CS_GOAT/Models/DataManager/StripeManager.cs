@@ -89,7 +89,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             int userId = int.Parse(setupIntent.Metadata["user_id"]);
             double amount = double.Parse(setupIntent.Metadata["amount"]);
             
-            User? user = await _userRepository.GetByIdAsyncNew(userId);
+            User? user = await _userRepository.GetByIdAsync(userId);
             if (user == null || user.Wallet < amount) return;
             
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
@@ -146,7 +146,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             {
                 int userId = int.Parse(session.Metadata["user_id"]);
                 double amount = double.Parse(session.Metadata["amount"]);
-                User? user = await _userRepository.GetByIdAsyncNew(userId);
+                User? user = await _userRepository.GetByIdAsync(userId);
                 if (user == null) return;
 
                 var oldWallet = user.Wallet;

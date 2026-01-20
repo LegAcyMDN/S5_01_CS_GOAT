@@ -1,5 +1,6 @@
 ﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
@@ -36,11 +37,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 
         public async Task<PromoCode?> Check(string code, int userId, int? caseId = null)
         {
-            IEnumerable<PromoCode> promoCodes = await GetAllAsyncOld(
-                pc => pc.Code == code &&
-                (pc.UserId == null || pc.UserId == userId) &&
-                (pc.CaseId == null || pc.CaseId == caseId)
+            QueryOptions<PromoCode> options = new QueryOptions<PromoCode>()
+                .Before(pc => pc.Code == code &&
+                    (pc.UserId == null || pc.UserId == userId) &&
+                    (pc.CaseId == null || pc.CaseId == caseId)
                 );
+            IEnumerable<PromoCode> promoCodes = await this.GetAllAsync(options);
             PromoCode? promoCode = promoCodes.FirstOrDefault();
             if (promoCode == null) return null;
             bool isValid = await CheckValidity(promoCode);
