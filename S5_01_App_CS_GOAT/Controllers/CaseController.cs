@@ -8,6 +8,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages case operations including case opening and favorite management
+    /// </summary>
     [Route("api/Case")]
     [ApiController]
     [SetThreadPrincipal]
@@ -19,12 +22,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
-        /// Get all cases
+        /// Get all cases with optional filtering and sorting
         /// </summary>
-        /// <returns>List of all CaseDTO objects</returns>
+        /// <returns>List of all CaseDTO objects with favorite status for authenticated users</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
             IEnumerable<Case> caseResult = await manager.GetAllAsync();
@@ -47,10 +49,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get case details by ID
+        /// Get case details by ID including case contents (items and probabilities)
         /// </summary>
         /// <param name="id">The ID of the case</param>
-        /// <returns>CaseDetailDTO object</returns>
+        /// <returns>CaseDetailDTO object with contents</returns>
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -73,7 +75,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             }
 
             Favorite? favorite = await favoriteManager.GetByIdAsync(
-                (authResult.AuthUserId.Value,
+                (authResult.AuthUserId!.Value,
                 caseDetailDTO.CaseId)
             );
             caseDetailDTO.IsFavorite = favorite != null;
@@ -108,7 +110,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             {
                 caseResult = await caseOpenningService.OpenCaseAsync(
                     caseOpenning,
-                    authResult.AuthUserId.Value
+                    authResult.AuthUserId!.Value
                 );
             }
             catch (Exception ex)

@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages skin (item variant) information and retrieval
+    /// </summary>
     [Route("api/Skin")]
     [ApiController]
     public class SkinController(
@@ -16,9 +19,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         ) : ControllerBase
     {
         /// <summary>
-        /// Get all skins
+        /// Get all available skins with wear variations
         /// </summary>
-        /// <returns>List of SkinDTO objects</returns>
+        /// <returns>List of SkinDTO objects with all wear classes</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
@@ -31,10 +34,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get skins by case ID
+        /// Get skins available in a specific case with drop weights
         /// </summary>
         /// <param name="caseid">The ID of the case</param>
-        /// <returns>List of SkinDTO objects for the case</returns>
+        /// <returns>List of SkinDTO objects for the case with drop probabilities</returns>
         [HttpGet("bycase/{caseid}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

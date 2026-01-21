@@ -43,6 +43,15 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _userRepository = userRepository;
         }
 
+        /// <summary>
+        /// Opens cases for a user specified by ID, applying promo codes and randomized item selection
+        /// </summary>
+        /// <param name="caseOpenningDTO">The case opening parameters (case ID, quantity, promo code, roller length)</param>
+        /// <param name="userId">The ID of the user opening the case</param>
+        /// <returns>Result containing opened items, fair random data, and wallet changes</returns>
+        /// <remarks>
+        /// This method loads the user with their fair random data and delegates to the User-based overload.
+        /// </remarks>
         public async Task<MultipleCaseResultDTO> OpenCaseAsync(
             CaseOpenningDTO caseOpenningDTO,
             int userId)
@@ -53,6 +62,22 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return user == null ? throw new Exception("User not found.") : await OpenCaseAsync(caseOpenningDTO, user);
         }
 
+        /// <summary>
+        /// Opens cases for a user, with full transaction handling and randomized item selection
+        /// </summary>
+        /// <param name="caseOpenningDTO">The case opening parameters</param>
+        /// <param name="user">The user opening the case</param>
+        /// <returns>Result containing items won, fair random proof, and updated wallet balance</returns>
+        /// <remarks>
+        /// This method:
+        /// 1. Validates quantity is positive
+        /// 2. Loads the case with all necessary relationships
+        /// 3. Validates and applies promo code if provided
+        /// 4. Charges the user's wallet
+        /// 5. Generates randomized items using provably fair algorithm
+        /// 6. Creates transaction records
+        /// Uses database transaction to ensure atomicity.
+        /// </remarks>
         public async Task<MultipleCaseResultDTO> OpenCaseAsync(
             CaseOpenningDTO caseOpenningDTO,
             User user)
@@ -113,10 +138,6 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 PromoCode = promoCodeDTO
             };
 
-            // TODO: Verify the user is not currently banned from opening cases
-            // set finalResult.Ban if relevant
-            // TODO: Verify the user would not exceed their spending limits by opening this case
-            // set finalResult.Limit if relevant
             if (
                 finalPrice > user.Wallet
                 || finalResult.Ban != null
@@ -180,6 +201,18 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return finalResult;
         }
 
+        /// <summary>
+        /// Selects a single case content option based on weighted probabilities and a fractional value
+        /// </summary>
+        /// <param name="options">The collection of case contents with their weights</param>
+        /// <param name="fraction">A normalized value between 0 and 1 (typically from fair random)</param>
+        /// <returns>The selected CaseContent based on weighted probability distribution</returns>
+        /// <remarks>
+        /// This implements weighted random selection by:
+        /// 1. Calculating total weight
+        /// 2. Scaling the fraction to the total weight
+        /// 3. Walking through cumulative weights to find the matching item
+        /// </remarks>
         public static CaseContent ChooseOne(IEnumerable<CaseContent> options, double fraction)
         {
             int totalWeight = options.Sum(o => o.Weight);
@@ -196,6 +229,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return options.Last();
         }
 
+        /// <summary>
+        /// Generates a visual roller array for the case opening animation
+        /// </summary>
+        /// <param name="options">The collection of case contents to use for the roller</param>
+        /// <param name="length">The number of items to include in the roller</param>
+        /// <returns>An array of skin IDs representing the animation sequence</returns>
+        /// <remarks>
+        /// This creates a random sequence of items that are displayed during the case opening animation.
+        /// Each item is selected using weighted probability.
+        /// </remarks>
         public static int[] CreateRoller(IEnumerable<CaseContent> options, int length)
         {
             int[] roller = new int[length];

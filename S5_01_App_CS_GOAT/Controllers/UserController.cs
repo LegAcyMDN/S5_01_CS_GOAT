@@ -9,6 +9,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user account operations including authentication, profile management, and verification
+    /// </summary>
     [Route("api/User")]
     [ApiController]
     [SetThreadPrincipal]
@@ -26,6 +29,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all UserDetailDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -45,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get the number of connected users
+        /// Get count of currently connected users (active in last 15 minutes)
         /// </summary>
         /// <returns>Count of connected users</returns>
         [HttpGet("count")]
@@ -65,6 +70,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>UserDetailDTO object</returns>
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
@@ -90,10 +97,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Create a new user account
+        /// Create a new user account with automatic authentication
         /// </summary>
         /// <param name="userDTO">The user data to create</param>
-        /// <returns>The created UserDetailDTO object</returns>
+        /// <returns>AuthDTO with JWT token for the new account</returns>
         [AllowAnonymous]
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -118,13 +125,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Update user details
+        /// Update authenticated user details including email, phone, 2FA, and password
         /// </summary>
         /// <param name="userDTO">The updated user data</param>
         /// <returns>No content on success</returns>
         [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update([FromBody] UpdateUserDTO userDTO)
         {
@@ -158,10 +166,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Authenticate user with login credentials
+        /// Authenticate user with login credentials (login, email, or phone)
         /// </summary>
         /// <param name="loginDTO">The login credentials</param>
-        /// <returns>Auth token on successful authentication</returns>
+        /// <returns>AuthDTO with JWT token on successful authentication</returns>
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -179,10 +187,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Authenticate user with rememberme token
+        /// Authenticate user with remember token for persistent sessions
         /// </summary>
-        /// <param name="rememberDTO">The login credentials</param>
-        /// <returns>Auth token on successful authentication</returns>
+        /// <param name="rememberDTO">The remember token credentials</param>
+        /// <returns>AuthDTO with new JWT token on successful recall</returns>
         [HttpPost("recall")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -200,13 +208,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Request password reset for a user
+        /// Request password reset or complete reset with reset code
         /// </summary>
-        /// <param name="identifier">The email or login of the user</param>
-        /// <param name="url">The URL to send the reset link to (optional)</param>
-        /// <param name="code">The reset code (optional)</param>
-        /// <param name="preferMail">Whether to prefer email for communication</param>
-        /// <returns>Status code indicating the result of the operation</returns>
+        /// <param name="identifier">User identifier (login, email, or phone)</param>
+        /// <param name="url">Reset link base URL (for step 1: request reset)</param>
+        /// <param name="code">Reset verification code (for step 2: complete reset)</param>
+        /// <param name="preferMail">Whether to prefer email over SMS for reset link</param>
+        /// <returns>HTTP status codes or new temporary password on completion</returns>
         [HttpGet("resetpassword")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -242,13 +250,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Verify user's contact method (SMS or Email)
+        /// Verify user's contact method (SMS or Email) - request code or verify code
         /// </summary>
-        /// <param name="contact">The contact method to verify ("sms" or "mail")</param>
-        /// <param name="code">The verification code (optional)</param>
-        /// <returns>Status code indicating the result of the operation</returns>
+        /// <param name="contact">Contact method type: "sms" or "mail"</param>
+        /// <param name="code">Verification code (omit to request new code)</param>
+        /// <returns>HTTP status codes indicating verification result</returns>
         [HttpHead("verify/{contact}")]
         [HttpHead("verify/{contact}/{code?}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> VerifyPhone(string contact, string? code = null)
         {
             if (contact.ToLower() != "sms" && contact.ToLower() != "mail")
@@ -275,12 +287,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Export user data (GDPR compliance)
+        /// Export user data for GDPR compliance (data portability)
         /// </summary>
         /// <param name="userId">The ID of the user</param>
-        /// <returns>No content on success</returns>
+        /// <returns>Complete user data export including inventory and transactions</returns>
         [HttpGet("exportdata/{userId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ExportData(int userId)
         {
@@ -313,12 +327,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Soft delete a user account
+        /// Soft delete the authenticated user account (GDPR right to be forgotten)
         /// </summary>
         /// <returns>No content on success</returns>
         [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public IActionResult Delete()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);

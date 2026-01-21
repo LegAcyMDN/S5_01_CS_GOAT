@@ -8,6 +8,9 @@ using Stripe.Checkout;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages Stripe payment processing for wallet top-ups and withdrawals
+    /// </summary>
     [Route("api/Stripe")]
     [ApiController]
     [SetThreadPrincipal]
@@ -17,7 +20,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         IStripeRepository stripeRepository
         ) : ControllerBase
     {
+        /// <summary>
+        /// Create a Stripe checkout session for wallet top-up payment
+        /// </summary>
+        /// <param name="request">Checkout request with amount and success/cancel URLs</param>
+        /// <returns>Session ID and redirect URL for Stripe Checkout</returns>
         [HttpPost("create-checkout-session")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreateCheckoutSession([FromBody] CheckoutRequest request)
         {
             AuthResult authResult = JwtService.JwtAuth(config);
@@ -48,7 +60,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
 
+        /// <summary>
+        /// Webhook endpoint for Stripe event notifications (payment and payout processing)
+        /// </summary>
+        /// <returns>Status 200 to acknowledge receipt</returns>
         [HttpPost("webhook")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Webhook()
         {
             try
@@ -108,7 +127,16 @@ namespace S5_01_App_CS_GOAT.Controllers
             }
         }
 
+        /// <summary>
+        /// Create a Stripe setup session for payment method registration (withdrawals)
+        /// </summary>
+        /// <param name="request">Payout request with amount and success/cancel URLs</param>
+        /// <returns>Session ID and redirect URL for Stripe payment method setup</returns>
         [HttpPost("create-payout-session")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> CreatePayoutSession([FromBody] PayoutRequest request)
         {
             AuthResult authResult = JwtService.JwtAuth(config);

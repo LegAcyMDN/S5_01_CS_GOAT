@@ -6,6 +6,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Provides available notification types for the system
+    /// </summary>
     [Route("api/NotificationType")]
     [ApiController]
     public class NotificationTypeController(
@@ -14,7 +17,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Get all notification types
+        /// Get all available notification types
         /// </summary>
         /// <returns>List of all NotificationTypeDTO objects</returns>
         [HttpGet("all")]

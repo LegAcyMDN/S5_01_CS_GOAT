@@ -8,6 +8,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages Steam OAuth authentication and account linking
+    /// </summary>
     [Route("api/steam")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,8 +25,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Initiate Steam OAuth login flow
         /// </summary>
         /// <param name="linkUserId">Optional user ID to link Steam account to existing user</param>
-        /// <returns>Redirect to Steam authentication</returns>
+        /// <returns>Redirect to Steam authentication page</returns>
         [HttpGet("login")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         public IActionResult SteamLogin([FromQuery] string? linkUserId = null)
         {
             string? redirectUri = Url.Action(nameof(Callback));
@@ -51,10 +55,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Handle Steam OAuth callback
+        /// Handle Steam OAuth callback after authentication
         /// </summary>
         /// <returns>Redirect to Blazor app with authentication result</returns>
         [HttpGet("callback")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         public async Task<IActionResult> Callback()
         {
             AuthenticateResult? authenticateResult =
@@ -124,6 +129,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// </summary>
         /// <returns>Redirect to home page</returns>
         [HttpGet("logout")]
+        [ProducesResponseType(StatusCodes.Status302Found)]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -131,12 +137,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Unlink Steam account from user
+        /// Unlink Steam account from authenticated user
         /// </summary>
         /// <returns>No content on success</returns>
         [HttpPatch("unlink")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UnlinkSteam()
         {
             AuthResult auth = JwtService.JwtAuth(configuration);

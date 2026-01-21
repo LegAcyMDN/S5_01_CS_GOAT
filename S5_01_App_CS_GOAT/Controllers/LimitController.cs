@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user limits (rate limiting and action thresholds)
+    /// </summary>
     [Route("api/Limit")]
     [ApiController]
     [SetThreadPrincipal]
@@ -24,6 +27,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of LimitDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -41,13 +45,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Update a limit for a user
+        /// Update a limit for authenticated user
         /// </summary>
         /// <param name="limitDto">The updated limit data</param>
         /// <returns>No content on success</returns>
         [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update([FromBody] LimitDTO limitDto)
         {

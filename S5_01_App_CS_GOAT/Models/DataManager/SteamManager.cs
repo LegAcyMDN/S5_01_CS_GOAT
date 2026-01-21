@@ -17,6 +17,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Retrieves user profile information from Steam API by Steam ID
+        /// </summary>
+        /// <param name="steamId">The Steam user ID (typically 64-bit)</param>
+        /// <returns>SteamUserData containing username, avatar URL, and profile URL; null if user not found</returns>
+        /// <exception cref="InvalidOperationException">Thrown when Steam API key is not configured</exception>
         public async Task<SteamUserData?> GetSteamUserDataAsync(string steamId)
         {
             string apiKey = _configuration["Steam:ApiKey"] ??

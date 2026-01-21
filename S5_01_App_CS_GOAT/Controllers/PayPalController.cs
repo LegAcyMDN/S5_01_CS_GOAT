@@ -10,6 +10,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages PayPal payment processing for wallet top-ups and withdrawals
+    /// </summary>
     [Route("api/Paypal")]
     [ApiController]
     [SetThreadPrincipal]
@@ -35,6 +38,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <summary>
         /// Create a PayPal order for adding funds to user wallet
         /// </summary>
+        /// <param name="request">Payment request with amount</param>
+        /// <returns>Order ID and approval URL on success</returns>
         [HttpPost("create-order")]
         [ProducesResponseType(typeof(CreateOrderResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -47,7 +52,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            int userId = (int)auth.AuthUserId;
+            int userId = (int)auth.AuthUserId!;
 
             if (request.Amount <= 0)
             {
@@ -62,7 +67,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Ok(new CreateOrderResponse
                 {
                     OrderId = orderResponse.OrderId,
-                    ApprovalUrl = orderResponse.ApprovalUrl,
+                    ApprovalUrl = orderResponse.ApprovalUrl!,
                     Status = orderResponse.Status
                 });
             }
@@ -73,8 +78,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Capture payment after user approval
+        /// Capture payment after user approval on PayPal
         /// </summary>
+        /// <param name="orderId">The PayPal order ID to capture</param>
+        /// <returns>Capture confirmation with updated wallet balance</returns>
         [HttpPost("capture-order")]
         [Authorize]
         [ProducesResponseType(typeof(CaptureOrderResponse), StatusCodes.Status200OK)]
@@ -90,7 +97,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            int userId = (int)auth.AuthUserId;
+            int userId = (int)auth.AuthUserId!;
 
             if (string.IsNullOrEmpty(orderId))
             {
@@ -152,8 +159,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Webhook endpoint for PayPal notifications
+        /// Webhook endpoint for PayPal notifications (IPN)
         /// </summary>
+        /// <returns>Status 200 to acknowledge receipt</returns>
         [HttpPost("webhook")]
         [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -166,12 +174,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Request withdrawal - SEND MONEY TO USER via PayPal Payouts
+        /// Request withdrawal funds via PayPal Payouts
         /// </summary>
+        /// <param name="request">Withdrawal request with amount and PayPal email</param>
+        /// <returns>Withdrawal confirmation or pending status</returns>
         [HttpPost("withdraw")]
         [Authorize]
         [ProducesResponseType(typeof(WithdrawalResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(WithdrawalPendingResponse), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> WithdrawFunds([FromBody] WithdrawalRequestDTO request)
@@ -182,7 +193,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            int userId = (int)auth.AuthUserId;
+            int userId = (int)auth.AuthUserId!;
 
             if (request.Amount < 10 || request.Amount > 5000)
             {

@@ -8,6 +8,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user inventory items including viewing, upgrading, selling, and favorites
+    /// </summary>
     [Route("api/InventoryItem")]
     [ApiController]
     [SetThreadPrincipal]
@@ -20,11 +23,12 @@ namespace S5_01_App_CS_GOAT.Controllers
         ) : ControllerBase
     {
         /// <summary>
-        /// Get inventory items for the authenticated user
+        /// Get inventory items for the authenticated user (active items only)
         /// </summary>
         /// <returns>List of InventoryItemDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -46,9 +50,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// Get detailed inventory item information by InventoryItemId
         /// </summary>
         /// <param name="inventoryItemId">The ID of the inventory item</param>
-        /// <returns>InventoryItemDetailDTO object</returns>
+        /// <returns>InventoryItemDetailDTO object with full details</returns>
         [HttpGet("details/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDetails(int inventoryItemId)
         {
@@ -75,11 +80,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Upgrade an inventory item
+        /// Upgrade inventory items with provably fair randomization
         /// </summary>
+        /// <param name="dto">Upgrade parameters including target skin, items, and monetary value</param>
+        /// <returns>UpgradeOutputDTO with probabilities and results</returns>
         [HttpPost("upgrade/")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> Upgrade([FromBody] UpgradeInputDTO dto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -100,12 +109,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Toggle favorite status of an inventory item by InventoryItemId
+        /// Toggle favorite status of an inventory item
         /// </summary>
         /// <param name="inventoryItemId">The ID of the inventory item</param>
         /// <returns>No content on success</returns>
         [HttpPatch("togglefavorite/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ToggleFavorite(int inventoryItemId)
         {
@@ -132,13 +143,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Sell an inventory item by InventoryItemId (marks it as removed)
+        /// Sell an inventory item and credit wallet (marks item as removed)
         /// </summary>
         /// <param name="inventoryItemId">The ID of the inventory item</param>
-        /// <returns>No content on success</returns>
+        /// <returns>No content (204) on success, other status codes based on sell service result</returns>
         [HttpDelete("sell/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status410Gone)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> Sell(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);

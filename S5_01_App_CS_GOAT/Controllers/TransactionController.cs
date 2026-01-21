@@ -5,22 +5,26 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages transaction cancellation and refunds (admin operations)
+    /// </summary>
     [Route("api/Transaction")]
     [ApiController]
     [SetThreadPrincipal]
     public class TransactionController(
-        IConfiguration configuration,
-        IDataRepository<Transaction, int> manager
+        IConfiguration configuration
     ) : ControllerBase
     {
 
         /// <summary>
-        /// Cancel/remove a transaction (admin only)
+        /// Cancel/remove a transaction and process refund (admin only)
         /// </summary>
         /// <param name="id">The ID of the transaction to cancel</param>
         /// <returns>No content on success</returns>
         [HttpDelete("remove/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {

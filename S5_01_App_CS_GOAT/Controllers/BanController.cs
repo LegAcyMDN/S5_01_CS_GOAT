@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user bans (admin operations)
+    /// </summary>
     [Route("api/Ban")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,6 +25,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all BanDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -48,6 +53,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of BanDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -71,6 +77,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create(BanDTO banDTO)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -113,6 +121,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, BanDTO banDTO)
         {

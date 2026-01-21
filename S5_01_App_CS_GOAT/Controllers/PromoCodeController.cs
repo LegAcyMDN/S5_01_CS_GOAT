@@ -8,6 +8,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages promotional codes for discounts on cases
+    /// </summary>
     [Route("api/PromoCode")]
     [ApiController]
     [SetThreadPrincipal]
@@ -19,12 +22,14 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Check if code is valid and retrieve promo code details
+        /// Check if promo code is valid and retrieve discount details
         /// </summary>
-        /// <param name="code"></param>
-        /// <returns>The promocode object if valid and usable by the user</returns>
+        /// <param name="code">The promotional code to check</param>
+        /// <param name="caseId">Optional case ID to calculate final price</param>
+        /// <returns>Promo code details with discount information</returns>
         [HttpGet("check/{code}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Check(string code, int? caseId)
         {
@@ -45,7 +50,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             }
             PromoCode? promoCode = await manager.Check(
                 code,
-                authResult.AuthUserId.Value,
+                authResult.AuthUserId!.Value,
                 caseId
             );
             if (promoCode == null)
@@ -100,6 +105,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create([FromBody] PromoCodeDTO promoCodeDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -138,6 +145,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, [FromBody] PromoCodeDTO promoCodeDto)
         {

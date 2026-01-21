@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages provably fair random number sessions for verifiable gaming operations
+    /// </summary>
     [Route("api/FairRandom")]
     [ApiController]
     [SetThreadPrincipal]
@@ -16,12 +19,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
-        /// Get fair randoms for the authenticated user
+        /// Get resolved fair random sessions for the authenticated user (for verification)
         /// </summary>
         /// Only returns resolved FairRandoms
         /// <returns>List of FairRandomDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -41,13 +45,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get unresolved FairRandom ServerHash for user
+        /// Get unresolved FairRandom server hash for the current session
         /// </summary>
-        /// Can dynamically create a new FairRandom if none exists
-        /// <returns>ServerHash string</returns>
-        /// <response code="200">Returns the ServerHash string</response>
+        /// Can dynamically create a new FairRandom session if none exists
+        /// <returns>ServerHash string for client-side verification</returns>
         [HttpGet("serverhash")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetServerHash()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -56,7 +60,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            FairRandom next = await manager.Init(authResult.AuthUserId.Value, true);
+            FairRandom next = await manager.Init(authResult.AuthUserId!.Value, true);
             return Ok(next.ServerHash);
         }
     }

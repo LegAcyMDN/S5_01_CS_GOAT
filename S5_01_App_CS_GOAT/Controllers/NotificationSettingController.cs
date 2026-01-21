@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages notification preferences for users (channel and type configuration)
+    /// </summary>
     [Route("api/NotificationSetting")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,6 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of notification settings for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -39,13 +43,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Update notification settings for the authenticated user
+        /// Update notification settings for authenticated user
         /// </summary>
-        /// <param name="notificationTypeId">The ID of the notification type</param>
+        /// <param name="notificationTypeName">The name of the notification type</param>
         /// <param name="patchData">The patch data with OnSite, ByEmail, ByPhone flags</param>
         /// <returns>No content on success</returns>
         [HttpPatch("update/{notificationTypeId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(string notificationTypeName, [FromBody] Dictionary<string, object> patchData)
         {
@@ -55,7 +60,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            int userId = authResult.AuthUserId.Value;
+            int userId = authResult.AuthUserId!.Value;
 
             NotificationType? notificationType = typeRepository.GetTypeByName(notificationTypeName);
             if (notificationType == null)

@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Retrieves upgrade operation results and outcomes
+    /// </summary>
     [Route("api/UpgradeResult")]
     [ApiController]
     [SetThreadPrincipal]
@@ -17,13 +20,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
-        /// Get upgrade results by inventory item
+        /// Get upgrade results and history for a specific inventory item
         /// </summary>
         /// <param name="inventoryItemId">The ID of the inventory item</param>
-        /// <returns>Upgrade result data for inventory item</returns>
+        /// <returns>List of UpgradeResultDTO objects for the item</returns>
         [HttpGet("byinventoryitem/{inventoryItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByInventoryItem(int inventoryItemId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -45,13 +49,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get upgrade results by random transaction
+        /// Get upgrade results associated with a random transaction
         /// </summary>
         /// <param name="transactionId">The ID of the random transaction</param>
-        /// <returns>Upgrade result data for random transaction</returns>
+        /// <returns>List of UpgradeResultDTO objects for the transaction</returns>
         [HttpGet("byrandomtransaction/{transactionId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByRandomTransaction(int transactionId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);

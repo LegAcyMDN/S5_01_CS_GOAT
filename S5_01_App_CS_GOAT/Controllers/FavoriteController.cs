@@ -6,23 +6,26 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user favorite cases (case bookmarking)
+    /// </summary>
     [Route("api/Favorite")]
     [ApiController]
     [SetThreadPrincipal]
     public class FavoriteController(
-        IMapper mapper,
         IDataRepository<Favorite, (int, int)> manager,
         IReadableRepository<Case, int> caseRepository,
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
-        /// Create a new favorite
+        /// Create a new favorite for authenticated user
         /// </summary>
         /// <param name="caseId">The case id to make a favorite for</param>
         /// <returns>The created Favorite object</returns>
         [HttpPost("create/{caseId}")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Create(int caseId)
         {
@@ -38,7 +41,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            Favorite? existing = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
+            Favorite? existing = await manager.GetByIdAsync((authResult.AuthUserId!.Value, caseId));
             if (existing != null)
             {
                 return Conflict();
@@ -71,7 +74,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                 return Unauthorized();
             }
 
-            Favorite? favorite = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
+            Favorite? favorite = await manager.GetByIdAsync((authResult.AuthUserId!.Value, caseId));
             if (favorite == null)
             {
                 return NotFound();

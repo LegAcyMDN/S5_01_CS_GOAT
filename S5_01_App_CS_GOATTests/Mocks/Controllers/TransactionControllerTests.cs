@@ -11,7 +11,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     [TestClass()]
     public class TransactionControllerTests
     {
-        private Mock<IDataRepository<Transaction, int>>? transactionRepositoryMock;
         private Mock<IConfiguration> configurationMock;
         private TransactionController? controller;
 
@@ -21,15 +20,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
-            transactionRepositoryMock = new Mock<IDataRepository<Transaction, int>>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
 
             controller = new TransactionController(
-                configurationMock.Object,
-                transactionRepositoryMock.Object
+                configurationMock.Object
             );
         }
 

@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages global system notifications (admin operations)
+    /// </summary>
     [Route("api/GlobalNotification")]
     [ApiController]
     [SetThreadPrincipal]
@@ -25,6 +28,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create(NotificationDTO notificationDTO)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);

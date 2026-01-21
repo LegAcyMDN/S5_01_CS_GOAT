@@ -16,6 +16,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         private readonly PayPalHttpClient _client;
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Initializes a new instance of the PayPalManager with API credentials from configuration
+        /// </summary>
+        /// <param name="configuration">The application configuration containing PayPal credentials and mode</param>
+        /// <exception cref="Exception">Thrown when PayPal credentials are not configured</exception>
         public PayPalManager(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -25,8 +30,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         }
 
         /// <summary>
-        /// Get PayPal environment (Sandbox or Live)
+        /// Determines the PayPal environment (Sandbox or Live) based on configuration
         /// </summary>
+        /// <returns>A PayPalEnvironment configured with API credentials</returns>
+        /// <exception cref="Exception">Thrown when credentials are not configured</exception>
         private PayPalEnvironment GetEnvironment()
         {
             string? clientId = _configuration["PayPal:ClientId"];
@@ -41,8 +48,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         }
 
         /// <summary>
-        /// Create a PayPal order for wallet recharge
+        /// Creates a PayPal order for wallet recharge
         /// </summary>
+        /// <param name="amount">The amount in EUR to charge</param>
+        /// <param name="userId">The user ID for metadata</param>
+        /// <returns>Order response containing order ID and approval URL</returns>
+        /// <exception cref="Exception">Thrown when PayPal API returns an error</exception>
         public async Task<PayPalOrderResponse> CreateOrderAsync(decimal amount, int userId)
         {
             var request = new OrdersCreateRequest();
@@ -74,8 +85,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         }
 
         /// <summary>
-        /// Capture payment after user approval
+        /// Captures payment from a user-approved PayPal order
         /// </summary>
+        /// <param name="orderId">The PayPal order ID returned from CreateOrderAsync</param>
+        /// <returns>Capture response containing capture ID, status, and amount</returns>
+        /// <exception cref="Exception">Thrown when PayPal API returns an error</exception>
         public async Task<PayPalCaptureResponse> CaptureOrderAsync(string orderId)
         {
             var request = new OrdersCaptureRequest(orderId);

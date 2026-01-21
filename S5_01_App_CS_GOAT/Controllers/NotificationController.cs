@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages notifications (system, global, and user-specific)
+    /// </summary>
     [Route("api/Notification")]
     [ApiController]
     [SetThreadPrincipal]
@@ -24,6 +27,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all NotificationDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
@@ -49,13 +54,12 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get relevant notifications for the authenticated user
+        /// Get relevant notifications for authenticated user (global and user-specific)
         /// </summary>
-        /// <param name="filters">Optional filter parameters</param>
-        /// <param name="sorts">Optional sort parameters</param>
-        /// <returns>List of NotificationDTO objects for the user (global + user-specific)</returns>
+        /// <returns>List of NotificationDTO objects (global + user-specific)</returns>
         [HttpGet("relevant")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRelevant()
         {

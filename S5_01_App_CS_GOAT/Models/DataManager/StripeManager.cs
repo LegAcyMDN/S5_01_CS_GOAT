@@ -26,6 +26,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _transactionRepository = transactionRepository;
         }
 
+        /// <summary>
+        /// Creates a Stripe checkout session for wallet credit payment
+        /// </summary>
+        /// <param name="userId">The user ID for metadata</param>
+        /// <param name="request">Checkout request containing amount and success/cancel URLs</param>
+        /// <returns>SessionCreateOptions ready to be passed to Stripe API</returns>
+        /// <remarks>
+        /// Creates a one-time payment session for adding wallet credit.
+        /// Amount is in EUR and converted to cents for Stripe.
+        /// </remarks>
         public SessionCreateOptions NewPaymentSession(int userId, CheckoutRequest request)
         {
             return new SessionCreateOptions
@@ -60,6 +70,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             };
         }
 
+        /// <summary>
+        /// Creates a Stripe setup session for payment method registration (for withdrawals)
+        /// </summary>
+        /// <param name="userId">The user ID for metadata</param>
+        /// <param name="request">Payout request containing amount and success/cancel URLs</param>
+        /// <returns>SessionCreateOptions for setup mode (saves payment method without charging)</returns>
         public SessionCreateOptions NewSetupSession(int userId, PayoutRequest request)
         {
             return new SessionCreateOptions
@@ -77,6 +93,14 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             };
         }
 
+        /// <summary>
+        /// Handles Stripe SetupIntent.succeeded webhook event for payment method registration
+        /// </summary>
+        /// <param name="stripeEvent">The Stripe event containing the setup intent</param>
+        /// <remarks>
+        /// When a setup intent for withdrawal succeeds, immediately processes the payout.
+        /// Uses database transaction to ensure consistency.
+        /// </remarks>
         public async Task HandleSetupIntentSucceeded(Event stripeEvent)
         {
             var setupIntent = stripeEvent.Data.Object as SetupIntent;
@@ -134,6 +158,15 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             }
         }
 
+        /// <summary>
+        /// Handles Stripe checkout.session.completed webhook event for payment and withdrawal processing
+        /// </summary>
+        /// <param name="stripeEvent">The Stripe event containing the session</param>
+        /// <remarks>
+        /// Processes both payment (wallet credit) and withdrawal transactions based on session metadata.
+        /// Updates user wallet and creates money transaction records.
+        /// Uses database transaction to ensure consistency.
+        /// </remarks>
         public async Task HandleCheckoutSessionCompleted(Event stripeEvent)
         {
             var session = stripeEvent.Data.Object as Session;

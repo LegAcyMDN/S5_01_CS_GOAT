@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages case opening transactions with provably fair randomization records
+    /// </summary>
     [Route("api/RandomTransaction")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,6 +25,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all RandomTransactionDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -46,6 +51,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of RandomTransactionDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
@@ -60,12 +66,13 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get RandomTransaction details by ID
+        /// Get RandomTransaction details by ID with full case and item information
         /// </summary>
         /// <param name="id">The ID of the transaction</param>
         /// <returns>RandomTransactionDetailDTO object</returns>
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
@@ -87,9 +94,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         }
 
         /// <summary>
-        /// Get live feed of random transactions from cases
+        /// Get live feed of recent case openings (public endpoint)
         /// </summary>
-        /// <returns>List of RandomTransactionLiveFeedDTO objects</returns>
+        /// <returns>List of recent LiveFeedDTO objects with item drops</returns>
         [HttpGet("livefeed")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> LiveFeed()

@@ -4,6 +4,9 @@ using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Provides available payment methods for the system
+    /// </summary>
     [Route("api/PaymentMethod")]
     [ApiController]
     public class PaymentMethodController(
@@ -11,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Get all payment methods
+        /// Get all available payment methods
         /// </summary>
         /// <returns>List of all PaymentMethod objects</returns>
         [HttpGet("all")]

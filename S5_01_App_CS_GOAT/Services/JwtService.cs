@@ -83,7 +83,7 @@ namespace S5_01_App_CS_GOAT.Services
                  new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                  // Custom claims
                  new Claim(nameof(User.UserId), user.UserId.ToString()),
-                 new Claim(nameof(User.Login), user.Login.ToString()),
+                 new Claim(nameof(User.Login), user.Login!.ToString()),
                  new Claim(nameof(User.IsAdmin), user.IsAdmin.ToString())
             ];
             return claims;

@@ -32,6 +32,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _itemTransactionRepository = itemTransactionRepository;
         }
 
+        /// <summary>
+        /// Sells an inventory item by ID, crediting the current price to the user's wallet
+        /// </summary>
+        /// <param name="invItemId">The inventory item ID to sell</param>
+        /// <returns>HTTP status code indicating success (204), not found (404), or error</returns>
         public async Task<int> SellAsync(int invItemId)
         {
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
@@ -44,11 +49,22 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return invItem == null ? StatusCodes.Status404NotFound : await SellAsync(invItem);
         }
 
+        /// <summary>
+        /// Sells an inventory item, marking it as removed and crediting the price to wallet
+        /// </summary>
+        /// <param name="invItem">The inventory item to sell</param>
+        /// <returns>HTTP status code (204 success, 410 already removed, 503 price unavailable)</returns>
+        /// <remarks>
+        /// This method:
+        /// 1. Checks if item is already removed (410 Gone)
+        /// 2. Gets current price from price history (503 if unavailable)
+        /// 3. Marks item as removed with current timestamp
+        /// 4. Credits wallet with item price
+        /// 5. Creates ItemTransaction record
+        /// Uses database transaction for atomicity.
+        /// </remarks>
         public async Task<int> SellAsync(InventoryItem invItem)
         {
-            // TODO: Check if the user is not restricted by a ban
-            // return StatusCodes.Status403Forbidden;
-
             if (invItem.RemovedOn != null)
             {
                 return StatusCodes.Status410Gone;

@@ -7,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages money transaction records (wallet debits/credits and payments)
+    /// </summary>
     [Route("api/MoneyTransaction")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,6 +25,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of MoneyTransactionDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByUser()
         {
@@ -44,6 +48,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all MoneyTransactionDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {

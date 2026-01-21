@@ -21,6 +21,17 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _flaskUrl = configuration["Urls:FlaskService"] ?? "http://localhost:5555";
         }
 
+        /// <summary>
+        /// Retrieves historical price data and AI-predicted prices for an item wear
+        /// </summary>
+        /// <param name="wear">The item wear to retrieve price history for</param>
+        /// <param name="days">The number of days to include in prediction (default: 30)</param>
+        /// <param name="limit">Whether to limit results to within the specified days (default: false)</param>
+        /// <returns>Collection of price history including predicted values, or null if prediction fails</returns>
+        /// <remarks>
+        /// This method calls the Flask service to generate AI-based price predictions.
+        /// The predictions extend the historical price data with future price estimates.
+        /// </remarks>
         public async Task<IEnumerable<PriceHistory>?> PredictWithAI(Wear wear, int days = 30, bool limit = false)
         {
             var httpClient = new HttpClient();

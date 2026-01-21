@@ -23,6 +23,10 @@ namespace S5_01_App_CS_GOAT.Configuration
                 {
                     OnAuthenticated = async context =>
                     {
+                        if (context.Identity == null || context.Properties == null)
+                        {
+                            return;
+                        }
                         string? steamIdClaim = context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                         if (string.IsNullOrEmpty(steamIdClaim))
@@ -32,7 +36,7 @@ namespace S5_01_App_CS_GOAT.Configuration
 
                         string steamId = steamIdClaim.Replace("https://steamcommunity.com/openid/id/", "");
 
-                        Microsoft.AspNetCore.Http.HttpContext httpContext = context.HttpContext;
+                        HttpContext httpContext = context.HttpContext;
                         bool isLinkingMode = context.Properties.Items.ContainsKey("linkUserId");
 
                         if (isLinkingMode)
@@ -83,7 +87,7 @@ namespace S5_01_App_CS_GOAT.Configuration
                         }
                         else
                         {
-                            if (user.Login.StartsWith("steam_"))
+                            if (user.Login!.StartsWith("steam_"))
                             {
                                 user.DisplayName = steamUserData.Username;
                             }
@@ -93,7 +97,7 @@ namespace S5_01_App_CS_GOAT.Configuration
 
                         context.Identity.AddClaim(new Claim("user_id", user.UserId.ToString()));
                         context.Identity.AddClaim(new Claim("steamid", steamId));
-                        context.Identity.AddClaim(new Claim("username", user.DisplayName));
+                        context.Identity.AddClaim(new Claim("username", user.DisplayName!));
                     },
 
                     OnRemoteFailure = context =>

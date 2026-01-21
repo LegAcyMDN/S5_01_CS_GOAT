@@ -7,6 +7,9 @@ using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages wear (item condition/quality) information and 3D models
+    /// </summary>
     [Route("api/Wear")]
     [ApiController]
     public class WearController(
@@ -15,10 +18,10 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Get 3D model by wear ID
+        /// Get 3D model data for rendering a specific wear/item quality
         /// </summary>
         /// <param name="wearId">The ID of the wear</param>
-        /// <returns>ModelDTO object for the wear</returns>
+        /// <returns>ModelDTO object with 3D model information</returns>
         [HttpGet("get3dmodel/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

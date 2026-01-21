@@ -13,7 +13,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
     [TestClass()]
     public class FavoriteControllerTests
     {
-        private Mock<IMapper>? mapperMock;
         private Mock<IDataRepository<Favorite, (int, int)>>? favoriteRepositoryMock;
         private Mock<IReadableRepository<Case, int>>? caseRepositoryMock;
         private Mock<IConfiguration>? configurationMock;
@@ -27,7 +26,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
-            mapperMock = new Mock<IMapper>();
             favoriteRepositoryMock = new Mock<IDataRepository<Favorite, (int, int)>>();
             caseRepositoryMock = new Mock<IReadableRepository<Case, int>>();
             configurationMock = new Mock<IConfiguration>();
@@ -37,7 +35,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             favorite = FavoriteFixture.GetFavorite();
 
             controller = new FavoriteController(
-                mapperMock.Object,
                 favoriteRepositoryMock.Object,
                 caseRepositoryMock.Object,
                 configurationMock.Object

@@ -24,6 +24,14 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Creates a new verification token with a random code
+        /// </summary>
+        /// <param name="userId">The user ID for the token</param>
+        /// <param name="tokenTypedId">The token type ID (3 for email, 4 for SMS)</param>
+        /// <param name="duration">How long the token is valid (default: 15 minutes)</param>
+        /// <param name="code">The verification code (default: random 6-digit code)</param>
+        /// <returns>The created Token entity</returns>
         private async Task<Token> NewToken(int userId, int tokenTypedId,
             TimeSpan? duration = null, string? code = null)
         {
@@ -41,6 +49,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return token;
         }
 
+        /// <summary>
+        /// Creates a message object with verification code content
+        /// </summary>
+        /// <param name="user">The user receiving the message</param>
+        /// <param name="token">The verification code token</param>
+        /// <returns>A Message object ready to be sent</returns>
         private Message NewMessage(User user, string token)
         {
             var message = new Message(_configuration, user)
@@ -53,8 +67,18 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         }
 
         /// <summary>
-        /// Generic method to create and send a verification code
+        /// Generic method to create and send a verification code via email or SMS
         /// </summary>
+        /// <param name="user">The user to send code to</param>
+        /// <param name="tokenTypeId">The token type (3 for email, 4 for SMS)</param>
+        /// <param name="contactInfo">Email or phone number to verify</param>
+        /// <param name="verifiedOn">Existing verification date if already verified</param>
+        /// <param name="sendMethod">Function to send the message (email or SMS)</param>
+        /// <returns>HTTP status code (201 created, 400 missing info, 409 already verified, 429 too many requests, 500 send failed)</returns>
+        /// <remarks>
+        /// Implements rate limiting by checking for unexpired tokens. If one exists, returns 429.
+        /// Otherwise, removes old tokens, creates a new one, and sends the message.
+        /// </remarks>
         private async Task<int> NewCodeAsync(
             User user,
             int tokenTypeId,
@@ -99,8 +123,19 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         }
 
         /// <summary>
-        /// Generic method to verify a code
+        /// Generic method to verify a user-submitted verification code
         /// </summary>
+        /// <param name="user">The user verifying the code</param>
+        /// <param name="code">The verification code to check</param>
+        /// <param name="tokenTypeId">The token type ID</param>
+        /// <param name="contactInfo">The contact info being verified</param>
+        /// <param name="verifiedOn">Existing verification date if already verified</param>
+        /// <param name="setVerifiedOn">Action to set the verified timestamp on the user</param>
+        /// <returns>HTTP status code (200 verified, 400 invalid input, 409 already verified, 404 token not found, 410 token expired)</returns>
+        /// <remarks>
+        /// Verifies the code matches an existing token, checks expiry, marks user as verified,
+        /// and removes the used token in a transaction.
+        /// </remarks>
         private async Task<int> VerifyCodeAsync(
             User user,
             string code,
@@ -150,6 +185,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             return statusCode;
         }
 
+        /// <summary>
+        /// Creates and sends an email verification code
+        /// </summary>
         public async Task<int> NewCodeMailAsync(User user)
         {
             return await NewCodeAsync(
@@ -161,6 +199,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             );
         }
 
+        /// <summary>
+        /// Creates and sends an SMS verification code
+        /// </summary>
         public async Task<int> NewCodeSmsAsync(User user)
         {
             return await NewCodeAsync(
@@ -172,6 +213,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             );
         }
 
+        /// <summary>
+        /// Verifies an email verification code
+        /// </summary>
         public async Task<int> VerifyMailAsync(User user, string code)
         {
             return await VerifyCodeAsync(
@@ -184,6 +228,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             );
         }
 
+        /// <summary>
+        /// Verifies an SMS verification code
+        /// </summary>
         public async Task<int> VerifySmsAsync(User user, string code)
         {
             return await VerifyCodeAsync(

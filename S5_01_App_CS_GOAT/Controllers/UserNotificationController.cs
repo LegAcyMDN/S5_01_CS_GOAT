@@ -8,6 +8,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user-specific notifications (admin operations)
+    /// </summary>
     [Route("api/UserNotification")]
     [ApiController]
     [SetThreadPrincipal]
@@ -19,13 +22,15 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Create a new user notification (admin only)
+        /// Create a new user-specific notification (admin only)
         /// </summary>
         /// <param name="notificationDto">The notification data to create</param>
         /// <returns>The created NotificationDTO object</returns>
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create(NotificationDTO notificationDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
