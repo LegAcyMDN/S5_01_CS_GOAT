@@ -1,10 +1,9 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -30,12 +29,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
+            }
+
             IEnumerable<Notification> notifications = await manager.GetAllAsync();
-            if (!notifications.Any()) return NotFound();
+            if (!notifications.Any())
+            {
+                return NotFound();
+            }
 
             IEnumerable<NotificationDTO> notificationsDTO = mapper.Map<IEnumerable<NotificationDTO>>(notifications);
             return Ok(new GetOptions<NotificationDTO>(Request, notificationsDTO));
@@ -54,7 +61,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             IEnumerable<GlobalNotification> globalNotifications = await globalNotificationManager.GetAllAsync();
             IEnumerable<UserNotification> userNotifications = await authResult.GetByUser(userNotificationManager, false);
@@ -81,7 +90,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Notification? notification = await manager.GetByIdAsync(id);
             if (notification == null)
+            {
                 return NotFound();
+            }
 
             NotificationDTO notificationDTO = mapper.Map<NotificationDTO>(notification);
             return Ok(notificationDTO);

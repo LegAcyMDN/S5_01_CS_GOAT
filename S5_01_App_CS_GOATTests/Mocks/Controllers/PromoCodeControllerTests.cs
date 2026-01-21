@@ -1,21 +1,14 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using System.Threading;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -57,7 +50,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             newPromoCode = PromoCodeFixture.GetNewPromoCode();
             updatedPromoCode = PromoCodeFixture.GetUpdatedPromoCode();
             testCase = CaseFixture.GetCase();
-            
+
             // DTOs for Create/Update operations
             newPromoCodeDTO = new PromoCodeDTO
             {
@@ -123,16 +116,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 DiscountAmount = 10.00
             };
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
                 .ReturnsAsync(new List<PromoCode> { promoCode });
 
-            promoCodeRepositoryMock.Setup(r => r.Check(
+            _ = promoCodeRepositoryMock.Setup(r => r.Check(
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<int?>()
             )).ReturnsAsync(promoCode);
 
-            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
+            _ = mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(promoCode))
                 .Returns(expectedDto);
 
             // When
@@ -162,16 +155,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 CaseId = caseId
             };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                 .ReturnsAsync(testCase);
 
-            promoCodeRepositoryMock.Setup(r => r.Check(
+            _ = promoCodeRepositoryMock.Setup(r => r.Check(
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<int?>()
             )).ReturnsAsync(userPromoCode);
 
-            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
+            _ = mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
                 .Returns(expectedDto);
 
             // When
@@ -195,7 +188,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "NONEXISTENT";
             var emptyList = new List<PromoCode>();
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
                 .ReturnsAsync(emptyList);
 
             // When
@@ -213,7 +206,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "EXPIRED2023";
             var promoCodeList = new List<PromoCode> { expiredPromoCode };
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
                 .ReturnsAsync(promoCodeList);
 
             // When
@@ -231,7 +224,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             string code = "SUMMER2024";
             int invalidCaseId = 999;
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(invalidCaseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(invalidCaseId, It.IsAny<QueryOptions<Case>>()))
                 .ReturnsAsync((Case?)null);
 
             // When
@@ -253,10 +246,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             var promoCodeList = new List<PromoCode> { promoCode };
             var differentCase = new Case { CaseId = requestedCaseId, CaseName = "Different Case", CasePrice = 5.00 };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(requestedCaseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(requestedCaseId, It.IsAny<QueryOptions<Case>>()))
                 .ReturnsAsync(differentCase);
 
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
                 .ReturnsAsync(promoCodeList);
 
             // When
@@ -282,16 +275,16 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 DiscountAmount = 5.00
             };
 
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                 .ReturnsAsync(testCase);
 
-            promoCodeRepositoryMock.Setup(r => r.Check(
+            _ = promoCodeRepositoryMock.Setup(r => r.Check(
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<int?>()
             )).ReturnsAsync(userPromoCode);
 
-            mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
+            _ = mapperMock.Setup(m => m.Map<CasePromoCodeDTO>(userPromoCode))
                 .Returns(expectedDto);
 
             // When
@@ -335,7 +328,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PromoCode>?>()))
                                    .ReturnsAsync(promoCodes);
 
             // When
@@ -380,11 +373,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            mapperMock.Setup(m => m.Map<PromoCode>(newPromoCodeDTO))
+            _ = mapperMock.Setup(m => m.Map<PromoCode>(newPromoCodeDTO))
                 .Returns(newPromoCode);
-            promoCodeRepositoryMock.Setup(r => r.AddAsync(It.IsAny<PromoCode>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.AddAsync(It.IsAny<PromoCode>()))
                                    .ReturnsAsync(newPromoCode);
-            mapperMock.Setup(m => m.Map<PromoCodeDTO>(newPromoCode))
+            _ = mapperMock.Setup(m => m.Map<PromoCodeDTO>(newPromoCode))
                 .Returns(newPromoCodeDTO);
 
             // When
@@ -449,7 +442,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 999;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
                                    .ReturnsAsync((PromoCode?)null);
 
             // When
@@ -467,11 +460,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 1;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
                                    .ReturnsAsync(promoCode);
-            mapperMock.Setup(m => m.Map<PromoCode>(updatedPromoCodeDTO))
+            _ = mapperMock.Setup(m => m.Map<PromoCode>(updatedPromoCodeDTO))
                 .Returns(updatedPromoCode);
-            promoCodeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<PromoCode>(), It.IsAny<PromoCode>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<PromoCode>(), It.IsAny<PromoCode>()))
                                    .Returns(Task.CompletedTask);
 
             // When
@@ -538,7 +531,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 999;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
                                    .ReturnsAsync((PromoCode?)null);
 
             // When
@@ -556,9 +549,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int promoCodeId = 1;
-            promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.GetByIdAsync(promoCodeId, It.IsAny<QueryOptions<PromoCode>>()))
                                    .ReturnsAsync(promoCode);
-            promoCodeRepositoryMock.Setup(r => r.DeleteAsync(It.IsAny<PromoCode>()))
+            _ = promoCodeRepositoryMock.Setup(r => r.DeleteAsync(It.IsAny<PromoCode>()))
                                    .Returns(Task.CompletedTask);
 
             // When

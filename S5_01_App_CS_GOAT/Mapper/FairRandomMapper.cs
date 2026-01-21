@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Shared.DTO;
+using AutoMapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -8,7 +8,7 @@ namespace S5_01_App_CS_GOAT.Mapper
     {
         public FairRandomMapper()
         {
-            CreateMap<FairRandom, FairRandomDTO>()
+            _ = CreateMap<FairRandom, FairRandomDTO>()
                 .ForMember(dest => dest.ServerSeed, opt => opt.MapFrom(src => src.ServerSeed))
                 .ForMember(dest => dest.ServerHash, opt => opt.MapFrom(src => src.ServerHash))
                 .ForMember(dest => dest.UserSeed, opt => opt.MapFrom(src => src.UserSeed))

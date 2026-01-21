@@ -1,13 +1,10 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using Microsoft.EntityFrameworkCore;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -33,19 +30,29 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             Case? targetCase = null;
             if (caseId != null)
             {
                 targetCase = await caseRepository.GetByIdAsync(caseId.Value);
-                if (targetCase == null) return NotFound();
+                if (targetCase == null)
+                {
+                    return NotFound();
+                }
             }
             PromoCode? promoCode = await manager.Check(
                 code,
                 authResult.AuthUserId.Value,
                 caseId
             );
-            if (promoCode == null) return NotFound();
+            if (promoCode == null)
+            {
+                return NotFound();
+            }
+
             CasePromoCodeDTO dto = mapper.Map<CasePromoCodeDTO>(promoCode);
             if (targetCase != null)
             {
@@ -67,9 +74,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
 
             QueryOptions<PromoCode> queryOptions = new QueryOptions<PromoCode>()
                 .Before(p => p.User, p => p.Case);
@@ -92,19 +104,28 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             // Mapper DTO -> Entity
-            var promoCode = mapper.Map<PromoCode>(promoCodeDto);
-            
+            PromoCode promoCode = mapper.Map<PromoCode>(promoCodeDto);
+
             PromoCode createdPromoCode = await manager.AddAsync(promoCode);
-            
+
             // Mapper l'entité créée vers DTO pour la réponse
-            var createdDto = mapper.Map<PromoCodeDTO>(createdPromoCode);
-            
+            PromoCodeDTO createdDto = mapper.Map<PromoCodeDTO>(createdPromoCode);
+
             return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdDto);
         }
 
@@ -122,18 +143,29 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            if (!ModelState.IsValid) 
+            }
+
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             PromoCode? existingPromoCode = await manager.GetByIdAsync(id);
-            if (existingPromoCode == null) return NotFound();
+            if (existingPromoCode == null)
+            {
+                return NotFound();
+            }
 
             // Mapper les modifications du DTO vers l'entité existante
-            var updatedPromoCode = mapper.Map<PromoCode>(promoCodeDto);
-            
+            PromoCode updatedPromoCode = mapper.Map<PromoCode>(promoCodeDto);
+
             await manager.UpdateAsync(existingPromoCode, updatedPromoCode);
             return NoContent();
         }
@@ -150,12 +182,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            var promoCode = await manager.GetByIdAsync(id);
-            if (promoCode == null) 
+            }
+
+            PromoCode? promoCode = await manager.GetByIdAsync(id);
+            if (promoCode == null)
+            {
                 return NotFound();
+            }
 
             await manager.DeleteAsync(promoCode);
             return NoContent();

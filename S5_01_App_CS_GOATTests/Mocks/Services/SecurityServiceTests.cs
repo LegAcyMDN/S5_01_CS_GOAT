@@ -1,6 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using S5_01_App_CS_GOAT.Services;
-using System;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Services
 {
@@ -171,9 +169,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
         public void HashString_NullInput_ThrowsArgumentException()
         {
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashString(null);
+                _ = SecurityService.HashString(null);
             });
         }
 
@@ -181,9 +179,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
         public void HashString_EmptyInput_ThrowsArgumentException()
         {
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashString(string.Empty);
+                _ = SecurityService.HashString(string.Empty);
             });
         }
 
@@ -277,9 +275,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
             string salt = SecurityService.GenerateToken(16);
 
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashAndSalt(null, salt);
+                _ = SecurityService.HashAndSalt(null, salt);
             });
         }
 
@@ -290,9 +288,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
             string salt = SecurityService.GenerateToken(16);
 
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashAndSalt(string.Empty, salt);
+                _ = SecurityService.HashAndSalt(string.Empty, salt);
             });
         }
 
@@ -303,9 +301,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
             string password = "Password123";
 
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashAndSalt(password, null);
+                _ = SecurityService.HashAndSalt(password, null);
             });
         }
 
@@ -316,9 +314,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Services
             string password = "Password123";
 
             // When/Then
-            Assert.ThrowsException<ArgumentException>(() =>
+            _ = Assert.ThrowsException<ArgumentException>(() =>
             {
-                SecurityService.HashAndSalt(password, string.Empty);
+                _ = SecurityService.HashAndSalt(password, string.Empty);
             });
         }
 

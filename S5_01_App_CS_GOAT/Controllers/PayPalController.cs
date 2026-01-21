@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PayPalCheckoutSdk.Core;
 using PayPalCheckoutSdk.Orders;
 using PayPalHttp;
 using S5_01_App_CS_GOAT.Models.DataManager;
@@ -44,12 +43,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult auth = JwtService.JwtAuth(_configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             int userId = (int)auth.AuthUserId;
 
             if (request.Amount <= 0)
+            {
                 return BadRequest("Invalid amount");
+            }
 
             try
             {
@@ -63,7 +66,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     Status = orderResponse.Status
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest("Failed to create payment order");
             }
@@ -83,12 +86,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult auth = JwtService.JwtAuth(_configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             int userId = (int)auth.AuthUserId;
 
             if (string.IsNullOrEmpty(orderId))
+            {
                 return BadRequest("Order ID is required");
+            }
 
             try
             {
@@ -96,16 +103,23 @@ namespace S5_01_App_CS_GOAT.Controllers
                 string customId = orderDetails.PurchaseUnits[0].CustomId;
 
                 if (customId != userId.ToString())
+                {
                     return Forbid();
+                }
 
                 PayPalCaptureResponse captureResponse =
                     await _payPalRepository.CaptureOrderAsync(orderId);
 
                 if (captureResponse.Status != "COMPLETED")
+                {
                     return BadRequest("Payment was not completed");
+                }
 
                 User? user = await _userRepository.GetByIdAsync(userId);
-                if (user == null) return NotFound();
+                if (user == null)
+                {
+                    return NotFound();
+                }
 
                 double oldWallet = user.Wallet;
                 user.Wallet += (double)captureResponse.Amount;
@@ -120,7 +134,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     PaymentMethodId = 3
                 };
 
-                await _transactionRepository.AddAsync(transaction);
+                _ = await _transactionRepository.AddAsync(transaction);
 
                 return Ok(new CaptureOrderResponse
                 {
@@ -131,7 +145,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     TransactionId = captureResponse.CaptureId
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest("Failed to process payment");
             }
@@ -146,7 +160,8 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> PayPalWebhook()
         {
             StreamReader reader = new(Request.Body);
-            string webhookPayload = await reader.ReadToEndAsync();
+
+            _ = await reader.ReadToEndAsync();
             return Ok();
         }
 
@@ -170,20 +185,29 @@ namespace S5_01_App_CS_GOAT.Controllers
             int userId = (int)auth.AuthUserId;
 
             if (request.Amount < 10 || request.Amount > 5000)
+            {
                 return BadRequest("Invalid amount");
+            }
 
             if (string.IsNullOrEmpty(request.PayPalEmail) || !request.PayPalEmail.Contains('@'))
+            {
                 return BadRequest("Invalid PayPal email");
+            }
 
             try
             {
                 User? user = await _userRepository.GetByIdAsync(userId);
-                if (user == null) return NotFound();
+                if (user == null)
+                {
+                    return NotFound();
+                }
 
                 if (user.Wallet < (double)request.Amount)
+                {
                     return BadRequest("Insufficient funds");
+                }
 
-                var payoutResponse = await _payPalRepository.CreatePayoutAsync(
+                PayPalPayoutResponse payoutResponse = await _payPalRepository.CreatePayoutAsync(
                     request.Amount,
                     userId,
                     request.PayPalEmail);
@@ -202,7 +226,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     NotificationId = null
                 };
 
-                await _transactionRepository.AddAsync(transaction);
+                _ = await _transactionRepository.AddAsync(transaction);
 
                 return Ok(new WithdrawalResponse
                 {
@@ -229,11 +253,11 @@ namespace S5_01_App_CS_GOAT.Controllers
                                    "If you don't receive the money, contact support with this batch ID: " + timeoutEx.PayoutBatchId
                 });
             }
-            catch (HttpException ex)
+            catch (HttpException)
             {
                 return BadRequest("PayPal withdrawal failed");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest("Withdrawal failed");
             }

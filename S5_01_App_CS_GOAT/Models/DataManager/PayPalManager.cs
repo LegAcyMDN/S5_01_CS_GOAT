@@ -1,11 +1,9 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PayPalCheckoutSdk.Core;
 using PayPalCheckoutSdk.Orders;
-using PayPalCheckoutSdk.Payments;
 using PayPalHttp;
-using System.Text.Json.Serialization;
-
 using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
@@ -21,7 +19,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         public PayPalManager(IConfiguration configuration)
         {
             _configuration = configuration;
-            
+
             PayPalEnvironment environment = GetEnvironment();
             _client = new PayPalHttpClient(environment);
         }
@@ -35,10 +33,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             string? clientSecret = _configuration["PayPal:ClientSecret"];
             string? mode = _configuration["PayPal:Mode"];
 
-            if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
-                throw new Exception("PayPal credentials not configured");
-
-            return mode?.ToLower() == "live"
+            return string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret)
+                ? throw new Exception("PayPal credentials not configured")
+                : mode?.ToLower() == "live"
                 ? new LiveEnvironment(clientId, clientSecret)
                 : new SandboxEnvironment(clientId, clientSecret);
         }
@@ -48,9 +45,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         /// </summary>
         public async Task<PayPalOrderResponse> CreateOrderAsync(decimal amount, int userId)
         {
-            OrdersCreateRequest request = new OrdersCreateRequest();
-            request.Prefer("return=representation");
-            request.RequestBody(BuildRequestBody(amount, userId));
+            var request = new OrdersCreateRequest();
+            _ = request.Prefer("return=representation");
+            _ = request.RequestBody(BuildRequestBody(amount, userId));
 
             try
             {
@@ -81,8 +78,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         /// </summary>
         public async Task<PayPalCaptureResponse> CaptureOrderAsync(string orderId)
         {
-            OrdersCaptureRequest request = new OrdersCaptureRequest(orderId);
-            request.RequestBody(new OrderActionRequest());
+            var request = new OrdersCaptureRequest(orderId);
+            _ = request.RequestBody(new OrderActionRequest());
 
             try
             {
@@ -126,8 +123,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     LandingPage = "BILLING",
                     UserAction = "PAY_NOW"
                 },
-                PurchaseUnits = new List<PurchaseUnitRequest>
-                {
+                PurchaseUnits =
+                [
                     new PurchaseUnitRequest
                     {
                         ReferenceId = "USER_" + userId + "_" + DateTime.UtcNow.Ticks,
@@ -139,7 +136,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                             Value = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)
                         }
                     }
-                }
+                ]
             };
         }
 
@@ -148,8 +145,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         /// </summary>
         public async Task<Order> GetOrderDetailsAsync(string orderId)
         {
-            OrdersGetRequest request = new OrdersGetRequest(orderId);
-            
+            var request = new OrdersGetRequest(orderId);
+
             try
             {
                 PayPalHttp.HttpResponse response = await _client.Execute(request);
@@ -168,18 +165,18 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             long ticks = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             string payoutBatchId = "P" + userId + ticks;
-            if (payoutBatchId.Length > 64) 
+            if (payoutBatchId.Length > 64)
             {
-                payoutBatchId = payoutBatchId.Substring(0, 64);
+                payoutBatchId = payoutBatchId[..64];
             }
 
             string senderItemId = "I" + userId + ticks;
-            if (senderItemId.Length > 64) 
+            if (senderItemId.Length > 64)
             {
-                senderItemId = senderItemId.Substring(0, 64);
+                senderItemId = senderItemId[..64];
             }
 
-            PayoutRequestDto body = new PayoutRequestDto
+            var body = new PayoutRequestDto
             {
                 SenderBatchHeader = new SenderBatchHeaderDto
                 {
@@ -189,13 +186,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 },
                 Items = new PayoutItemDto[]
                 {
-                    new PayoutItemDto
-                    {
+                    new() {
                         RecipientType = "EMAIL",
-                        Amount = new PayoutAmountDto 
-                        { 
-                            Value = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture), 
-                            Currency = "EUR" 
+                        Amount = new PayoutAmountDto
+                        {
+                            Value = amount.ToString("F2", System.Globalization.CultureInfo.InvariantCulture),
+                            Currency = "EUR"
                         },
                         Receiver = paypalEmail,
                         Note = "CS:GOAT withdrawal",
@@ -204,7 +200,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 }
             };
 
-            PayPalHttp.HttpRequest request = new PayPalHttp.HttpRequest("/v1/payments/payouts", HttpMethod.Post)
+            var request = new PayPalHttp.HttpRequest("/v1/payments/payouts", HttpMethod.Post)
             {
                 Body = body,
                 ContentType = "application/json"
@@ -220,11 +216,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 {
                     string createdBatchId = batchHeader.GetProperty("payout_batch_id").GetString()!;
                     string batchStatus = batchHeader.GetProperty("batch_status").GetString()!;
-                    
-                    return new PayPalPayoutResponse 
-                    { 
-                        PayoutBatchId = createdBatchId ?? payoutBatchId, 
-                        Status = batchStatus ?? "PENDING" 
+
+                    return new PayPalPayoutResponse
+                    {
+                        PayoutBatchId = createdBatchId ?? payoutBatchId,
+                        Status = batchStatus ?? "PENDING"
                     };
                 }
 
@@ -238,11 +234,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     message.IndexOf("GATEWAY_TIMEOUT", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     await Task.Delay(50000);
-                    
+
                     try
                     {
-                        PayPalHttp.HttpRequest checkReq = new PayPalHttp.HttpRequest(
-                            "/v1/payments/payouts/" + payoutBatchId, 
+                        var checkReq = new PayPalHttp.HttpRequest(
+                            "/v1/payments/payouts/" + payoutBatchId,
                             HttpMethod.Get
                         );
 
@@ -253,11 +249,11 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                         {
                             string id = bh.GetProperty("payout_batch_id").GetString()!;
                             string status = bh.GetProperty("batch_status").GetString()!;
-                            
-                            return new PayPalPayoutResponse 
-                            { 
-                                PayoutBatchId = id ?? payoutBatchId, 
-                                Status = status ?? "PENDING" 
+
+                            return new PayPalPayoutResponse
+                            {
+                                PayoutBatchId = id ?? payoutBatchId,
+                                Status = status ?? "PENDING"
                             };
                         }
                     }
@@ -272,7 +268,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     }
                 }
 
-                JsonDocument doc = JsonDocument.Parse(message);
+                var doc = JsonDocument.Parse(message);
                 string errorName = doc.RootElement.GetProperty("name").GetString() ?? "UNKNOWN";
                 string errorMessage = doc.RootElement.GetProperty("message").GetString() ?? "Unknown error";
                 string errorDebugId = doc.RootElement.GetProperty("debug_id").GetString() ?? "N/A";
@@ -304,7 +300,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         [JsonPropertyName("sender_batch_header")]
         public SenderBatchHeaderDto SenderBatchHeader { get; set; } = null!;
-        
+
         [JsonPropertyName("items")]
         public PayoutItemDto[] Items { get; set; } = null!;
     }
@@ -313,10 +309,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         [JsonPropertyName("sender_batch_id")]
         public string SenderBatchId { get; set; } = null!;
-        
+
         [JsonPropertyName("email_subject")]
         public string EmailSubject { get; set; } = null!;
-        
+
         [JsonPropertyName("email_message")]
         public string EmailMessage { get; set; } = null!;
     }
@@ -325,16 +321,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         [JsonPropertyName("recipient_type")]
         public string RecipientType { get; set; } = null!;
-        
+
         [JsonPropertyName("amount")]
         public PayoutAmountDto Amount { get; set; } = null!;
-        
+
         [JsonPropertyName("receiver")]
         public string Receiver { get; set; } = null!;
-        
+
         [JsonPropertyName("note")]
         public string Note { get; set; } = null!;
-        
+
         [JsonPropertyName("sender_item_id")]
         public string SenderItemId { get; set; } = null!;
     }
@@ -343,7 +339,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     {
         [JsonPropertyName("value")]
         public string Value { get; set; } = null!;
-        
+
         [JsonPropertyName("currency")]
         public string Currency { get; set; } = null!;
     }

@@ -1,14 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
-using S5_01_App_CS_GOATTests.Fixtures;
-using System.Threading;
 using S5_01_App_CS_GOAT.Services;
+using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -48,9 +46,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Get3dModelByWear_ValidWearId_ReturnsOk()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<Wear>?>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<Wear>?>()))
                                .ReturnsAsync(wear);
-            mapperMock.Setup(m => m.Map<ModelDTO>(wear))
+            _ = mapperMock.Setup(m => m.Map<ModelDTO>(wear))
                        .Returns(modelDTO);
 
             // When
@@ -58,7 +56,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.IsNotNull(okResult.Value);
             wearRepositoryMock.Verify(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<Wear>?>()), Times.Once);
         }
@@ -66,7 +64,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Get3dModelByWear_InvalidWearId_ReturnsNotFound()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<Wear>?>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<Wear>?>()))
                                .ReturnsAsync((Wear?)null);
 
             // When
@@ -80,7 +78,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Get3dModelByWear_NegativeWearId_ReturnsNotFound()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(-1, It.IsAny<QueryOptions<Wear>?>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(-1, It.IsAny<QueryOptions<Wear>?>()))
                                .ReturnsAsync((Wear?)null);
 
             // When
@@ -93,7 +91,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Get3dModelByWear_ZeroWearId_ReturnsNotFound()
         {
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(0, It.IsAny<QueryOptions<Wear>?>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(0, It.IsAny<QueryOptions<Wear>?>()))
                                .ReturnsAsync((Wear?)null);
 
             // When
@@ -109,9 +107,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             var wearWithoutSkin = new Wear { WearId = 1, Skin = null };
             var emptyModel = new ModelDTO();
 
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<Wear>?>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<Wear>?>()))
                                .ReturnsAsync(wearWithoutSkin);
-            mapperMock.Setup(m => m.Map<ModelDTO>(wearWithoutSkin))
+            _ = mapperMock.Setup(m => m.Map<ModelDTO>(wearWithoutSkin))
                        .Returns(emptyModel);
 
             // When

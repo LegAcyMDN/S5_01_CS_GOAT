@@ -1,9 +1,4 @@
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Services;
-using System.Data.SqlTypes;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
@@ -12,7 +7,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
     /// </summary>
     public partial class User : IUserDependant
     {
-        public int? DependantUserId { get => this.UserId; }
+        public int? DependantUserId => UserId;
 
         /// <summary>
         /// Validates if a password meets complexity requirements
@@ -29,18 +24,37 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <returns>True if password is valid; false otherwise</returns>
         public bool IsValidPassword(string password)
         {
-            if (string.IsNullOrWhiteSpace(password)) return false;
-            if (password.Length < 8 || password.Length > 64) return false;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                return false;
+            }
+
+            if (password.Length < 8 || password.Length > 64)
+            {
+                return false;
+            }
+
             int number = 0, upper = 0, lower = 0, special = 0;
             foreach (char c in password)
             {
-                if (char.IsDigit(c)) number++;
-                else if (char.IsUpper(c)) upper++;
-                else if (char.IsLower(c)) lower++;
-                else special++;
+                if (char.IsDigit(c))
+                {
+                    number++;
+                }
+                else if (char.IsUpper(c))
+                {
+                    upper++;
+                }
+                else if (char.IsLower(c))
+                {
+                    lower++;
+                }
+                else
+                {
+                    special++;
+                }
             }
-            if (number < 1 || upper < 1 || lower < 1 || special < 1) return false;
-            return true;
+            return number >= 1 && upper >= 1 && lower >= 1 && special >= 1;
         }
 
         /// <summary>
@@ -49,12 +63,17 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <param name="password">The new password to set</param>
         /// <param name="bypassValidity">If true, skips validation checks; use only in special cases</param>
         /// <returns>True if password was successfully set; false if password doesn't meet requirements</returns>
-        public bool TrySetPassword(string password, bool bypassValidity = false) {
-            if (!bypassValidity && !IsValidPassword(password)) return false;
+        public bool TrySetPassword(string password, bool bypassValidity = false)
+        {
+            if (!bypassValidity && !IsValidPassword(password))
+            {
+                return false;
+            }
+
             string newSalt = SecurityService.GenerateToken();
             string newHash = SecurityService.HashAndSalt(password, newSalt);
-            this.SaltPassword = newSalt;
-            this.HashPassword = newHash;
+            SaltPassword = newSalt;
+            HashPassword = newHash;
             return true;
         }
     }

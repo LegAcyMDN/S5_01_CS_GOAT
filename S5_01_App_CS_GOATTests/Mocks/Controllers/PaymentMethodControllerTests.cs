@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
-using S5_01_App_CS_GOATTests.Fixtures;
 using S5_01_App_CS_GOAT.Services;
+using S5_01_App_CS_GOATTests.Fixtures;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -40,7 +34,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_ReturnsOk()
         {
             // Given
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
+            _ = paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
                                        .ReturnsAsync(paymentMethods);
 
             // When
@@ -56,7 +50,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             var emptyList = new List<PaymentMethod>();
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
+            _ = paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
                                        .ReturnsAsync(emptyList);
 
             // When
@@ -76,7 +70,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new PaymentMethod { PaymentMethodId = 2, PaymentMethodName = "PayPal" },
                 new PaymentMethod { PaymentMethodId = 3, PaymentMethodName = "Bank Transfer" }
             };
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
+            _ = paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
                                        .ReturnsAsync(multiplePaymentMethods);
 
             // When
@@ -91,7 +85,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_RepositoryCallsWithoutFilter_VerifiesCall()
         {
             // Given
-            paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
+            _ = paymentMethodRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<PaymentMethod>?>()))
                                        .ReturnsAsync(paymentMethods);
 
             // When

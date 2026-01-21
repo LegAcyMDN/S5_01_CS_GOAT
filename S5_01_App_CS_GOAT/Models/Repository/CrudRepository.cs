@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using System.Linq.Expressions;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
@@ -11,7 +9,7 @@ public class CrudRepository<TEntity, TIdentifier> :
     where TEntity : class
     where TIdentifier : struct
 {
-    protected readonly CSGOATDbContext _context;
+    protected new readonly CSGOATDbContext _context;
 
     public CrudRepository(CSGOATDbContext context) : base(context)
     {
@@ -20,27 +18,27 @@ public class CrudRepository<TEntity, TIdentifier> :
 
     public async Task<TEntity> AddAsync(TEntity entity)
     {
-        await _context.Set<TEntity>().AddAsync(entity);
-        await _context.SaveChangesAsync();
+        _ = await _context.Set<TEntity>().AddAsync(entity);
+        _ = await _context.SaveChangesAsync();
         return entity;
     }
 
     public async Task UpdateAsync(TEntity entityToUpdate)
     {
-        _context.Set<TEntity>().Attach(entityToUpdate);
-        await _context.SaveChangesAsync();
+        _ = _context.Set<TEntity>().Attach(entityToUpdate);
+        _ = await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(TEntity entityToUpdate, TEntity entity)
     {
-        _context.Set<TEntity>().Attach(entityToUpdate);
+        _ = _context.Set<TEntity>().Attach(entityToUpdate);
         _context.Entry(entityToUpdate).CurrentValues.SetValues(entity);
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
     }
 
     public async Task PatchAsync(TEntity entityToUpdate, IDictionary<string, object> patchData)
     {
-        _context.Set<TEntity>().Attach(entityToUpdate);
+        _ = _context.Set<TEntity>().Attach(entityToUpdate);
         EntityEntry<TEntity> entry = _context.Entry(entityToUpdate);
 
         foreach (KeyValuePair<string, object> update in patchData)
@@ -53,13 +51,13 @@ public class CrudRepository<TEntity, TIdentifier> :
             }
         }
 
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(TEntity entity)
     {
-        _context.Set<TEntity>().Remove(entity);
-        await _context.SaveChangesAsync();
+        _ = _context.Set<TEntity>().Remove(entity);
+        _ = await _context.SaveChangesAsync();
     }
 }
 

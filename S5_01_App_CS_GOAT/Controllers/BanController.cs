@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using System.Collections;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -28,10 +26,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
+            }
+
             QueryOptions<Ban> options = new QueryOptions<Ban>()
                 .Before(b => b.BanType);
             IEnumerable<Ban> bans = await manager.GetAllAsync(options);
@@ -49,7 +52,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<Ban> queryOptions = new QueryOptions<Ban>()
                 .Before(b => b.BanType);
@@ -70,20 +75,30 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if (!authResult.IsAdmin)
-                return Forbid();
+            }
 
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!authResult.IsAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             BanType? banType = typeManager.GetTypeByName(banDTO.BanTypeName);
             if (banType == null)
+            {
                 return BadRequest($"Invalid ban type: {banDTO.BanTypeName}");
+            }
 
             Ban ban = mapper.Map<Ban>(banDTO);
             ban.BanTypeId = banType.BanTypeId;
 
-            await manager.AddAsync(ban);
+            _ = await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);
             return CreatedAtAction("GetAll", new { id = ban.BanId }, createdBanDTO);
@@ -103,14 +118,25 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if (!authResult.IsAdmin)
-                return Forbid();
+            }
 
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!authResult.IsAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             Ban? banToUpdate = await manager.GetByIdAsync(id);
-            if (banToUpdate == null) return NotFound();
+            if (banToUpdate == null)
+            {
+                return NotFound();
+            }
 
             Ban ban = mapper.Map<Ban>(banDTO);
             await manager.UpdateAsync(banToUpdate, ban);

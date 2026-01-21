@@ -13,7 +13,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <returns>The RandomTransaction if available; otherwise null</returns>
         public RandomTransaction? GetRandomTransaction()
         {
-            return this.RandomTransaction ?? this.UpgradeResult?.RandomTransaction;
+            return RandomTransaction ?? UpgradeResult?.RandomTransaction;
         }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// A session is considered resolved when the user ID is null, indicating
         /// the server seed has been revealed and computation is complete.
         /// </remarks>
-        public bool IsResolved => this.UserId == null;
+        public bool IsResolved => UserId == null;
 
         /// <summary>
         /// Computes the final random fractions by combining server seed, user seed, and nonce
@@ -38,21 +38,27 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <exception cref="InvalidOperationException">Thrown if UserSeed or UserNonce are not set</exception>
         public void Compute()
         {
-            if (this.Fraction1 != null && this.Fraction2 != null) return;
-            if (this.UserSeed == null || this.UserNonce == null)
-                throw new InvalidOperationException("Cannot compute FairRandom without UserSeed and UserNonce.");
+            if (Fraction1 != null && Fraction2 != null)
+            {
+                return;
+            }
 
-            string combined = SecurityService.HashString(this.ServerSeed + this.UserSeed + this.UserNonce.ToString());
-            this.CombinedHash = combined;
+            if (UserSeed == null || UserNonce == null)
+            {
+                throw new InvalidOperationException("Cannot compute FairRandom without UserSeed and UserNonce.");
+            }
+
+            string combined = SecurityService.HashString(ServerSeed + UserSeed + UserNonce.ToString());
+            CombinedHash = combined;
             byte[] hashBytes = Convert.FromBase64String(combined);
 
             uint intValue1 = BitConverter.ToUInt32(hashBytes, 0);
-            this.Fraction1 = intValue1 / (double)uint.MaxValue;
+            Fraction1 = intValue1 / (double)uint.MaxValue;
 
             uint intValue2 = BitConverter.ToUInt32(hashBytes, 4);
-            this.Fraction2 = intValue2 / (double)uint.MaxValue;
+            Fraction2 = intValue2 / (double)uint.MaxValue;
         }
 
-        public int? DependantUserId { get => this.UserId ?? this.GetRandomTransaction()?.DependantUserId; }
+        public int? DependantUserId => UserId ?? GetRandomTransaction()?.DependantUserId;
     }
 }

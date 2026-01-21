@@ -5,8 +5,8 @@ namespace S5_01_App_CS_GOAT.Services
     /// </summary>
     public interface IType
     {
-        public int TypeId { get; }
-        
-        public string TypeName { get; }
+        int TypeId { get; }
+
+        string TypeName { get; }
     }
 }

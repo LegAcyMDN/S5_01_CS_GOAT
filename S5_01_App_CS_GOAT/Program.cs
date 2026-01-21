@@ -1,41 +1,33 @@
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using S5_01_App_CS_GOAT.Models.EntityFramework;
-using S5_01_App_CS_GOAT.Models.Repository;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AspNet.Security.OpenId;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using S5_01_App_CS_GOAT.Configuration;
 using S5_01_App_CS_GOAT.Models.DataManager;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<CSGOATDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("RemoteConnectionString"))
 );
 
 // Enable CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowBlazorApp", policy =>
-    {
-        policy.WithOrigins(
+builder.Services.AddCors(options => options.AddPolicy("AllowBlazorApp", policy => policy.WithOrigins(
                 "https://blazorcsgoat-hpbpdkhmadduekef.eastus-01.azurewebsites.net",
                 "https://localhost:7030",
                 "http://localhost:7030",
                 "https://127.0.0.1:7030",
-                "http://127.0.0.1:7030"  
+                "http://127.0.0.1:7030"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
+            .AllowCredentials()));
 
 // Add this after builder.Services.AddCors
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -62,7 +54,7 @@ builder.Services.AddHttpClient();
 
 // Readonly repositories for web-scraped entities
 builder.Services.AddScoped<IReadableRepository<Case, int>, ReadRepository<Case>>();
-builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, ReadRepository<CaseContent, (int,int)>>();
+builder.Services.AddScoped<IReadableRepository<CaseContent, (int, int)>, ReadRepository<CaseContent, (int, int)>>();
 builder.Services.AddScoped<IReadableRepository<Skin, int>, ReadRepository<Skin>>();
 builder.Services.AddScoped<IReadableRepository<Wear, int>, ReadRepository<Wear>>();
 
@@ -75,18 +67,18 @@ builder.Services.AddScoped<ITypeRepository<WearType>, TypeRepository<WearType>>(
 
 // Generic repositories for standard entities
 builder.Services.AddScoped<IDataRepository<Ban, int>, CrudRepository<Ban>>();
-builder.Services.AddScoped<IDataRepository<Favorite, (int,int)>, CrudRepository<Favorite, (int, int)>>();
+builder.Services.AddScoped<IDataRepository<Favorite, (int, int)>, CrudRepository<Favorite, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<GlobalNotification, int>, CrudRepository<GlobalNotification>>();
 builder.Services.AddScoped<IDataRepository<InventoryItem, int>, CrudRepository<InventoryItem>>();
 builder.Services.AddScoped<IDataRepository<ItemTransaction, int>, CrudRepository<ItemTransaction>>();
-builder.Services.AddScoped<IDataRepository<Limit, (int,int)>, CrudRepository<Limit, (int,int)>>();
+builder.Services.AddScoped<IDataRepository<Limit, (int, int)>, CrudRepository<Limit, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<MoneyTransaction, int>, CrudRepository<MoneyTransaction>>();
 builder.Services.AddScoped<IDataRepository<Notification, int>, CrudRepository<Notification>>();
 builder.Services.AddScoped<IDataRepository<NotificationSetting, (int, int)>, CrudRepository<NotificationSetting, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<RandomTransaction, int>, CrudRepository<RandomTransaction>>();
 builder.Services.AddScoped<IDataRepository<Token, int>, CrudRepository<Token>>();
 builder.Services.AddScoped<IDataRepository<Transaction, int>, CrudRepository<Transaction>>();
-builder.Services.AddScoped<IDataRepository<UpgradeResult, (int,int)>, CrudRepository<UpgradeResult, (int,int)>>();
+builder.Services.AddScoped<IDataRepository<UpgradeResult, (int, int)>, CrudRepository<UpgradeResult, (int, int)>>();
 builder.Services.AddScoped<IDataRepository<UserNotification, int>, CrudRepository<UserNotification>>();
 
 // Custom managers for complex entities
@@ -108,8 +100,10 @@ builder.Services.AddHostedService<TimedActionService<IPromoCodeRepository, Promo
 
 // JWT Secret
 string? secret = builder.Configuration.GetValue<string>("Jwt:Secret");
-if (secret == null) throw new Exception("Jwt Secret environment variable is not set in appssettings.");
-
+if (secret == null)
+{
+    throw new Exception("Jwt Secret environment variable is not set in appssettings.");
+}
 
 builder.Services.AddAuthentication(options =>
     {
@@ -142,13 +136,13 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    _ = app.UseSwagger();
+    _ = app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

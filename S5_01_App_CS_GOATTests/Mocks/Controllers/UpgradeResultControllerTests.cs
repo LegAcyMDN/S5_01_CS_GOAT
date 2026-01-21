@@ -1,18 +1,13 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Threading;
-using System;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -75,9 +70,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 UpgradeResults = upgradeResults.Where(ur => ur.InventoryItemId == inventoryItemId).ToList()
             };
 
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId, It.IsAny<QueryOptions<InventoryItem>>()))
+            _ = inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(inventoryItemId, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync(inventoryItem);
-            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults))
                        .Returns(upgradeResultDTOs);
 
             // When
@@ -111,9 +106,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 UpgradeResults = upgradeResults.Where(ur => ur.TransactionId == transactionId).ToList()
             };
 
-            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<RandomTransaction>>()))
+            _ = randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<RandomTransaction>>()))
                                            .ReturnsAsync(randomTransaction);
-            mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults))
                        .Returns(upgradeResultDTOs);
 
             // When
@@ -137,7 +132,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<InventoryItem>>()))
+            _ = inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync((InventoryItem?)null);
 
             // When
@@ -151,7 +146,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_NegativeId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(-1, It.IsAny<QueryOptions<InventoryItem>>()))
+            _ = inventoryItemRepositoryMock.Setup(r => r.GetByIdAsync(-1, It.IsAny<QueryOptions<InventoryItem>>()))
                                        .ReturnsAsync((InventoryItem?)null);
 
             // When
@@ -165,7 +160,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByRandomTransaction_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<RandomTransaction>>()))
+            _ = randomTransactionRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<RandomTransaction>>()))
                                            .ReturnsAsync((RandomTransaction?)null);
 
             // When

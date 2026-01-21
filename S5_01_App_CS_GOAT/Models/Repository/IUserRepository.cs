@@ -1,6 +1,6 @@
+using S5_01_App_CS_GOAT.Models.EntityFramework;
 using Shared.DTO;
 using Shared.DTO.Helpers;
-using S5_01_App_CS_GOAT.Models.EntityFramework;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 
@@ -58,21 +58,21 @@ public interface IUserRepository : IDataRepository<User, int>
     /// <param name="identifier">Username, email, or phone to search for</param>
     /// <returns>The User if found; otherwise null</returns>
     Task<User?> GetByIdentifier(string identifier);
-    
+
     /// <summary>
     /// Gets a user by their login/username
     /// </summary>
     /// <param name="login">The user's login/username</param>
     /// <returns>The User if found; otherwise null</returns>
     Task<User?> GetByLogin(string login);
-    
+
     /// <summary>
     /// Gets a user by their email address
     /// </summary>
     /// <param name="email">The user's email address</param>
     /// <returns>The User if found; otherwise null</returns>
     Task<User?> GetByEmail(string email);
-    
+
     /// <summary>
     /// Gets a user by their phone number
     /// </summary>
@@ -88,7 +88,7 @@ public interface IUserRepository : IDataRepository<User, int>
     /// <param name="preferMail">If true, send code via email; otherwise via SMS</param>
     /// <returns>HTTP status code indicating result</returns>
     Task<int> StartResetPassword(string identifier, string url, bool preferMail = true);
-    
+
     /// <summary>
     /// Completes a password reset by validating the code and updating the password
     /// </summary>
@@ -103,7 +103,7 @@ public interface IUserRepository : IDataRepository<User, int>
     /// <param name="steamId">The Steam ID to search for</param>
     /// <returns>The User if found; otherwise null</returns>
     Task<User?> GetBySteamIdAsync(string steamId);
-    
+
     /// <summary>
     /// Authenticates or creates a user via Steam authentication
     /// </summary>

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -28,7 +27,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
                 .Before(e => e.PaymentMethod);
@@ -48,10 +49,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
+            }
+
             QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
                 .Before(e => e.PaymentMethod);
             IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync(queryOptions);

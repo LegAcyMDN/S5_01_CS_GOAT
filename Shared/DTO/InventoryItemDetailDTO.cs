@@ -1,4 +1,4 @@
-﻿namespace Shared.DTO;
+namespace Shared.DTO;
 
 public class InventoryItemDetailDTO
 {
@@ -24,7 +24,7 @@ public class InventoryItemDetailDTO
 
     public string RarityColor { get; set; } = null!; // return has an hexadecimal color
 
-    public string RarityName { get; set;} = null!; // name of the rarity return by the rarity color
+    public string RarityName { get; set; } = null!; // name of the rarity return by the rarity color
 
     public double? CurrentPrice { get; set; }
 }

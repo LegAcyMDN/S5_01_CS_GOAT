@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public TokenMapper()
         {
             // Entity -> DTO
-            CreateMap<Token, TokenDTO>()
+            _ = CreateMap<Token, TokenDTO>()
                 .ForMember(dest => dest.TokenId, opt => opt.MapFrom(src => src.TokenId))
                 .ForMember(dest => dest.TokenValue, opt => opt.MapFrom(src => src.TokenValue))
                 .ForMember(dest => dest.TokenExpiry, opt => opt.MapFrom(src => src.TokenExpiry))

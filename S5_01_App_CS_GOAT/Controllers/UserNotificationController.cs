@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 
 namespace S5_01_App_CS_GOAT.Controllers
@@ -32,19 +30,30 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
+
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             NotificationType? notificationType = typeManager.GetTypeByName(notificationDto.NotificationTypeName);
             if (notificationType == null)
+            {
                 return BadRequest($"Invalid notification type: {notificationDto.NotificationTypeName}");
+            }
+
             UserNotification userNotification = mapper.Map<UserNotification>(notificationDto);
             userNotification.NotificationTypeId = notificationType.NotificationTypeId;
 
-            await manager.AddAsync(userNotification);
+            _ = await manager.AddAsync(userNotification);
 
             NotificationDTO resultDto = mapper.Map<NotificationDTO>(userNotification);
             return CreatedAtRoute(null, resultDto);

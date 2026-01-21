@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -13,12 +12,12 @@ namespace S5_01_App_CS_GOAT.Controllers
     [SetThreadPrincipal]
     public class LimitController(
        IMapper mapper,
-       IDataRepository<Limit, (int,int)> manager,
+       IDataRepository<Limit, (int, int)> manager,
        ITypeRepository<LimitType> typeManager,
        IConfiguration configuration
        ) : ControllerBase
     {
-        
+
         /// <summary>
         /// Get limits for the authenticated user
         /// </summary>
@@ -29,7 +28,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<Limit> options = new QueryOptions<Limit>()
                 .Before(l => l.LimitType);
@@ -52,24 +53,33 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             int userId = authResult.AuthUserId!.Value;
             LimitType? limitType = typeManager.GetTypeByName(limitDto.LimitTypeName);
             if (limitType == null)
+            {
                 return NotFound($"LimitType not found: {limitDto.LimitTypeName}");
+            }
 
             Limit? existingLimit = await manager.GetByIdAsync((userId, limitType.LimitTypeId));
             if (existingLimit == null)
+            {
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitType.LimitTypeId}");
+            }
 
-            Dictionary<string, object> patchData = new Dictionary<string, object>
+            var patchData = new Dictionary<string, object>
             {
                 { nameof(Limit.LimitAmount), limitDto.LimitAmount }
             };
-            
+
             await manager.PatchAsync(existingLimit, patchData);
             return NoContent();
         }

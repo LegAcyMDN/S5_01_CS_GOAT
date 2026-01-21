@@ -1,9 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Shared.DTO.Helpers
 {
     public class UpgradeOutputItemDTO
@@ -16,7 +10,7 @@ namespace Shared.DTO.Helpers
     {
         public bool Preview { get; set; } = true;
 
-        public List<UpgradeOutputItemDTO> Items { get; set; } = new List<UpgradeOutputItemDTO>();
+        public List<UpgradeOutputItemDTO> Items { get; set; } = [];
 
         public InventoryItemDetailDTO? ItemResult { get; set; }
 

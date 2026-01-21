@@ -1,4 +1,4 @@
-﻿using Shared.Enum;
+using Shared.Enum;
 using Shared.Interfaces;
 
 namespace Shared.DTO
@@ -22,7 +22,7 @@ namespace Shared.DTO
         public string? ItemTypeName { get; set; }
 
         public string? Uuid { get; set; }
-        
+
         public string? RarityColor { get; set; }
 
         // IQueryableDTO implementation

@@ -1,4 +1,4 @@
-﻿namespace Shared.DTO
+namespace Shared.DTO
 {
     public class RandomTransactionDetailDTO
     {
@@ -21,7 +21,7 @@
         public string? ItemTypeName { get; set; }
 
         public string? Uuid { get; set; }
-        
+
         public string? RarityColor { get; set; }
 
         public CaseDTO? Case { get; set; }

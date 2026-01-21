@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -12,7 +11,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     [ApiController]
     [SetThreadPrincipal]
     public class NotificationSettingController(
-        IDataRepository<NotificationSetting, (int,int)> manager,
+        IDataRepository<NotificationSetting, (int, int)> manager,
         ITypeRepository<NotificationType> typeRepository,
         IConfiguration configuration,
         IMapper mapper) : ControllerBase
@@ -27,7 +26,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<NotificationSetting> queryOptions = new QueryOptions<NotificationSetting>()
                 .Before(ns => ns.NotificationType);
@@ -50,13 +51,23 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             int userId = authResult.AuthUserId.Value;
 
             NotificationType? notificationType = typeRepository.GetTypeByName(notificationTypeName);
-            if (notificationType == null) return NotFound();
+            if (notificationType == null)
+            {
+                return NotFound();
+            }
+
             NotificationSetting? setting = await manager.GetByIdAsync((userId, notificationType.NotificationTypeId));
-            if (setting == null) return NotFound();
+            if (setting == null)
+            {
+                return NotFound();
+            }
 
             await manager.PatchAsync(setting, patchData);
             return NoContent();

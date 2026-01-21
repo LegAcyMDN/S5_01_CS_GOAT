@@ -10,6 +10,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <summary>
         /// Gets the user ID that owns this inventory item
         /// </summary>
-        public int? DependantUserId { get => this.UserId; }
+        public int? DependantUserId => UserId;
     }
 }

@@ -1,56 +1,55 @@
-﻿using System.Linq.Expressions;
+using System.Net.Http.Headers;
 using System.Reflection;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using System.Net.Http.Headers;
 
 namespace S5_01_App_CS_GOAT.Services
 {
     public interface IMessage
     {
-        public IConfiguration? Configuration { get; set; }
-        public User? User { get; set; }
-        public string? Text { get; set; }
-        public string? Subject { get; set; }
-        public string? Html { get; set; }
+        IConfiguration? Configuration { get; set; }
+        User? User { get; set; }
+        string? Text { get; set; }
+        string? Subject { get; set; }
+        string? Html { get; set; }
     }
 
     public interface IMessageable<T> : IMessage
     {
         private static string ConfigString => typeof(T) == typeof(Tuple<string, string>) ? "Mail" : "Sms";
 
-        public string? Url => Configuration?[ConfigString + ":Url"];
-        public string? Auth => Configuration?[ConfigString + ":Auth"];
-        public string? Token => Configuration?[ConfigString + ":Token"];
-        public string? Type => Configuration?[ConfigString + ":Type"];
-        public string? From => Configuration?[ConfigString + ":From"];
-        public virtual string? ToUser => null;
-        public string? ToOverride => Configuration?[ConfigString + ":To"];
-        public string? To => ToOverride ?? ToUser;
+        string? Url => Configuration?[ConfigString + ":Url"];
+        string? Auth => Configuration?[ConfigString + ":Auth"];
+        string? Token => Configuration?[ConfigString + ":Token"];
+        string? Type => Configuration?[ConfigString + ":Type"];
+        string? From => Configuration?[ConfigString + ":From"];
+        virtual string? ToUser => null;
+        string? ToOverride => Configuration?[ConfigString + ":To"];
+        string? To => ToOverride ?? ToUser;
 
-        public bool CanSend { get; }
-        public T? Content { get; }
-        public object? Payload { get; }
+        bool CanSend { get; }
+        T? Content { get; }
+        object? Payload { get; }
     }
 
     public interface IMail : IMessageable<Tuple<string, string>>
     {
-        public string? Origin { get; }
-        public string? Name => User?.DisplayName ?? User?.Login;
-        public new string? ToUser => User?.Email;
+        string? Origin { get; }
+        string? Name => User?.DisplayName ?? User?.Login;
+        new string? ToUser => User?.Email;
 
         bool IMessageable<Tuple<string, string>>.CanSend => !string.IsNullOrWhiteSpace(From) // Requires FromAddress
                 && !string.IsNullOrWhiteSpace(To) // Requires ToAddress
-                // Requires at least two of Text, Subject or Html
+                                                  // Requires at least two of Text, Subject or Html
                 && ((string.IsNullOrWhiteSpace(Text) ? 0 : 1) + (string.IsNullOrWhiteSpace(Subject) ? 0 : 1) + (string.IsNullOrWhiteSpace(Html) ? 0 : 1) >= 2);
 
-        Tuple<string, string>? IMessageable<Tuple<string, string>>.Content => this.CanSend ?
+        Tuple<string, string>? IMessageable<Tuple<string, string>>.Content => CanSend ?
                 new Tuple<string, string>(
                     Subject ?? Text!,
                     Html ?? Text!
                 )
                 : null;
 
-        object? IMessageable<Tuple<string, string>>.Payload => this.Content != null ? new
+        object? IMessageable<Tuple<string, string>>.Payload => Content != null ? new
         {
             from = new
             {
@@ -65,29 +64,29 @@ namespace S5_01_App_CS_GOAT.Services
                         name = Name
                     }
                 },
-            subject = this.Content!.Item1,
-            html = this.Content!.Item2
+            subject = Content!.Item1,
+            html = Content!.Item2
         } : null;
     }
 
     public interface ISms : IMessageable<string>
     {
-        public new string? ToUser => User?.Phone;
+        new string? ToUser => User?.Phone;
 
         bool IMessageable<string>.CanSend => !string.IsNullOrWhiteSpace(From) // Requires FromNumber
                 && !string.IsNullOrWhiteSpace(To) // Requires ToNumber
-                // Requires at least one of Text, Subject or Html
+                                                  // Requires at least one of Text, Subject or Html
                 && !string.IsNullOrWhiteSpace(Text + Subject + Html);
 
-        string? IMessageable<string>.Content => this.CanSend ?
+        string? IMessageable<string>.Content => CanSend ?
                 (Text ?? Subject ?? Html)!
                 : null;
 
-        object? IMessageable<string>.Payload => this.Content != null ? new
+        object? IMessageable<string>.Payload => Content != null ? new
         {
-            To = To,
-            From = From,
-            Body = this.Content
+            To,
+            From,
+            Body = Content
         } : null;
     }
 
@@ -95,7 +94,7 @@ namespace S5_01_App_CS_GOAT.Services
     {
         public IConfiguration? Configuration { get; set; }
         public User? User { get; set; }
-        public string? Origin { get => "CS:GOAT";}
+        public string? Origin => "CS:GOAT";
         public string? Text { get; set; }
         public string? Subject { get; set; }
         public string? Html { get; set; }
@@ -117,7 +116,7 @@ namespace S5_01_App_CS_GOAT.Services
                     var dict = new Dictionary<string, string>();
                     foreach (PropertyInfo prop in payload.GetType().GetProperties())
                     {
-                        var value = prop.GetValue(payload)?.ToString() ?? "";
+                        string value = prop.GetValue(payload)?.ToString() ?? "";
                         dict.Add(prop.Name, value);
                     }
                     return (T)(HttpContent)new FormUrlEncodedContent(dict);
@@ -126,26 +125,32 @@ namespace S5_01_App_CS_GOAT.Services
             }
         }
 
-        public async Task<HttpResponseMessage> SendAsync<T1, T2>() where T1: IMessageable<T2>
+        public async Task<HttpResponseMessage> SendAsync<T1, T2>() where T1 : IMessageable<T2>
         {
-            T1 messageable = (T1)(IMessageable<T2>)this;
+            var messageable = (T1)(IMessageable<T2>)this;
             if (messageable.Payload == null)
+            {
                 throw new InvalidOperationException("Message cannot be sent due to missing information.");
-            using HttpClient client = new HttpClient();
+            }
+
+            using var client = new HttpClient();
             if (messageable.Auth != null && messageable.Token != null)
             {
                 string token = messageable.Token;
                 if (messageable.Auth == "Basic")
+                {
                     token = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(token));
+                }
+
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(messageable.Auth, token);
             }
             switch (messageable.Type)
             {
                 case "application/json":
-                    var jsonContent = EncodePayload<StringContent>(messageable.Payload);
+                    StringContent jsonContent = EncodePayload<StringContent>(messageable.Payload);
                     return await client.PostAsync(messageable.Url!, jsonContent);
                 case "application/x-www-form-urlencoded":
-                    var formContent = EncodePayload<FormUrlEncodedContent>(messageable.Payload);
+                    FormUrlEncodedContent formContent = EncodePayload<FormUrlEncodedContent>(messageable.Payload);
                     return await client.PostAsync(messageable.Url!, formContent);
                 default:
                     throw new NotSupportedException($"Content type {messageable.Type} is not supported.");

@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using AutoMapper;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -75,7 +68,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(moneyTransactions);
 
             // When
@@ -120,7 +113,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(allMoneyTransactions);
 
             // When
@@ -137,7 +130,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             var emptyList = new List<MoneyTransaction>();
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(emptyList);
 
             // When
@@ -153,7 +146,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             var emptyList = new List<MoneyTransaction>();
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(emptyList);
 
             // When

@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -35,7 +28,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         private LimitDTO? limitDTO;
         private LimitDTO? updatedLimitDTO;
         private List<LimitDTO>? limitDTOs;
-        
+
         private (int, int) limitKey;
 
         [TestInitialize]
@@ -64,7 +57,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 configurationMock.Object
             );
 
-            limitTypeRepositoryMock.Setup(r => r.GetTypeByName(limitType.LimitTypeName))
+            _ = limitTypeRepositoryMock.Setup(r => r.GetTypeByName(limitType.LimitTypeName))
                                .Returns(limitType);
         }
 
@@ -92,9 +85,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            limitRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Limit>?>()))
+            _ = limitRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync(limits);
-            mapperMock.Setup(m => m.Map<IEnumerable<LimitDTO>>(limits))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<LimitDTO>>(limits))
                       .Returns(limitDTOs);
 
             // When
@@ -112,8 +105,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void Update_Unauthenticated_ReturnsUnauthorized()
         {
-            // Given
-            int limitTypeId = 1;
 
             // When
             IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();
@@ -128,11 +119,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            int limitTypeId = 1;
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()))
+            _ = limitRepositoryMock.Setup(r => r.GetByIdAsync(limitKey, It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync(limit);
-            limitRepositoryMock.Setup(r => r.PatchAsync(limit, It.IsAny<Dictionary<string, object>>()))
+            _ = limitRepositoryMock.Setup(r => r.PatchAsync(limit, It.IsAny<Dictionary<string, object>>()))
                                .Returns(Task.CompletedTask);
 
             // When
@@ -151,7 +141,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int limitTypeId = 999;
             (int, int) nonExistingLimitKey = LimitFixture.GetLimitKey(normalUser.UserId, limitTypeId);
 
-            limitRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingLimitKey, It.IsAny<QueryOptions<Limit>?>()))
+            _ = limitRepositoryMock.Setup(r => r.GetByIdAsync(nonExistingLimitKey, It.IsAny<QueryOptions<Limit>?>()))
                                .ReturnsAsync((Limit?)null);
 
             // When
@@ -168,7 +158,6 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             controller.ModelState.AddModelError("LimitAmount", "Required");
-            int limitTypeId = 1;
 
             // When
             IActionResult? result = controller.Update(updatedLimitDTO).GetAwaiter().GetResult();

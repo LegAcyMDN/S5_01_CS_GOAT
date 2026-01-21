@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Threading;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -81,9 +74,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_Unauthenticated_ReturnsOkWithoutFavorites()
         {
             //Given
-            caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
+            _ = caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
                               .ReturnsAsync(caseList);
-            mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
 
             //When
@@ -99,12 +92,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
+            _ = caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
                               .ReturnsAsync(caseList);
-            mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
-            
-            favoriteRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Favorite>?>()))
+
+            _ = favoriteRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync(new List<Favorite>());
 
             //When
@@ -121,12 +114,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
+            _ = caseRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Case>?>()))
                               .ReturnsAsync(caseList);
-            mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<CaseDTO>>(caseList))
                       .Returns(caseDTOList);
-            
-            favoriteRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Favorite>?>()))
+
+            _ = favoriteRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync(new List<Favorite> { favorite });
 
             //When
@@ -148,9 +141,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             //Given
             int caseId = 1;
             QueryOptions<Case> options = new QueryOptions<Case>().Before(c => c.CaseContents);
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
-            mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
+            _ = mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
 
             //When
@@ -168,12 +161,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
-            
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
-            mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
+            _ = mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
+            _ = favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync(favorite);
 
             //When
@@ -190,7 +183,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             //Given
             int caseId = 999;
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync((Case?)null);
 
             //When
@@ -208,12 +201,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
-            
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
+
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(caseId, It.IsAny<QueryOptions<Case>>()))
                               .ReturnsAsync(caseEntity);
-            mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
+            _ = mapperMock.Setup(m => m.Map<CaseDTO>(caseEntity))
                       .Returns(caseDTO);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
+            _ = favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync((Favorite?)null);
 
             //When

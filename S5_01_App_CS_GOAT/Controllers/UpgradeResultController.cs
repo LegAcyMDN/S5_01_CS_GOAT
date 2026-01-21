@@ -1,10 +1,9 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -29,12 +28,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                 .Before(i => i.UpgradeResults);
             InventoryItem? inventoryItem = await invItemManager.GetByIdAsync(inventoryItemId, options);
-            if (inventoryItem == null || inventoryItem.DependantUserId != authResult.AuthUserId) return NotFound();
+            if (inventoryItem == null || inventoryItem.DependantUserId != authResult.AuthUserId)
+            {
+                return NotFound();
+            }
 
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(inventoryItem.UpgradeResults);
             return Ok(new GetOptions<UpgradeResultDTO>(Request, upgradeResultsDTO));
@@ -52,12 +56,17 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<RandomTransaction> options = new QueryOptions<RandomTransaction>()
                 .Before(rt => rt.UpgradeResults);
             RandomTransaction? randomTransaction = await randTransManager.GetByIdAsync(transactionId, options);
-            if (randomTransaction == null || randomTransaction.DependantUserId != authResult.AuthUserId) return NotFound();
+            if (randomTransaction == null || randomTransaction.DependantUserId != authResult.AuthUserId)
+            {
+                return NotFound();
+            }
 
             IEnumerable<UpgradeResultDTO> upgradeResultsDTO = mapper.Map<IEnumerable<UpgradeResultDTO>>(randomTransaction.UpgradeResults);
             return Ok(new GetOptions<UpgradeResultDTO>(Request, upgradeResultsDTO));

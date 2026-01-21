@@ -1,15 +1,12 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -49,9 +46,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByInventoryItem_ReturnsOk()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync(wear);
-            mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
                       .Returns(priceHistoryDTOs);
 
             // When
@@ -66,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByWear_WearNotFound_ReturnsNotFound()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync((Wear?)null);
 
             // When
@@ -82,9 +79,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             var emptyList = new List<PriceHistory>();
             var emptyDTOList = new List<PriceHistoryDTO>();
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync(wear);
-            mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(emptyList))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(emptyList))
                       .Returns(emptyDTOList);
 
             // When
@@ -102,11 +99,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAIPrediction_ReturnsOk()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync(wear);
-            priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30, false))
+            _ = priceHistoryRepositoryMock.Setup(r => r.PredictWithAI(wear, 30, false))
                                       .ReturnsAsync(priceHistories);
-            mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<PriceHistoryDTO>>(priceHistories))
                       .Returns(priceHistoryDTOs);
 
             // When
@@ -121,7 +118,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAIPrediction_WearNotFound_ReturnsNotFound()
         {
             // Given
-            wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
+            _ = wearRepositoryMock.Setup(r => r.GetByIdAsync(wear.WearId, It.IsAny<QueryOptions<Wear>>()))
                                   .ReturnsAsync((Wear)null);
 
             // When

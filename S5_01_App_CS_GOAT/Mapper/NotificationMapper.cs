@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Shared.DTO;
+using AutoMapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper;
 
@@ -9,7 +9,7 @@ public class NotificationMapper : Profile
     public NotificationMapper()
     {
         // Entity → DTO
-        CreateMap<Notification, NotificationDTO>()
+        _ = CreateMap<Notification, NotificationDTO>()
             .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
             .ForMember(dest => dest.NotificationSummary, opt => opt.MapFrom(src => src.NotificationSummary))
             .ForMember(dest => dest.NotificationContent, opt => opt.MapFrom(src => src.NotificationContent))
@@ -17,11 +17,11 @@ public class NotificationMapper : Profile
             .ForMember(dest => dest.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationType.NotificationTypeName));
 
         // UserNotification → DTO
-        CreateMap<UserNotification, NotificationDTO>()
+        _ = CreateMap<UserNotification, NotificationDTO>()
             .IncludeBase<Notification, NotificationDTO>();
 
         // DTO → UserNotification
-        CreateMap<NotificationDTO, UserNotification>()
+        _ = CreateMap<NotificationDTO, UserNotification>()
             .ForMember(dest => dest.NotificationId, opt => opt.MapFrom(src => src.NotificationId))
             .ForMember(dest => dest.NotificationSummary, opt => opt.MapFrom(src => src.NotificationSummary))
             .ForMember(dest => dest.NotificationContent, opt => opt.MapFrom(src => src.NotificationContent))

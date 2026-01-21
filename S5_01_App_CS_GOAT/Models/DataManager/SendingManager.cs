@@ -1,4 +1,3 @@
-﻿using System.Reflection.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -9,7 +8,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     /// <summary>
     /// Manages sending and verification of email and SMS codes for user contact information verification
     /// </summary>
-    public class SendingManager: ISendingRepository
+    public class SendingManager : ISendingRepository
     {
         protected readonly CSGOATDbContext _context;
         protected readonly IUserRepository _userRepository;
@@ -30,21 +29,21 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             duration ??= TimeSpan.FromMinutes(15);
             code ??= SecurityService.GenerateSeed(6);
-            Token token = new Token
+            var token = new Token
             {
                 UserId = userId,
                 TokenTypeId = tokenTypedId,
                 TokenExpiry = DateTime.Now.Add(duration.Value),
                 TokenValue = code
             };
-            _context.Set<Token>().Add(token);
-            await _context.SaveChangesAsync();
+            _ = _context.Set<Token>().Add(token);
+            _ = await _context.SaveChangesAsync();
             return token;
         }
 
         private Message NewMessage(User user, string token)
         {
-            Message message = new Message(_configuration, user)
+            var message = new Message(_configuration, user)
             {
                 Text = $"Votre code de vérification CS:GOAT est: / Your CS:GOAT verification code is: {token}",
                 Subject = "Code de vérification CS:GOAT / CS:GOAT Verification code",
@@ -64,22 +63,29 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             Func<Message, Task<HttpResponseMessage>> sendMethod)
         {
             if (string.IsNullOrWhiteSpace(contactInfo))
+            {
                 return StatusCodes.Status400BadRequest;
+            }
+
             if (verifiedOn != null)
+            {
                 return StatusCodes.Status409Conflict;
+            }
 
             // Check for existing unexpired tokens
             IEnumerable<Token> tokens = _context.Set<Token>()
                 .Where(t => t.UserId == user.UserId && t.TokenTypeId == tokenTypeId);
             // If any unexpired token exists, do not create a new one
             if (tokens.Any(t => t.TokenExpiry > DateTime.Now))
+            {
                 return StatusCodes.Status429TooManyRequests;
+            }
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             // Otherwise, remove all previous tokens
             _context.Set<Token>().RemoveRange(tokens);
             Token token = await NewToken(user.UserId, tokenTypeId);
-            
+
             // Create the message and send it
             Message message = NewMessage(user, token.TokenValue);
             HttpResponseMessage response = await sendMethod(message);
@@ -104,9 +110,14 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             Action<User> setVerifiedOn)
         {
             if (string.IsNullOrWhiteSpace(contactInfo))
+            {
                 return StatusCodes.Status400BadRequest;
+            }
+
             if (verifiedOn != null)
+            {
                 return StatusCodes.Status409Conflict;
+            }
 
             // Find the token
             Token? token = _context.Set<Token>()
@@ -114,7 +125,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     t.UserId == user.UserId &&
                     t.TokenTypeId == tokenTypeId &&
                     t.TokenValue == code);
-            if (token == null) return StatusCodes.Status404NotFound;
+            if (token == null)
+            {
+                return StatusCodes.Status404NotFound;
+            }
 
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             int statusCode;
@@ -126,12 +140,12 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             else
             {
                 setVerifiedOn(user);
-                _context.Set<User>().Update(user);
+                _ = _context.Set<User>().Update(user);
                 statusCode = StatusCodes.Status200OK;
             }
             // Remove the token
-            _context.Set<Token>().Remove(token);
-            await _context.SaveChangesAsync();
+            _ = _context.Set<Token>().Remove(token);
+            _ = await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return statusCode;
         }

@@ -1,10 +1,9 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -29,7 +28,11 @@ namespace S5_01_App_CS_GOAT.Controllers
                 new QueryOptions<Wear>()
                 .After(w => w.WearClass.PriceHistories);
             Wear? wear = await wearManager.GetByIdAsync(wearId, options);
-            if (wear == null) return NotFound();
+            if (wear == null)
+            {
+                return NotFound();
+            }
+
             IEnumerable<PriceHistory> result = wear.PriceHistories(false);
             IEnumerable<PriceHistoryDTO> dto = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
             return Ok(dto);
@@ -51,9 +54,17 @@ namespace S5_01_App_CS_GOAT.Controllers
                 new QueryOptions<Wear>()
                 .After(w => w.WearClass.PriceHistories);
             Wear? wear = await wearManager.GetByIdAsync(wearId, options);
-            if (wear == null) return NotFound();
+            if (wear == null)
+            {
+                return NotFound();
+            }
+
             IEnumerable<PriceHistory>? result = await manager.PredictWithAI(wear);
-            if (result == null) return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            if (result == null)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
+
             IEnumerable<PriceHistoryDTO> priceHistoryDTOs = mapper.Map<IEnumerable<PriceHistoryDTO>>(result);
 
             return Ok(priceHistoryDTOs);

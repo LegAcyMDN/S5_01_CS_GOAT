@@ -1,11 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -15,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Controllers
     public class CaseController(
         IMapper mapper,
         IReadableRepository<Case, int> manager,
-        IDataRepository<Favorite, (int,int)> favoriteManager,
+        IDataRepository<Favorite, (int, int)> favoriteManager,
         ICaseOpenningRepository caseOpenningService,
         IConfiguration configuration) : ControllerBase
     {
@@ -33,11 +32,16 @@ namespace S5_01_App_CS_GOAT.Controllers
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Ok(new GetOptions<CaseDTO>(Request, caseDTO));
+            }
+
             IEnumerable<Favorite> favorites = await authResult.GetByUser(favoriteManager, false);
 
             foreach (CaseDTO caseDto in caseDTO)
+            {
                 caseDto.IsFavorite = favorites.Any(fav => fav.CaseId == caseDto.CaseId);
+            }
 
             return Ok(new GetOptions<CaseDTO>(Request, caseDTO));
         }
@@ -55,11 +59,18 @@ namespace S5_01_App_CS_GOAT.Controllers
             QueryOptions<Case> options = new QueryOptions<Case>()
                 .Before(c => c.CaseContents);
             Case? result = await manager.GetByIdAsync(id, options);
-            if (result == null) return NotFound();
+            if (result == null)
+            {
+                return NotFound();
+            }
+
             CaseDTO caseDetailDTO = mapper.Map<CaseDTO>(result);
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated) return Ok(caseDetailDTO);
+            if (!authResult.IsAuthenticated)
+            {
+                return Ok(caseDetailDTO);
+            }
 
             Favorite? favorite = await favoriteManager.GetByIdAsync(
                 (authResult.AuthUserId.Value,
@@ -82,9 +93,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             Case? caseToOpen = await manager.GetByIdAsync(caseOpenning.CaseId);
-            if (caseToOpen == null) return NotFound();
+            if (caseToOpen == null)
+            {
+                return NotFound();
+            }
+
             MultipleCaseResultDTO caseResult;
             try
             {

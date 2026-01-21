@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Services;
 
@@ -22,16 +20,24 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         public async Task<IEnumerable<TEntity>> GetAllAsync(QueryOptions<TEntity>? options = null)
         {
             IQueryable<TEntity> query = _context.Set<TEntity>();
-            if (options != null) query = options.ApplyBefore(query);
+            if (options != null)
+            {
+                query = options.ApplyBefore(query);
+            }
+
             IEnumerable<TEntity> list = await query.ToListAsync();
-            if (options != null) await options.ApplyAfter(list, _context);
+            if (options != null)
+            {
+                _ = await options.ApplyAfter(list, _context);
+            }
+
             return list;
         }
 
         public async Task<TEntity?> GetByIdAsync(TIdentifier id, QueryOptions<TEntity>? options = null)
         {
-            DbSet<TEntity> dbSet = _context.Set<TEntity>(); // Use DbSet for FindAsync
-            IQueryable<TEntity> query = dbSet.AsQueryable(); // Ensure query is IQueryable
+            DbSet<TEntity> dbSet = _context.Set<TEntity>();
+            IQueryable<TEntity> query = dbSet.AsQueryable();
 
             if (options != null)
             {
@@ -41,8 +47,8 @@ namespace S5_01_App_CS_GOAT.Models.Repository
 
             if (typeof(TIdentifier).Name.StartsWith("ValueTuple"))
             {
-                var fields = typeof(TIdentifier).GetFields();
-                var values = new object[fields.Length];
+                System.Reflection.FieldInfo[] fields = typeof(TIdentifier).GetFields();
+                object[] values = new object[fields.Length];
                 for (int i = 0; i < fields.Length; i++)
                 {
                     values[i] = fields[i].GetValue(id)!;
@@ -51,14 +57,13 @@ namespace S5_01_App_CS_GOAT.Models.Repository
             }
             else
             {
-                string? keyName = _context.Model
+                string? keyName = (_context.Model
                     .FindEntityType(typeof(TEntity))?
                     .FindPrimaryKey()?
                     .Properties
                     .Select(x => x.Name)
-                    .FirstOrDefault();
-                if (keyName == null) throw new InvalidOperationException(
-                    $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
+                    .FirstOrDefault()) ?? throw new InvalidOperationException(
+                        $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
                 entity = await query.FirstOrDefaultAsync(e => EF.Property<TIdentifier>(e, keyName).Equals(id));
             }
 

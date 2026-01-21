@@ -1,17 +1,13 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -63,8 +59,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_AsAdmin_ReturnsOk()
         {
             JwtService.AuthentifyController(controller, admin);
-            transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>?>())).ReturnsAsync(transactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
+            _ = transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>?>())).ReturnsAsync(transactions);
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
             // When
@@ -103,8 +99,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetByUser_AuthenticatedUser_ReturnsOwnTransactions()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>?>())).ReturnsAsync(transactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
+            _ = transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>?>())).ReturnsAsync(transactions);
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<RandomTransactionDTO>>(transactions))
                        .Returns(transactionDTOs);
 
             // When
@@ -130,9 +126,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_ValidId_ReturnsOk()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            transactionRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<RandomTransaction>?>())
+            _ = transactionRepositoryMock.Setup(r => r.GetByIdAsync(1, It.IsAny<QueryOptions<RandomTransaction>?>())
             ).ReturnsAsync(transaction);
-            mapperMock.Setup(m => m.Map<RandomTransactionDetailDTO>(transaction))
+            _ = mapperMock.Setup(m => m.Map<RandomTransactionDetailDTO>(transaction))
                        .Returns(transactionDetailDTO);
 
             // When
@@ -147,7 +143,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_InvalidId_ReturnsNotFound()
         {
             JwtService.AuthentifyController(controller, normalUser);
-            transactionRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<RandomTransaction>?>())
+            _ = transactionRepositoryMock.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<RandomTransaction>?>())
             ).ReturnsAsync((RandomTransaction?)null);
 
             // When
@@ -177,8 +173,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void LiveFeed_ReturnsDTOs()
         {
             // Given
-            transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>>())).ReturnsAsync(transactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<LiveFeedDTO>>(transactions))
+            _ = transactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<RandomTransaction>>())).ReturnsAsync(transactions);
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<LiveFeedDTO>>(transactions))
                        .Returns(new List<LiveFeedDTO>());
 
             // When

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
@@ -6,8 +6,6 @@ using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using Shared.DTO;
 using Shared.DTO.Helpers;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -32,9 +30,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
 
             IEnumerable<User> users = await manager.GetAllAsync();
             IEnumerable<UserDTO> dtos = mapper.Map<IEnumerable<UserDTO>>(users);
@@ -67,13 +70,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!auth.IsAdmin && auth.AuthUserId != id)
+            {
                 return Forbid();
+            }
 
             User? user = await manager.GetByIdAsync(id);
             if (user == null)
+            {
                 return NotFound();
+            }
 
             UserDTO dto = mapper.Map<UserDTO>(user);
             return Ok(dto);
@@ -91,7 +101,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> Create([FromBody] CreateUserDTO userDTO)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             try
             {
@@ -118,14 +130,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             User? existing = await manager.GetByIdAsync((int)auth.AuthUserId!);
             if (existing == null)
+            {
                 return NotFound();
+            }
 
             try
             {
@@ -151,7 +169,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             User? user = await manager.Login(loginDTO);
-            if (user == null) return Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             AuthDTO authDTO = await manager.Auth(user, configuration, loginDTO.Remember);
             return Ok(authDTO);
         }
@@ -168,7 +190,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> Recall([FromBody] TokenDTO rememberDTO)
         {
             User? user = await manager.Recall(rememberDTO);
-            if (user == null) return Unauthorized();
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             AuthDTO authDTO = await manager.Auth(user, configuration);
             return Ok(authDTO);
         }
@@ -189,13 +215,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> ResetPassword(
             [FromQuery] string identifier,
-            [FromQuery] string? url = null, 
+            [FromQuery] string? url = null,
             [FromQuery] string? code = null,
             [FromQuery] bool preferMail = true)
         {
-            if (string.IsNullOrEmpty(identifier)) return BadRequest();
-            if ((string.IsNullOrEmpty(url) ? 0 : 1) + (string.IsNullOrEmpty(code) ? 0 : 1) != 1)
+            if (string.IsNullOrEmpty(identifier))
+            {
                 return BadRequest();
+            }
+
+            if ((string.IsNullOrEmpty(url) ? 0 : 1) + (string.IsNullOrEmpty(code) ? 0 : 1) != 1)
+            {
+                return BadRequest();
+            }
+
             if (url != null)
             {
                 int response = await manager.StartResetPassword(identifier, url, preferMail);
@@ -204,8 +237,7 @@ namespace S5_01_App_CS_GOAT.Controllers
             else
             {
                 Tuple<int, string?> response = await manager.EndResetPassword(identifier, code!);
-                if (response.Item2 != null) return Ok(response.Item2);
-                return StatusCode(response.Item1);
+                return response.Item2 != null ? Ok(response.Item2) : StatusCode(response.Item1);
             }
         }
 
@@ -220,10 +252,16 @@ namespace S5_01_App_CS_GOAT.Controllers
         public async Task<IActionResult> VerifyPhone(string contact, string? code = null)
         {
             if (contact.ToLower() != "sms" && contact.ToLower() != "mail")
+            {
                 return BadRequest();
+            }
+
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             User user = (await manager.GetByIdAsync((int)auth.AuthUserId!))!;
             int response = (contact, code) switch
             {
@@ -248,18 +286,25 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult auth = JwtService.JwtAuth(configuration);
             if (!auth.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!auth.IsAdmin && auth.AuthUserId != userId)
+            {
                 return Forbid();
+            }
 
             User? user = await manager.GetByIdAsync(userId);
-            if (user == null) return NotFound();
+            if (user == null)
+            {
+                return NotFound();
+            }
 
             try
             {
                 object? data = await manager.ExportUserDataAsync(user.UserId);
-                if (data == null) return NotFound();
-                return Ok(data);
+                return data == null ? NotFound() : Ok(data);
             }
             catch (Exception ex)
             {
@@ -274,13 +319,10 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Delete()
+        public IActionResult Delete()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
-            if (!authResult.IsAuthenticated)
-                return Unauthorized();
-
-            throw new NotImplementedException();
+            return !authResult.IsAuthenticated ? (IActionResult)Unauthorized() : throw new NotImplementedException();
         }
     }
 }

@@ -1,6 +1,6 @@
 using AutoMapper;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public RandomTransactionMapper()
         {
             // Entity → DTO
-            CreateMap<RandomTransaction, RandomTransactionDTO>()
+            _ = CreateMap<RandomTransaction, RandomTransactionDTO>()
                 .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.TransactionId))
                 .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
@@ -17,7 +17,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.CancelledOn, opt => opt.MapFrom(src => src.CancelledOn));
 
             // Entity → DetailDTO
-            CreateMap<RandomTransaction, RandomTransactionDetailDTO>()
+            _ = CreateMap<RandomTransaction, RandomTransactionDetailDTO>()
                 .ForMember(dest => dest.TransactionId, opt => opt.MapFrom(src => src.TransactionId))
                 .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
@@ -32,7 +32,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.Case, opt => opt.MapFrom(src => src.Case));
 
             // Entity → LiveFeedDTO
-            CreateMap<RandomTransaction, LiveFeedDTO>()
+            _ = CreateMap<RandomTransaction, LiveFeedDTO>()
                 .ForMember(dest => dest.TransactionDate, opt => opt.MapFrom(src => src.TransactionDate))
                 .ForMember(dest => dest.ItemName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.Item.ItemName))
                 .ForMember(dest => dest.SkinName, opt => opt.MapFrom(src => src.InventoryItem.Wear.Skin.SkinName))
@@ -45,7 +45,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         {
             // Extract uppercase letters from the wear type name
             // For example: "FactoryNew" -> "FN", "MinimalWear" -> "MW"
-            var abbreviation = string.Concat(wearTypeName.Where(char.IsUpper));
+            string abbreviation = string.Concat(wearTypeName.Where(char.IsUpper));
             return string.IsNullOrEmpty(abbreviation) ? wearTypeName : abbreviation;
         }
     }

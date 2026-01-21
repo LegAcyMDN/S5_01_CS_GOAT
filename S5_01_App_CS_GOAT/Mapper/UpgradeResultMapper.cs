@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Shared.DTO;
+using AutoMapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public UpgradeResultMapper()
         {
             // Entity -> DTO
-            CreateMap<UpgradeResult, UpgradeResultDTO>()
+            _ = CreateMap<UpgradeResult, UpgradeResultDTO>()
                 .ForMember(dest => dest.FloatStart, opt => opt.MapFrom(src => src.FloatStart))
                 .ForMember(dest => dest.FloatEnd, opt => opt.MapFrom(src => src.FloatEnd))
                 .ForMember(dest => dest.ProbIntact, opt => opt.MapFrom(src => src.ProbIntact))

@@ -30,9 +30,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             return new SessionCreateOptions
             {
-                PaymentMethodTypes = new List<string> { "card" },
-                LineItems = new List<SessionLineItemOptions>
-                    {
+                PaymentMethodTypes = ["card"],
+                LineItems =
+                    [
                         new SessionLineItemOptions
                         {
                             PriceData = new SessionLineItemPriceDataOptions
@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                             },
                             Quantity = 1,
                         },
-                    },
+                    ],
                 Mode = "payment",
                 SuccessUrl = $"{request.SuccessUrl}?session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = request.CancelUrl,
@@ -64,7 +64,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             return new SessionCreateOptions
             {
-                PaymentMethodTypes = new List<string> { "card" },
+                PaymentMethodTypes = ["card"],
                 Mode = "setup",
                 SuccessUrl = $"{request.SuccessUrl}?session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = request.CancelUrl,
@@ -80,33 +80,41 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         public async Task HandleSetupIntentSucceeded(Event stripeEvent)
         {
             var setupIntent = stripeEvent.Data.Object as SetupIntent;
-            if (setupIntent == null || setupIntent.Metadata == null) return;
+            if (setupIntent == null || setupIntent.Metadata == null)
+            {
+                return;
+            }
 
             if (!setupIntent.Metadata.ContainsKey("type")
                 || setupIntent.Metadata["type"] != "withdrawal")
-                    return;
-            
+            {
+                return;
+            }
+
             int userId = int.Parse(setupIntent.Metadata["user_id"]);
             double amount = double.Parse(setupIntent.Metadata["amount"]);
-            
+
             User? user = await _userRepository.GetByIdAsync(userId);
-            if (user == null || user.Wallet < amount) return;
-            
+            if (user == null || user.Wallet < amount)
+            {
+                return;
+            }
+
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var payoutService = new PayoutService();
-                var payout = await payoutService.CreateAsync(new PayoutCreateOptions
+                Payout payout = await payoutService.CreateAsync(new PayoutCreateOptions
                 {
                     Amount = (long)(amount * 100),
                     Currency = "eur",
                     Method = "instant",
                     SourceType = "card",
                 });
-                 
+
                 user.Wallet -= amount;
                 await _userRepository.UpdateAsync(user);
-                  
+
                 var moneyTrans = new MoneyTransaction
                 {
                     UserId = userId,
@@ -114,8 +122,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     TransactionDate = DateTime.UtcNow,
                     PaymentMethodId = 1,
                 };
-                await _transactionRepository.AddAsync(moneyTrans);
-                await _context.SaveChangesAsync();
+                _ = await _transactionRepository.AddAsync(moneyTrans);
+                _ = await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch (StripeException ex)
@@ -125,15 +133,25 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 return;
             }
         }
-        
+
         public async Task HandleCheckoutSessionCompleted(Event stripeEvent)
         {
             var session = stripeEvent.Data.Object as Session;
-            if (session == null) return;
-            
-            if (!session.Metadata.ContainsKey("user_id")) return;
-            if (!session.Metadata.ContainsKey("amount")) return;
-            
+            if (session == null)
+            {
+                return;
+            }
+
+            if (!session.Metadata.ContainsKey("user_id"))
+            {
+                return;
+            }
+
+            if (!session.Metadata.ContainsKey("amount"))
+            {
+                return;
+            }
+
             bool withdrawal = false;
             if (session.Metadata.ContainsKey("type") &&
                 session.Metadata["type"] == "withdrawal")
@@ -147,10 +165,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 int userId = int.Parse(session.Metadata["user_id"]);
                 double amount = double.Parse(session.Metadata["amount"]);
                 User? user = await _userRepository.GetByIdAsync(userId);
-                if (user == null) return;
+                if (user == null)
+                {
+                    return;
+                }
 
-                var oldWallet = user.Wallet;
-                if (!withdrawal) user.Wallet += amount;
+                double oldWallet = user.Wallet;
+                if (!withdrawal)
+                {
+                    user.Wallet += amount;
+                }
                 else
                 {
                     user.Wallet -= amount;
@@ -169,8 +193,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 
                 };
 
-                await _transactionRepository.AddAsync(moneyTrans);
-                await _context.SaveChangesAsync();
+                _ = await _transactionRepository.AddAsync(moneyTrans);
+                _ = await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch (Exception ex)

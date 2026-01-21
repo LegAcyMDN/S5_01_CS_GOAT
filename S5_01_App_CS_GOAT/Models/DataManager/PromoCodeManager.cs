@@ -1,4 +1,4 @@
-﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     /// </summary>
     public class PromoCodeManager : CrudRepository<PromoCode, int>, IPromoCodeRepository
     {
-        protected readonly CSGOATDbContext _context;
+        protected new readonly CSGOATDbContext _context;
 
         public PromoCodeManager(CSGOATDbContext context) : base(context)
         {
@@ -18,20 +18,35 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
 
         public async Task Refresh(PromoCode promoCode)
         {
-            if (!promoCode.IsDueForRefresh()) return;
+            if (!promoCode.IsDueForRefresh())
+            {
+                return;
+            }
+
             promoCode.ValidityStart += promoCode.RefreshDelay.Value;
             promoCode.ExpiryDate += promoCode.RefreshDelay.Value;
-            if (promoCode.RemainingUses == 0) promoCode.RemainingUses = 1;
-            await this.UpdateAsync(promoCode);
+            if (promoCode.RemainingUses == 0)
+            {
+                promoCode.RemainingUses = 1;
+            }
+
+            await UpdateAsync(promoCode);
             return;
         }
 
         public async Task<bool> CheckValidity(PromoCode promoCode)
         {
-            await this.Refresh(promoCode);
-            if (promoCode.IsValid()) return true;
+            await Refresh(promoCode);
+            if (promoCode.IsValid())
+            {
+                return true;
+            }
+
             if (promoCode.IsDueForDelete())
-                await this.DeleteAsync(promoCode);
+            {
+                await DeleteAsync(promoCode);
+            }
+
             return false;
         }
 
@@ -42,12 +57,15 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     (pc.UserId == null || pc.UserId == userId) &&
                     (pc.CaseId == null || pc.CaseId == caseId)
                 );
-            IEnumerable<PromoCode> promoCodes = await this.GetAllAsync(options);
+            IEnumerable<PromoCode> promoCodes = await GetAllAsync(options);
             PromoCode? promoCode = promoCodes.FirstOrDefault();
-            if (promoCode == null) return null;
+            if (promoCode == null)
+            {
+                return null;
+            }
+
             bool isValid = await CheckValidity(promoCode);
-            if (!isValid) return null;
-            return promoCode;
+            return !isValid ? null : promoCode;
         }
 
         public async Task Consume(PromoCode promoCode)
@@ -55,9 +73,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             if (promoCode.RemainingUses != null && promoCode.RemainingUses > 0)
             {
                 promoCode.RemainingUses -= 1;
-                await this.UpdateAsync(promoCode);
+                await UpdateAsync(promoCode);
             }
-            await CheckValidity(promoCode);
+            _ = await CheckValidity(promoCode);
         }
     }
 }

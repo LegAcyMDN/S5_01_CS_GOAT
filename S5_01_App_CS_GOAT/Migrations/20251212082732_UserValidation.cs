@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,7 +10,7 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "usr_login",
                 table: "t_e_user_usr",
                 type: "character varying(32)",
@@ -21,7 +21,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 oldMaxLength: 50,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "usr_displayname",
                 table: "t_e_user_usr",
                 type: "character varying(64)",
@@ -36,7 +36,7 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "usr_login",
                 table: "t_e_user_usr",
                 type: "character varying(50)",
@@ -47,7 +47,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 oldMaxLength: 32,
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<string>(
+            _ = migrationBuilder.AlterColumn<string>(
                 name: "usr_displayname",
                 table: "t_e_user_usr",
                 type: "character varying(100)",

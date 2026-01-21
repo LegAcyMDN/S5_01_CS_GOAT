@@ -1,6 +1,6 @@
 using AutoMapper;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper;
 
@@ -9,7 +9,7 @@ public class InventoryItemDetailMapper : Profile
     public InventoryItemDetailMapper()
     {
         // Entity -> DTO
-        CreateMap<InventoryItem, InventoryItemDetailDTO>()
+        _ = CreateMap<InventoryItem, InventoryItemDetailDTO>()
             .ForMember(dest => dest.InventoryItemId, opt => opt.MapFrom(src => src.InventoryItemId))
             .ForMember(dest => dest.WearId, opt => opt.MapFrom(src => src.WearId))
             .ForMember(dest => dest.Float, opt => opt.MapFrom(src => src.Float))

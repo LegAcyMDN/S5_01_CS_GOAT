@@ -1,20 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -104,9 +97,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
+            _ = notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
                                       .ReturnsAsync(allNotifications);
-            mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(allNotifications))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(allNotifications))
                       .Returns(notificationDTOs);
 
             // When
@@ -122,7 +115,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
+            _ = notificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<Notification>?>()))
                                       .ReturnsAsync(new List<Notification>());
 
             // When
@@ -154,11 +147,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            globalNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<GlobalNotification>?>()))
+            _ = globalNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<GlobalNotification>?>()))
                                             .ReturnsAsync(globalNotifications);
-            userNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<UserNotification>?>()))
+            _ = userNotificationRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<UserNotification>?>()))
                                           .ReturnsAsync(userNotifications);
-            mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(It.IsAny<List<Notification>>()))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<NotificationDTO>>(It.IsAny<List<Notification>>()))
                       .Returns(notificationDTOs);
 
             // When
@@ -179,9 +172,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             int notificationId = 1;
-            notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
+            _ = notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
                                       .ReturnsAsync(globalNotification);
-            mapperMock.Setup(m => m.Map<NotificationDTO>(globalNotification))
+            _ = mapperMock.Setup(m => m.Map<NotificationDTO>(globalNotification))
                       .Returns(notificationDTO);
 
             // When
@@ -197,7 +190,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             int notificationId = 999;
-            notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
+            _ = notificationRepositoryMock.Setup(r => r.GetByIdAsync(notificationId, It.IsAny<QueryOptions<Notification>>()))
                                       .ReturnsAsync((Notification?)null);
 
             // When

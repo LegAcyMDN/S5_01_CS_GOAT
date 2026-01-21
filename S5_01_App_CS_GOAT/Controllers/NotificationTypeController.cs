@@ -1,9 +1,8 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {

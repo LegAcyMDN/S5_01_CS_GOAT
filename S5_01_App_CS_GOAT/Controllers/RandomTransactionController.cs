@@ -1,11 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using S5_01_App_CS_GOAT.Mapper;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -28,9 +26,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
 
             IEnumerable<RandomTransaction?> transactions = await manager.GetAllAsync();
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
@@ -47,7 +50,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             IEnumerable<RandomTransaction> transactions = await authResult.GetByUser(manager, false);
             IEnumerable<RandomTransactionDTO> transactionsDTO = mapper.Map<IEnumerable<RandomTransactionDTO>>(transactions);
@@ -66,7 +71,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<RandomTransaction> queryOptions = new QueryOptions<RandomTransaction>()
                 .Before(
@@ -76,8 +83,7 @@ namespace S5_01_App_CS_GOAT.Controllers
                     rt => rt.InventoryItem.Wear.Skin.Item.ItemType
                 );
             RandomTransaction? result = await manager.GetByIdAsync(id, queryOptions);
-            if (result == null) return NotFound();
-            return Ok(mapper.Map<RandomTransactionDetailDTO>(result));
+            return result == null ? NotFound() : Ok(mapper.Map<RandomTransactionDetailDTO>(result));
         }
 
         /// <summary>
@@ -88,7 +94,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> LiveFeed()
         {
-            var queryOptions = new QueryOptions<RandomTransaction>()
+            QueryOptions<RandomTransaction> queryOptions = new QueryOptions<RandomTransaction>()
                 .Before(rt => rt.CaseId != null)
                 .Before(
                     rt => rt.InventoryItem.Wear.WearType,
@@ -96,8 +102,8 @@ namespace S5_01_App_CS_GOAT.Controllers
                     rt => rt.InventoryItem.Wear.Skin.Item
                 );
 
-            var transactions = await manager.GetAllAsync(queryOptions);
-            var liveFeedDTOs = mapper.Map<IEnumerable<LiveFeedDTO>>(transactions);
+            IEnumerable<RandomTransaction> transactions = await manager.GetAllAsync(queryOptions);
+            IEnumerable<LiveFeedDTO> liveFeedDTOs = mapper.Map<IEnumerable<LiveFeedDTO>>(transactions);
             return Ok(new GetOptions<LiveFeedDTO>(Request, liveFeedDTOs));
         }
     }

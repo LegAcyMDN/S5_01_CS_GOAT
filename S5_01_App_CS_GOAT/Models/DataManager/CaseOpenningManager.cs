@@ -1,11 +1,10 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore.Storage;
-using Shared.DTO;
-using Shared.DTO.Helpers;
-using S5_01_App_CS_GOAT.Mapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
@@ -51,15 +50,18 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             QueryOptions<User> options = new QueryOptions<User>()
                 .Before(u => u.FairRandom);
             User? user = await _userRepository.GetByIdAsync(userId, options);
-            if (user == null) throw new Exception("User not found.");
-            return await OpenCaseAsync(caseOpenningDTO, user);
+            return user == null ? throw new Exception("User not found.") : await OpenCaseAsync(caseOpenningDTO, user);
         }
 
         public async Task<MultipleCaseResultDTO> OpenCaseAsync(
             CaseOpenningDTO caseOpenningDTO,
             User user)
         {
-            if (caseOpenningDTO.Quantity <= 0) throw new Exception("Quantity must be greater than zero.");
+            if (caseOpenningDTO.Quantity <= 0)
+            {
+                throw new Exception("Quantity must be greater than zero.");
+            }
+
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
             QueryOptions<Case> options = new QueryOptions<Case>()
@@ -70,7 +72,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 caseOpenningDTO.CaseId,
                 options
             );
-            if (targetCase == null) throw new Exception("Case not found.");
+            if (targetCase == null)
+            {
+                throw new Exception("Case not found.");
+            }
 
             PromoCode? promoCode = null;
             if (!string.IsNullOrEmpty(caseOpenningDTO.PromoCode))
@@ -81,7 +86,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     caseOpenningDTO.CaseId
                 );
                 if (promoCode == null)
+                {
                     throw new Exception("Promo code is invalid.");
+                }
             }
 
             double basePrice = targetCase.CasePrice * caseOpenningDTO.Quantity;
@@ -97,7 +104,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 await _promoCodeRepository.Consume(promoCode);
             }
 
-            MultipleCaseResultDTO finalResult = new MultipleCaseResultDTO
+            var finalResult = new MultipleCaseResultDTO
             {
                 CaseId = targetCase.CaseId,
                 WalletBefore = user.Wallet,
@@ -114,7 +121,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 finalPrice > user.Wallet
                 || finalResult.Ban != null
                 || finalResult.Limit != null
-            ) return finalResult;
+            )
+            {
+                return finalResult;
+            }
 
             user.Wallet -= finalPrice;
             await _userRepository.UpdateAsync(user);
@@ -130,16 +140,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 float floatValue = (float)fairRandom.Fraction2!;
                 Skin skin = ChooseOne(targetCase.CaseContents, (double)fairRandom.Fraction1!).Skin;
                 Wear wear = skin.GetClosestWear(floatValue);
-                InventoryItem newItem = new InventoryItem
+                var newItem = new InventoryItem
                 {
                     UserId = user.UserId,
                     WearId = wear.WearId,
                     Float = floatValue,
                 };
-                await _inventoryItemRepository.AddAsync(newItem);
+                _ = await _inventoryItemRepository.AddAsync(newItem);
                 await _context.Entry(newItem.Wear.WearClass).Collection(wc => wc.PriceHistories).LoadAsync();
 
-                RandomTransaction randomTransaction = new RandomTransaction
+                var randomTransaction = new RandomTransaction
                 {
                     UserId = user.UserId,
                     WalletValue = -finalPrice / caseOpenningDTO.Quantity,
@@ -147,9 +157,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     CaseId = targetCase.CaseId,
                     FairRandomId = fairRandom.FairRandomId,
                 };
-                await _randomTransactionRepository.AddAsync(randomTransaction);
+                _ = await _randomTransactionRepository.AddAsync(randomTransaction);
 
-                IndividualCaseResultDTO indivResult = new IndividualCaseResultDTO
+                var indivResult = new IndividualCaseResultDTO
                 {
                     Reward = _mapper.Map<InventoryItemDetailDTO>(newItem),
                     RandomTransactionId = randomTransaction.TransactionId,
@@ -158,7 +168,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 };
 
                 finalResult.Results.Add(indivResult);
-                finalResult.ContentLength ++;
+                finalResult.ContentLength++;
             }
 
             foreach (CaseContent cc in targetCase.CaseContents)
@@ -179,7 +189,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             {
                 cumulative += option.Weight;
                 if (scaled < cumulative)
+                {
                     return option;
+                }
             }
             return options.Last();
         }

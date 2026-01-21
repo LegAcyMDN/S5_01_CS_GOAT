@@ -1,9 +1,8 @@
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Primitives;
 using Shared.Enum;
 using Shared.Interfaces;
-using System.Reflection;
-using System.Text.Json.Serialization;
 
 namespace S5_01_App_CS_GOAT.Services;
 
@@ -17,15 +16,15 @@ public class GetOptions<Tdto>
         { new() { "s", "search", "levenshtein" }, SortingType.Search }
     };
 
-    private static BindingFlags BindingFlags = 
+    private static readonly BindingFlags BindingFlags =
         BindingFlags.IgnoreCase |
         BindingFlags.Public |
         BindingFlags.Instance;
 
-    private static List<string> KeyWords = new List<string>()
-    {
+    private static readonly List<string> KeyWords =
+    [
         "sorttype", "sortkey", "page", "pagenumber", "pagesize"
-    };
+    ];
 
 
     private IQueryCollection? _query;
@@ -54,15 +53,19 @@ public class GetOptions<Tdto>
     {
         get;
         private set;
-    } = new Dictionary<string, List<string?>>();
-    
+    } = [];
+
     public string? SortKey
     {
         get => _sortKey ?? Tdto.DefaultSortKey;
-        set {
-            if (SortType != SortingType.Search && 
+        set
+        {
+            if (SortType != SortingType.Search &&
                 !PropertyNames.Any(p => p.Equals(value, StringComparison.OrdinalIgnoreCase)))
+            {
                 throw new ArgumentException($"Invalid sort key: {value}");
+            }
+
             _sortKey = value;
         }
     }
@@ -74,7 +77,10 @@ public class GetOptions<Tdto>
         set
         {
             if (value == SortingType.Search && !CanSearch)
+            {
                 throw new ArgumentException("Search sorting type is not supported for this DTO.");
+            }
+
             _sortType = value;
         }
     }
@@ -82,9 +88,13 @@ public class GetOptions<Tdto>
     public int PageNumber
     {
         get => _pageNumber;
-        set {
+        set
+        {
             if (value <= 0)
+            {
                 throw new ArgumentException("PageNumber must be greater than zero.");
+            }
+
             _pageNumber = value;
         }
     }
@@ -92,9 +102,13 @@ public class GetOptions<Tdto>
     public int PageSize
     {
         get => _pageSize ?? Tdto.DefaultPageSize;
-        set {
+        set
+        {
             if (value <= 0)
+            {
                 throw new ArgumentException("PageSize must be greater than zero.");
+            }
+
             _pageSize = value;
         }
     }
@@ -109,8 +123,12 @@ public class GetOptions<Tdto>
 
     public IEnumerable<Tdto> ApplyFilters(IEnumerable<Tdto> result)
     {
-        if (!result.Any()) return result;
-        foreach (var filter in Filters)
+        if (!result.Any())
+        {
+            return result;
+        }
+
+        foreach (KeyValuePair<string, List<string?>> filter in Filters)
         {
             result = result.Where(item =>
             {
@@ -123,8 +141,16 @@ public class GetOptions<Tdto>
 
     public IEnumerable<Tdto> ApplySorting(IEnumerable<Tdto> result)
     {
-        if (!result.Any()) return result;
-        if (SortKey == null) return result;
+        if (!result.Any())
+        {
+            return result;
+        }
+
+        if (SortKey == null)
+        {
+            return result;
+        }
+
         switch (SortType ?? SortingType.Ascending)
         {
             case SortingType.Ascending:
@@ -133,7 +159,8 @@ public class GetOptions<Tdto>
                 return result.OrderByDescending(item => item.GetType().GetProperty(SortKey, BindingFlags)?.GetValue(item, null));
             case SortingType.Search:
                 return Search(result, SortKey);
-            default: throw new Exception(); // Unreachable
+            default:
+                throw new Exception(); // Unreachable
         }
     }
 
@@ -144,7 +171,11 @@ public class GetOptions<Tdto>
 
     private GetOptions<Tdto> Apply()
     {
-        if (Result == null || Count == 0) return this;
+        if (Result == null || Count == 0)
+        {
+            return this;
+        }
+
         TotalCount = Result.Count();
         Result = ApplyFilters(Result);
         FilteredCount = Result.Count();
@@ -155,17 +186,32 @@ public class GetOptions<Tdto>
 
     public GetOptions<Tdto> Apply(IEnumerable<Tdto>? result)
     {
-        if (result == null) return this;
+        if (result == null)
+        {
+            return this;
+        }
+
         Result = result;
-        Apply();
+        _ = Apply();
         return this;
     }
 
     public static IEnumerable<Tdto> Search(IEnumerable<Tdto> result, string searchTerm)
     {
-        if (!result.Any()) return result;
-        if (!Tdto.CanSearch) return result;
-        if (string.IsNullOrWhiteSpace(searchTerm)) return result;
+        if (!result.Any())
+        {
+            return result;
+        }
+
+        if (!Tdto.CanSearch)
+        {
+            return result;
+        }
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return result;
+        }
 
         result = result.OrderBy(item => ComputeLevenshteinDistance(
             item.SearchTerm?.ToLower() ?? "",
@@ -177,10 +223,14 @@ public class GetOptions<Tdto>
     private static int ComputeLevenshteinDistance(string source, string target)
     {
         if (string.IsNullOrEmpty(source))
+        {
             return string.IsNullOrEmpty(target) ? 0 : target.Length;
-        
+        }
+
         if (string.IsNullOrEmpty(target))
+        {
             return source.Length;
+        }
 
         int sourceLength = source.Length;
         int targetLength = target.Length;
@@ -188,10 +238,14 @@ public class GetOptions<Tdto>
         int[,] distance = new int[sourceLength + 1, targetLength + 1];
 
         for (int i = 0; i <= sourceLength; i++)
+        {
             distance[i, 0] = i;
-        
+        }
+
         for (int j = 0; j <= targetLength; j++)
+        {
             distance[0, j] = j;
+        }
 
         for (int i = 1; i <= sourceLength; i++)
         {
@@ -215,7 +269,7 @@ public class GetOptions<Tdto>
     public GetOptions() { }
 
     public GetOptions(IQueryCollection? query, IEnumerable<Tdto>? result)
-        { ParseQuery(query); Apply(result); }
+    { ParseQuery(query); _ = Apply(result); }
 
     public GetOptions(HttpRequest? request, IEnumerable<Tdto>? result)
         : this(request?.Query, result) { }
@@ -228,45 +282,73 @@ public class GetOptions<Tdto>
 
     public GetOptions(IEnumerable<Tdto>? result)
         : this(query: null, result) { }
-    
+
 
     public void ParseQuery(HttpRequest request)
-        { ParseQuery(request.Query); }
+    { ParseQuery(request.Query); }
 
     public void ParseQuery(IQueryCollection? query = null)
     {
-        if (query != null) Query = query;
-        if (Query == null) return;
+        if (query != null)
+        {
+            Query = query;
+        }
+
+        if (Query == null)
+        {
+            return;
+        }
 
         // Parse filters
-        foreach (var item in Query)
+        foreach (KeyValuePair<string, StringValues> item in Query)
         {
             string key = item.Key.ToLower();
-            if (KeyWords.Contains(key)) continue;
+            if (KeyWords.Contains(key))
+            {
+                continue;
+            }
+
             if (!PropertyNames.Any(p => p.Equals(key, StringComparison.OrdinalIgnoreCase)))
+            {
                 throw new ArgumentException($"Invalid filter key: {key}");
+            }
+
             Filters[key] = item.Value.ToList();
         }
 
         // Parse sorting
-        if (Query.TryGetValue("sorttype", out var sortType))
+        if (Query.TryGetValue("sorttype", out StringValues sortType))
+        {
             SortType = SortingTypeMapping.SelectMany(kv => kv.Key
                 .Where(s => s.Equals(sortType.First(), StringComparison.OrdinalIgnoreCase))
                 .Select(_ => kv.Value))
                 .First();
-        if (Query.TryGetValue("sortkey", out var sortKey))
+        }
+
+        if (Query.TryGetValue("sortkey", out StringValues sortKey))
+        {
             SortKey = sortKey.First()!;
-        
-        if ((SortType != null ? 1: 0) + (SortKey != null ? 1 : 0) == 1)
+        }
+
+        if ((SortType != null ? 1 : 0) + (SortKey != null ? 1 : 0) == 1)
+        {
             throw new ArgumentException("Both SortKey and SortType must be provided together.");
+        }
 
         // Parse pagination
-        if (Query.TryGetValue("page", out var page))
+        if (Query.TryGetValue("page", out StringValues page))
+        {
             PageNumber = int.Parse(page.First()!);
-        if (Query.TryGetValue("pagenumber", out var pageNumber))
-            PageNumber = int.Parse(pageNumber.First()!);
+        }
 
-        if (Query.TryGetValue("pagesize", out var pageSize))
+        if (Query.TryGetValue("pagenumber", out StringValues pageNumber))
+        {
+            PageNumber = int.Parse(pageNumber.First()!);
+        }
+
+        if (Query.TryGetValue("pagesize", out StringValues pageSize))
+        {
             PageSize = int.Parse(pageSize.First()!);
+        }
     }
 }

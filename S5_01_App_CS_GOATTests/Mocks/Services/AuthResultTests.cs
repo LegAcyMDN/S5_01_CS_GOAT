@@ -1,6 +1,5 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Services

@@ -1,16 +1,13 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -63,13 +60,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_AsAdmin_ValidNotification_ReturnsCreatedAtRoute()
         {
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+            _ = notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
                                            .Returns(notificationType);
-            mapperMock.Setup(m => m.Map<UserNotification>(notificationDTO))
+            _ = mapperMock.Setup(m => m.Map<UserNotification>(notificationDTO))
                        .Returns(userNotification);
-            notificationRepositoryMock.Setup(r => r.AddAsync(userNotification))
+            _ = notificationRepositoryMock.Setup(r => r.AddAsync(userNotification))
                                        .ReturnsAsync(userNotification);
-            mapperMock.Setup(m => m.Map<NotificationDTO>(userNotification))
+            _ = mapperMock.Setup(m => m.Map<NotificationDTO>(userNotification))
                        .Returns(notificationDTO);
 
             // When
@@ -112,7 +109,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_InvalidNotificationType_ReturnsBadRequest()
         {
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+            _ = notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
                                            .Returns((NotificationType?)null);
 
             // When

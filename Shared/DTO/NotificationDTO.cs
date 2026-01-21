@@ -1,4 +1,4 @@
-﻿using Shared.Enum;
+using Shared.Enum;
 using Shared.Interfaces;
 
 namespace Shared.DTO
@@ -21,7 +21,7 @@ namespace Shared.DTO
         public string NotificationSummary { get; set; } = null!;
 
         public string NotificationContent { get; set; } = null!;
-   
+
         public DateTime NotificationDate { get; set; }
 
         public string NotificationTypeName { get; set; } = null!;

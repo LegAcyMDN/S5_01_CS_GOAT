@@ -1,11 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Metadata;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq.Expressions;
-using System.Runtime.ExceptionServices;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace S5_01_App_CS_GOAT.Services;
@@ -87,7 +81,7 @@ public class QueryOption<TEntity> where TEntity : class
 
     private static List<string> GetNavigation(Expression<Func<TEntity, object?>> include)
     {
-        List<string> path = new();
+        List<string> path = [];
         Expression current = include.Body;
 
         // Convert unary ("x.y") expressions to member expressions
@@ -103,10 +97,9 @@ public class QueryOption<TEntity> where TEntity : class
             current = memberExpr.Expression;
         }
 
-        if (path.Count == 0)
-            throw new ArgumentException($"{include} is invalid. Must be a member access expression.", nameof(include));
-
-        return path;
+        return path.Count == 0
+            ? throw new ArgumentException($"{include} is invalid. Must be a member access expression.", nameof(include))
+            : path;
     }
 
     private async Task LoadNavigation<T>(IEnumerable<T> collection, DbContext context, List<string> path)
@@ -119,31 +112,52 @@ public class QueryOption<TEntity> where TEntity : class
 
     private async Task LoadNavigation<T>(T? entity, DbContext context, List<string> path)
     {
-        if (entity == null) return;
+        if (entity == null)
+        {
+            return;
+        }
+
         string propertyName = path[0];
-        List<string> remainingPath = path.Skip(1).ToList();
+        var remainingPath = path.Skip(1).ToList();
 
         EntityEntry entry = context.Entry(entity);
         NavigationEntry navigation = entry.Navigation(propertyName);
         if (navigation.IsLoaded == false)
+        {
             await navigation.LoadAsync();
+        }
 
-        if (remainingPath.Count == 0) return;
+        if (remainingPath.Count == 0)
+        {
+            return;
+        }
 
         if (navigation.Metadata.IsCollection)
         {
-            IEnumerable<object?>? relatedEntities = navigation.CurrentValue as IEnumerable<object?>;
-            if (relatedEntities == null) return;
+            var relatedEntities = navigation.CurrentValue as IEnumerable<object?>;
+            if (relatedEntities == null)
+            {
+                return;
+            }
+
             foreach (object? relatedEntity in relatedEntities)
             {
-                if (relatedEntity == null) continue;
+                if (relatedEntity == null)
+                {
+                    continue;
+                }
+
                 await LoadNavigation(relatedEntity, context, remainingPath);
             }
         }
         else
         {
             object? relatedEntity = navigation.CurrentValue;
-            if (relatedEntity == null) return;
+            if (relatedEntity == null)
+            {
+                return;
+            }
+
             await LoadNavigation(relatedEntity, context, remainingPath);
         }
     }
@@ -151,8 +165,8 @@ public class QueryOption<TEntity> where TEntity : class
 
 public class QueryOptions<TEntity> where TEntity : class
 {
-    private List<QueryOption<TEntity>> BeforeOptions = new();
-    private List<QueryOption<TEntity>> AfterOptions = new();
+    private readonly List<QueryOption<TEntity>> BeforeOptions = [];
+    private readonly List<QueryOption<TEntity>> AfterOptions = [];
     private Expression<Func<TEntity, object?>>? Sorting;
     private bool SortIsDescending = false;
 
@@ -166,7 +180,7 @@ public class QueryOptions<TEntity> where TEntity : class
 
     public QueryOptions<TEntity> Before(params Expression<Func<TEntity, bool>>[] wheres)
     {
-        foreach (var where in wheres)
+        foreach (Expression<Func<TEntity, bool>> where in wheres)
         {
             BeforeOptions.Add(new QueryOption<TEntity>(where));
         }
@@ -175,7 +189,7 @@ public class QueryOptions<TEntity> where TEntity : class
 
     public QueryOptions<TEntity> Before(params Expression<Func<TEntity, object?>>[] includes)
     {
-        foreach (var include in includes)
+        foreach (Expression<Func<TEntity, object?>> include in includes)
         {
             BeforeOptions.Add(new QueryOption<TEntity>(include));
         }
@@ -199,7 +213,7 @@ public class QueryOptions<TEntity> where TEntity : class
 
     public QueryOptions<TEntity> After(params Expression<Func<TEntity, bool>>[] wheres)
     {
-        foreach (var where in wheres)
+        foreach (Expression<Func<TEntity, bool>> where in wheres)
         {
             AfterOptions.Add(new QueryOption<TEntity>(where));
         }
@@ -208,7 +222,7 @@ public class QueryOptions<TEntity> where TEntity : class
 
     public QueryOptions<TEntity> After(params Expression<Func<TEntity, object?>>[] includes)
     {
-        foreach (var include in includes)
+        foreach (Expression<Func<TEntity, object?>> include in includes)
         {
             AfterOptions.Add(new QueryOption<TEntity>(include));
         }

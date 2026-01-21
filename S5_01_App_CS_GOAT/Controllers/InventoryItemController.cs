@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
@@ -30,7 +29,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<InventoryItem> queryOptions = new QueryOptions<InventoryItem>()
                 .Before(i => i.RemovedOn == null)
@@ -53,7 +54,9 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             QueryOptions<InventoryItem> options =
                 new QueryOptions<InventoryItem>()
@@ -62,7 +65,10 @@ namespace S5_01_App_CS_GOAT.Controllers
                     i => i.Wear.WearType)
                 .After(i => i.Wear.WearClass.PriceHistories);
             InventoryItem? item = await manager.GetByIdAsync(inventoryItemId, options);
-            if (item == null || item.UserId != authResult.AuthUserId) return NotFound();
+            if (item == null || item.UserId != authResult.AuthUserId)
+            {
+                return NotFound();
+            }
 
             InventoryItemDetailDTO? inventory = mapper.Map<InventoryItemDetailDTO>(item);
             return Ok(inventory);
@@ -78,12 +84,14 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             /*try
             {*/
-                UpgradeOutputDTO output = await upgradeService.UpgradeAsync(dto, authResult.AuthUserId!.Value);
-                return Ok(output);
+            UpgradeOutputDTO output = await upgradeService.UpgradeAsync(dto, authResult.AuthUserId!.Value);
+            return Ok(output);
             /*}
             catch (Exception ex)
             {
@@ -103,11 +111,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
-            if (inventory == null) return NotFound();
-            if (inventory.UserId != authResult.AuthUserId) return Forbid();
+            if (inventory == null)
+            {
+                return NotFound();
+            }
+
+            if (inventory.UserId != authResult.AuthUserId)
+            {
+                return Forbid();
+            }
 
             inventory.IsFavorite = !inventory.IsFavorite;
             await manager.UpdateAsync(inventory, inventory);
@@ -126,10 +143,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             InventoryItem? inventory = await manager.GetByIdAsync(inventoryItemId);
-            if (inventory == null || inventory.UserId != authResult.AuthUserId) return NotFound();
+            if (inventory == null || inventory.UserId != authResult.AuthUserId)
+            {
+                return NotFound();
+            }
 
             int responseCode = await sellingService.SellAsync(inventoryItemId);
             return StatusCode(responseCode);

@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -43,8 +41,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 invItemId,
                 options
             );
-            if (invItem == null) return StatusCodes.Status404NotFound;
-            return await SellAsync(invItem);
+            return invItem == null ? StatusCodes.Status404NotFound : await SellAsync(invItem);
         }
 
         public async Task<int> SellAsync(InventoryItem invItem)
@@ -52,23 +49,30 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             // TODO: Check if the user is not restricted by a ban
             // return StatusCodes.Status403Forbidden;
 
-            if (invItem.RemovedOn != null) return StatusCodes.Status410Gone;
+            if (invItem.RemovedOn != null)
+            {
+                return StatusCodes.Status410Gone;
+            }
+
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
             double? currentPrice = invItem.Wear.CurrentPrice;
-            if (currentPrice == null) return StatusCodes.Status503ServiceUnavailable;
+            if (currentPrice == null)
+            {
+                return StatusCodes.Status503ServiceUnavailable;
+            }
 
             invItem.RemovedOn = DateTime.Now;
             invItem.User.Wallet += (double)currentPrice;
-            ItemTransaction itemTransaction = new ItemTransaction()
+            var itemTransaction = new ItemTransaction()
             {
                 WalletValue = (double)currentPrice,
                 InventoryItemId = invItem.InventoryItemId,
                 UserId = invItem.UserId,
             };
-            await _itemTransactionRepository.AddAsync(itemTransaction);
+            _ = await _itemTransactionRepository.AddAsync(itemTransaction);
             await _inventoryItemRepository.UpdateAsync(invItem);
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return StatusCodes.Status204NoContent;
         }

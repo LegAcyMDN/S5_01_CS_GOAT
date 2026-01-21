@@ -1,5 +1,4 @@
 using S5_01_App_CS_GOAT.Models.EntityFramework;
-using System.Collections.Generic;
 
 namespace S5_01_App_CS_GOAT.Models.Repository;
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
@@ -12,9 +12,9 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     /// Implements the provably fair system by combining server seeds, client seeds, and nonces
     /// to generate verifiable random outcomes that players can independently verify.
     /// </remarks>
-    public class FairRandomManager: CrudRepository<FairRandom, int>, IFairRandomRepository
+    public class FairRandomManager : CrudRepository<FairRandom, int>, IFairRandomRepository
     {
-        protected readonly CSGOATDbContext _context;
+        protected new readonly CSGOATDbContext _context;
         public FairRandomManager(CSGOATDbContext context) : base(context)
         {
             _context = context;
@@ -29,9 +29,8 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     .ThenInclude(fr => fr.UpgradeResult)
                         .ThenInclude(ur => ur.RandomTransaction)
                 .FirstOrDefaultAsync(u => u.UserId == userId);
-                
-            if (user == null) throw new ArgumentException("User not found", nameof(userId));
-            return await this.Init(user, requestUnresolved);
+
+            return user == null ? throw new ArgumentException("User not found", nameof(userId)) : await Init(user, requestUnresolved);
         }
 
         public async Task<FairRandom> Init(User user, bool requestUnresolved = false, FairRandom? init = null)
@@ -39,55 +38,73 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             FairRandom? existing = user.FairRandom;
             if (existing != null)
             {
-                if (!requestUnresolved || !existing.IsResolved) return existing;
+                if (!requestUnresolved || !existing.IsResolved)
+                {
+                    return existing;
+                }
+
                 if (existing.GetRandomTransaction() == null)
                 {
-                    _context.Set<FairRandom>().Remove(existing);
+                    _ = _context.Set<FairRandom>().Remove(existing);
                 }
                 else
                 {
                     existing.UserId = null;
-                    _context.Set<FairRandom>().Update(existing);
+                    _ = _context.Set<FairRandom>().Update(existing);
                 }
             }
             string seed = init != null ? init.ServerSeed :
                 SecurityService.GenerateSeed(16);
             string hash = init != null ? init.ServerHash :
                 SecurityService.HashString(seed);
-            FairRandom newFairRandom = new FairRandom()
+            var newFairRandom = new FairRandom()
             {
                 UserId = user.UserId,
                 ServerSeed = seed,
                 ServerHash = hash
             };
-            _context.Set<FairRandom>().Add(newFairRandom);
-            await _context.SaveChangesAsync();
+            _ = _context.Set<FairRandom>().Add(newFairRandom);
+            _ = await _context.SaveChangesAsync();
             return newFairRandom;
         }
 
         public async Task<FairRandom> Resolve(User user, FairRandom? oldRandom, bool requestUnresolved = true)
         {
-            FairRandom? newRandom = null;
+            FairRandom? newRandom;
             if (
                 oldRandom == null
                 || (oldRandom.IsResolved
                 && requestUnresolved)
             )
             {
-                if (oldRandom != null && !requestUnresolved && oldRandom.IsResolved) return oldRandom;
-                else newRandom = await this.Init(user, requestUnresolved, oldRandom);
+                if (oldRandom != null && !requestUnresolved && oldRandom.IsResolved)
+                {
+                    return oldRandom;
+                }
+                else
+                {
+                    newRandom = await Init(user, requestUnresolved, oldRandom);
+                }
             }
-            else newRandom = oldRandom;
-            if (!requestUnresolved && newRandom.IsResolved) return newRandom;
+            else
+            {
+                newRandom = oldRandom;
+            }
+
+            if (!requestUnresolved && newRandom.IsResolved)
+            {
+                return newRandom;
+            }
+
             newRandom.UserSeed = user.Seed;
             newRandom.UserNonce = user.Nonce;
             newRandom.Compute();
             newRandom.UserId = null;
             user.Nonce += 1;
-            await _context.SaveChangesAsync();
-            _context.Set<FairRandom>().Update(newRandom);
-            _context.Set<User>().Update(user);
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
+            _ = _context.Set<FairRandom>().Update(newRandom);
+            _ = _context.Set<User>().Update(user);
+            _ = await _context.SaveChangesAsync();
             return newRandom;
         }
     }

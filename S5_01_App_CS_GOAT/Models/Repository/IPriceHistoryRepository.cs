@@ -1,4 +1,4 @@
-﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
 
 namespace S5_01_App_CS_GOAT.Models.Repository
 {
@@ -14,7 +14,7 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         /// <param name="days">Number of days ahead to predict (default 30)</param>
         /// <param name="limit">If true, limits predictions to the specified number of days</param>
         /// <returns>Collection of predicted PriceHistory records; null if prediction fails</returns>
-        public Task<IEnumerable<PriceHistory>?> PredictWithAI(InventoryItem invItem, int days = 30, bool limit = false)
+        Task<IEnumerable<PriceHistory>?> PredictWithAI(InventoryItem invItem, int days = 30, bool limit = false)
         {
             return PredictWithAI(invItem.Wear, days, limit);
         }
@@ -26,6 +26,6 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         /// <param name="days">Number of days ahead to predict (default 30)</param>
         /// <param name="limit">If true, limits predictions to the specified number of days</param>
         /// <returns>Collection of predicted PriceHistory records; null if prediction fails</returns>
-        public Task<IEnumerable<PriceHistory>?> PredictWithAI(Wear wear, int days = 30, bool limit = false);
+        Task<IEnumerable<PriceHistory>?> PredictWithAI(Wear wear, int days = 30, bool limit = false);
     }
 }

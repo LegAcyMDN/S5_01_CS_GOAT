@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -29,22 +28,29 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             Case? targetCase = await caseRepository.GetByIdAsync(caseId);
             if (targetCase == null)
+            {
                 return NotFound();
+            }
 
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             Favorite? existing = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
-            if (existing != null) return Conflict();
+            if (existing != null)
+            {
+                return Conflict();
+            }
 
-            Favorite favorite = new Favorite
+            var favorite = new Favorite
             {
                 CaseId = caseId,
                 UserId = authResult.AuthUserId!.Value
             };
 
-            await manager.AddAsync(favorite);
+            _ = await manager.AddAsync(favorite);
             return CreatedAtAction(null, new { id = favorite.UserId, favorite.CaseId });
         }
 
@@ -61,10 +67,15 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
             Favorite? favorite = await manager.GetByIdAsync((authResult.AuthUserId.Value, caseId));
-            if (favorite == null) return NotFound();
+            if (favorite == null)
+            {
+                return NotFound();
+            }
 
             await manager.DeleteAsync(favorite);
             return NoContent();

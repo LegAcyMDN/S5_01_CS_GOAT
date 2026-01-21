@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Shared.DTO.Helpers
 {
@@ -16,7 +11,7 @@ namespace Shared.DTO.Helpers
     public class SteamResponse
     {
         [JsonPropertyName("players")]
-        public List<SteamPlayer> Players { get; set; } = new();
+        public List<SteamPlayer> Players { get; set; } = [];
     }
 
     public class SteamPlayer

@@ -1,4 +1,4 @@
-﻿using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
 
 namespace S5_01_App_CS_GOAT.Models.Repository
 {
@@ -28,13 +28,16 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         {
             switch (method)
             {
-                case SendMethod.Mail: return NewCodeMailAsync(user);
-                case SendMethod.Sms: return NewCodeSmsAsync(user);
-                default: throw new NotSupportedException($"Send method {method} is not supported.");
+                case SendMethod.Mail:
+                    return NewCodeMailAsync(user);
+                case SendMethod.Sms:
+                    return NewCodeSmsAsync(user);
+                default:
+                    throw new NotSupportedException($"Send method {method} is not supported.");
             }
         }
         Task<int> NewCodeMailAsync(User user);
-        
+
         /// <summary>
         /// Creates and sends a new SMS verification code
         /// </summary>
@@ -53,13 +56,16 @@ namespace S5_01_App_CS_GOAT.Models.Repository
         {
             switch (method)
             {
-                case SendMethod.Mail: return VerifyMailAsync(user, code);
-                case SendMethod.Sms: return VerifySmsAsync(user, code);
-                default: throw new NotSupportedException($"Send method {method} is not supported.");
+                case SendMethod.Mail:
+                    return VerifyMailAsync(user, code);
+                case SendMethod.Sms:
+                    return VerifySmsAsync(user, code);
+                default:
+                    throw new NotSupportedException($"Send method {method} is not supported.");
             }
         }
         Task<int> VerifyMailAsync(User user, string code);
-        
+
         /// <summary>
         /// Verifies an SMS verification code
         /// </summary>

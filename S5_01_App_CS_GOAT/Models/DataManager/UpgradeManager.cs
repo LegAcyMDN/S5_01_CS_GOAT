@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
@@ -6,7 +6,6 @@ using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using Shared.DTO;
 using Shared.DTO.Helpers;
-using Stripe;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
@@ -50,8 +49,10 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         {
             switch (function.ToLower())
             {
-                case "none": return original;
-                case "uniform": return (float)random * original;
+                case "none":
+                    return original;
+                case "uniform":
+                    return (float)random * original;
                 default:
                     throw new Exception($"Unknown degrade function {function}.");
             }
@@ -86,7 +87,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             double t = invItemPrice.TotalPrice + monetaryValue;
             // \frac{p^{2}}{\left(t+1\right)^{2}+p^{2}-1}
             double probDestroy = Math.Max(0.0, Math.Min(1.0,
-                Math.Pow(p, 2) / (Math.Pow((t + 1), 2) + Math.Pow(p, 1.75) - 1)
+                Math.Pow(p, 2) / (Math.Pow(t + 1, 2) + Math.Pow(p, 1.75) - 1)
             ));
             return probDestroy;
         }
@@ -101,14 +102,17 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             double t = invItemPrice.TotalPrice + monetaryValue;
             double z = monetaryValue;
             double? i = item.Wear.CurrentPrice;
-            if (i == null) return new UpgradeResultDTO()
+            if (i == null)
             {
-                FloatStart = item.Float,
-                ProbIntact = 1,
-                ProbDegrade = 0,
-                PropDestroy = 0,
-                DegradeFunction = "None"
-            };
+                return new UpgradeResultDTO()
+                {
+                    FloatStart = item.Float,
+                    ProbIntact = 1,
+                    ProbDegrade = 0,
+                    PropDestroy = 0,
+                    DegradeFunction = "None"
+                };
+            }
             // \left(1-\frac{m}{t}\right)\left(1-\frac{i}{t}\right)\left(1-\frac{m}{i+z}\right)
             double keepProb = Math.Max(0.0, Math.Min(1.0,
                 (1 - (m / t)) *
@@ -131,16 +135,26 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             QueryOptions<User> options1 = new QueryOptions<User>()
                 .Before(u => u.FairRandom);
             User? user = await _userRepository.GetByIdAsync(userId, options1);
-            if (user == null) throw new Exception("User not found.");
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
 
             QueryOptions<Skin> option2 = new QueryOptions<Skin>()
                 .Before(s => s.Rarity, s => s.Item, s => s.Wears);
             Skin? skin = await _skinRepository.GetByIdAsync(dto.TargetSkinId, option2);
-            if (skin == null) throw new Exception("Skin not found.");
+            if (skin == null)
+            {
+                throw new Exception("Skin not found.");
+            }
+
             IEnumerable<PriceHistory> priceHistories = _context.PriceHistories
                 .Where(ph => ph.SkinId == skin.SkinId).OrderByDescending(ph => ph.PriceDate).Take(skin.Wears.Count);
-            PriceInfo skinPrice = new PriceInfo(priceHistories.Select(ph => ph.PriceValue));
-            if (skinPrice.PriceCount == 0) throw new Exception("Target skin has no price history.");
+            var skinPrice = new PriceInfo(priceHistories.Select(ph => ph.PriceValue));
+            if (skinPrice.PriceCount == 0)
+            {
+                throw new Exception("Target skin has no price history.");
+            }
 
             QueryOptions<InventoryItem> options2 = new QueryOptions<InventoryItem>()
                 .Before(i => i.Wear.Skin.Rarity)
@@ -150,10 +164,14 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 .After(i => i.Wear.WearClass.PriceHistories);
             IEnumerable<InventoryItem> invItems = await _inventoryItemRepository.GetAllAsync(options2);
             if (invItems.Count() != dto.InventoryItemIds.Count)
+            {
                 throw new Exception("One or more inventory items not found.");
-            PriceInfo invItemPrice = new PriceInfo(invItems.Select(i => i.Wear.CurrentPrice));
+            }
 
-            UpgradeOutputDTO output = new() {
+            var invItemPrice = new PriceInfo(invItems.Select(i => i.Wear.CurrentPrice));
+
+            UpgradeOutputDTO output = new()
+            {
                 Preview = dto.Preview,
                 FailProbability = SkinUpgrade(
                     invItemPrice,
@@ -230,7 +248,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 tuple.UpgradeResult.FloatEnd = invItem.Float;
             }
 
-            UpgradeResult upgradeResult = new UpgradeResult()
+            var upgradeResult = new UpgradeResult()
             {
                 InventoryItemId = invItem.InventoryItemId,
                 TransactionId = randomTransaction.TransactionId,
@@ -242,7 +260,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 PropDestroy = tuple.UpgradeResult.PropDestroy,
                 DegradeFunction = tuple.UpgradeResult.DegradeFunction
             };
-            await _upgradeResultRepository.AddAsync(upgradeResult);
+            _ = await _upgradeResultRepository.AddAsync(upgradeResult);
             tuple.UpgradeResult = _mapper.Map<UpgradeResultDTO>(upgradeResult);
             await _context.Entry(upgradeResult).Reference(u => u.FairRandom).LoadAsync();
             tuple.UpgradeResult.FairRandom = _mapper.Map<FairRandomDTO>(upgradeResult.FairRandom);
@@ -253,12 +271,16 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
         private async Task<UpgradeOutputDTO> ExecuteUpgradeAsync(UpgradeOutputDTO dto,
             User user, Skin skin, IEnumerable<InventoryItem> invItems, double monetaryValue)
         {
-            if (user.Wallet < monetaryValue) throw new Exception("Insufficient funds.");
+            if (user.Wallet < monetaryValue)
+            {
+                throw new Exception("Insufficient funds.");
+            }
+
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
             FairRandom initRandom = await _fairRandomRepository.Resolve(user, null, true);
             dto.FairRandom = _mapper.Map<FairRandomDTO>(initRandom);
             InventoryItem? newItem = null;
-            
+
             if (initRandom.Fraction1 > dto.FailProbability)
             {
                 Wear targetWear = skin.GetClosestWear((float)initRandom.Fraction2!);
@@ -269,7 +291,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                     Float = (float)initRandom.Fraction2!,
                     IsFavorite = false
                 };
-                await _inventoryItemRepository.AddAsync(newItem);
+                _ = await _inventoryItemRepository.AddAsync(newItem);
 
                 QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                     .Before(i => i.Wear.Skin.Rarity, i => i.Wear.WearType,
@@ -279,7 +301,7 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 dto.ItemResult = _mapper.Map<InventoryItemDetailDTO>(newItem);
             }
 
-            RandomTransaction randomTransaction = new RandomTransaction()
+            var randomTransaction = new RandomTransaction()
             {
                 UserId = user.UserId,
                 FairRandomId = initRandom.FairRandomId,
@@ -287,19 +309,19 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
                 WalletValue = -monetaryValue,
                 InventoryItemId = newItem?.InventoryItemId
             };
-            _context.ItemTransactions.Add(randomTransaction);
+            _ = _context.ItemTransactions.Add(randomTransaction);
 
-            List<UpgradeOutputItemDTO> resolvedItems = new List<UpgradeOutputItemDTO>();
-            foreach (var item in dto.Items)
+            List<UpgradeOutputItemDTO> resolvedItems = [];
+            foreach (UpgradeOutputItemDTO item in dto.Items)
             {
-                var resolved = await Resolve(item, invItems, randomTransaction, initRandom, user);
+                UpgradeOutputItemDTO resolved = await Resolve(item, invItems, randomTransaction, initRandom, user);
                 resolvedItems.Add(resolved);
             }
             dto.Items = resolvedItems;
 
             user.Wallet -= monetaryValue;
             await _userRepository.UpdateAsync(user);
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return dto;
         }

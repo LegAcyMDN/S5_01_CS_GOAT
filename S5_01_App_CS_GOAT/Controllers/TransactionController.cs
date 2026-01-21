@@ -1,4 +1,3 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -27,10 +26,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if (!authResult.IsAdmin)
-                return Forbid();
-            throw new NotImplementedException();
+            }
+
+            return !authResult.IsAdmin ? (IActionResult)Forbid() : throw new NotImplementedException();
         }
     }
 }

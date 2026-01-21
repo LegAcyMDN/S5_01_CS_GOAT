@@ -1,5 +1,4 @@
-﻿using S5_01_App_CS_GOAT.Models.Repository;
-using Microsoft.Extensions.Logging;
+using S5_01_App_CS_GOAT.Models.Repository;
 
 namespace S5_01_App_CS_GOAT.Services
 {
@@ -20,8 +19,8 @@ namespace S5_01_App_CS_GOAT.Services
 
     public interface ITimedAction
     {
-        public Task Tick(IServiceScope scope);
-        public static abstract TimedActionFrequency TickFrequency { get; }
+        Task Tick(IServiceScope scope);
+        static abstract TimedActionFrequency TickFrequency { get; }
     }
 
     public class TimedActionService<TRepository, TEntity, TIdentifier> : BackgroundService

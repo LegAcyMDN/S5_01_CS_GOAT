@@ -12,11 +12,14 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         /// <returns>Collection of PriceHistory entries for this skin</returns>
         public IEnumerable<PriceHistory> Prices(bool allowGuess = false)
         {
-            IEnumerable<PriceHistory> histories = new List<PriceHistory>();
-            foreach (Wear wear in this.Wears)
+            IEnumerable<PriceHistory> histories = [];
+            foreach (Wear wear in Wears)
             {
                 PriceHistory? lastPrice = wear.LastPrice(allowGuess);
-                if (lastPrice != null) histories.Append(lastPrice);
+                if (lastPrice != null)
+                {
+                    _ = histories.Append(lastPrice);
+                }
             }
             return histories;
         }
@@ -46,9 +49,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                     closestWear = wear;
                 }
             }
-            if (closestWear == null)
-                throw new Exception("No wears available for this skin.");
-            return closestWear;
+            return closestWear == null ? throw new Exception("No wears available for this skin.") : closestWear;
         }
     }
 }

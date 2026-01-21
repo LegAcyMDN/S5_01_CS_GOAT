@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -80,9 +73,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            notificationSettingRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationSetting>?>()))
+            _ = notificationSettingRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationSetting>?>()))
                                              .ReturnsAsync(notificationSettings);
-            mapperMock.Setup(m => m.Map<IEnumerable<NotificationSettingDTO>>(notificationSettings))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<NotificationSettingDTO>>(notificationSettings))
                       .Returns(new List<NotificationSettingDTO>
                       {
                           new NotificationSettingDTO { NotificationTypeName = "Type1", OnSite = true },
@@ -123,12 +116,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             int notificationTypeId = 1;
             var notificationType = new NotificationType { NotificationTypeId = notificationTypeId, NotificationTypeName = notificationTypeName };
 
-            typeRepositoryMock.Setup(r => r.GetTypeByName(notificationTypeName))
+            _ = typeRepositoryMock.Setup(r => r.GetTypeByName(notificationTypeName))
                              .Returns(notificationType);
-            var key = (normalUser.UserId, notificationTypeId);
-            notificationSettingRepositoryMock.Setup(r => r.GetByIdAsync(key, It.IsAny<QueryOptions<NotificationSetting>?>()))
+            (int UserId, int notificationTypeId) key = (normalUser.UserId, notificationTypeId);
+            _ = notificationSettingRepositoryMock.Setup(r => r.GetByIdAsync(key, It.IsAny<QueryOptions<NotificationSetting>?>()))
                                              .ReturnsAsync(notificationSetting);
-            notificationSettingRepositoryMock.Setup(r => r.PatchAsync(notificationSetting, patchData))
+            _ = notificationSettingRepositoryMock.Setup(r => r.PatchAsync(notificationSetting, patchData))
                                              .Returns(Task.CompletedTask);
 
             // When
@@ -145,7 +138,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             string notificationTypeName = "Unknown";
 
-            typeRepositoryMock.Setup(r => r.GetTypeByName(notificationTypeName))
+            _ = typeRepositoryMock.Setup(r => r.GetTypeByName(notificationTypeName))
                              .Returns((NotificationType?)null);
 
             // When
@@ -161,9 +154,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             var emptyList = new List<NotificationSetting>();
-            notificationSettingRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationSetting>?>()))
+            _ = notificationSettingRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<NotificationSetting>?>()))
                                              .ReturnsAsync(emptyList);
-            mapperMock.Setup(m => m.Map<IEnumerable<NotificationSettingDTO>>(emptyList))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<NotificationSettingDTO>>(emptyList))
                       .Returns(new List<NotificationSettingDTO>());
 
             // When

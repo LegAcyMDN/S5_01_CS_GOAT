@@ -1,18 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -96,9 +91,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<ItemTransaction>?>()))
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<ItemTransaction>?>()))
                                         .ReturnsAsync(itemTransactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDTO>>(itemTransactions))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDTO>>(itemTransactions))
                       .Returns(itemTransactionDTOs);
 
             // When
@@ -130,10 +125,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 1;
-            
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
+
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
                                          .ReturnsAsync(itemTransaction);
-            mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(itemTransaction))
+            _ = mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(itemTransaction))
                       .Returns(itemTransactionDetailDTO);
 
             // When
@@ -150,8 +145,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 999;
-            
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
+
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
                                          .ReturnsAsync((ItemTransaction?)null);
 
             // When
@@ -168,8 +163,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, normalUser);
             int transactionId = 2;
-            
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
+
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
                                          .ReturnsAsync(otherUserItemTransaction);
 
             // When
@@ -186,10 +181,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             JwtService.AuthentifyController(controller, admin);
             int transactionId = 2;
-            
-            itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
+
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetByIdAsync(transactionId, It.IsAny<QueryOptions<ItemTransaction>>()))
                                          .ReturnsAsync(otherUserItemTransaction);
-            mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(otherUserItemTransaction))
+            _ = mapperMock.Setup(m => m.Map<ItemTransactionDetailDTO>(otherUserItemTransaction))
                       .Returns(itemTransactionDetailDTO);
 
             // When
@@ -220,9 +215,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<ItemTransaction>?>()))
+            _ = itemTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<ItemTransaction>?>()))
                                          .ReturnsAsync(itemTransactions);
-            mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions))
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions))
                       .Returns(itemTransactionDetailDTOs);
 
             // When

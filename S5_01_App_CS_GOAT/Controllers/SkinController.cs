@@ -1,10 +1,9 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
@@ -46,11 +45,14 @@ namespace S5_01_App_CS_GOAT.Controllers
                         "CaseContents.Skin.Rarity",
                         "CaseContents.Skin.Item");
             Case? _case = await caseManager.GetByIdAsync(caseid, options);
-            if (_case == null) return NotFound();
+            if (_case == null)
+            {
+                return NotFound();
+            }
 
-            IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc => 
+            IEnumerable<SkinDTO> skins = _case.CaseContents.Select(cc =>
                 {
-                    var skinDto = mapper.Map<SkinDTO>(cc.Skin);
+                    SkinDTO skinDto = mapper.Map<SkinDTO>(cc.Skin);
                     skinDto.Weight = cc.Weight;
                     return skinDto;
                 });

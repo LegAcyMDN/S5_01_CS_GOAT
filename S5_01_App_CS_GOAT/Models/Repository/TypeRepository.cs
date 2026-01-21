@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Services;
 
@@ -9,9 +8,9 @@ public class TypeRepository<TEntity> :
     ITypeRepository<TEntity>
     where TEntity : class, IType
 {
-    private readonly CSGOATDbContext _context;
+    private new readonly CSGOATDbContext _context;
 
-    public TypeRepository(CSGOATDbContext context): base(context)
+    public TypeRepository(CSGOATDbContext context) : base(context)
     {
         _context = context;
     }

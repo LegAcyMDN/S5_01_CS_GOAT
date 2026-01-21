@@ -1,19 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Threading;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -63,7 +56,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Create_Unauthenticated_ReturnsUnauthorized()
         {
             // Given
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
 
             // When
@@ -79,9 +72,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
-            favoriteRepositoryMock.Setup(r => r.AddAsync(favorite))
+            _ = favoriteRepositoryMock.Setup(r => r.AddAsync(favorite))
                                   .ReturnsAsync(favorite);
 
             // When
@@ -113,10 +106,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>?>()))
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(favorite.CaseId, It.IsAny<QueryOptions<Case>?>()))
                                   .ReturnsAsync(new Case { CaseId = favorite.CaseId });
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, favorite.CaseId);
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
+            _ = favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync(favorite);
             // When
             IActionResult? result = controller.Create(favorite.CaseId).GetAwaiter().GetResult();
@@ -151,10 +144,10 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 1;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
-            
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
+
+            _ = favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync(favorite);
-            favoriteRepositoryMock.Setup(r => r.DeleteAsync(favorite))
+            _ = favoriteRepositoryMock.Setup(r => r.DeleteAsync(favorite))
                                   .Returns(Task.CompletedTask);
 
             // When
@@ -173,8 +166,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
             int caseId = 999;
             favoriteKey = FavoriteFixture.GetFavoriteKey(normalUser.UserId, caseId);
-            
-            favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
+
+            _ = favoriteRepositoryMock.Setup(r => r.GetByIdAsync(favoriteKey, It.IsAny<QueryOptions<Favorite>?>()))
                                   .ReturnsAsync((Favorite?)null);
 
             // When

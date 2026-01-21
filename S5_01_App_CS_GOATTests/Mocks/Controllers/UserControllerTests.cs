@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -48,7 +43,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_AdminUserAuthenticated_ReturnsOk()
         {
             // Given
-            var adminUser = UserFixture.GetAdminUser();
+            User adminUser = UserFixture.GetAdminUser();
             JwtService.AuthentifyController(controller!, adminUser);
 
             // When
@@ -62,7 +57,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_NonAdminUserAuthenticated_ReturnsForbid()
         {
             // Given
-            var normalUser = UserFixture.GetNormalUser();
+            User normalUser = UserFixture.GetNormalUser();
             JwtService.AuthentifyController(controller!, normalUser);
 
             // When
@@ -89,8 +84,8 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetAll_AdminUserAuthenticated_ReturnsOkWithUsers()
         {
             // Given
-            var users = UserFixture.GetUsers();
-            var adminUser = UserFixture.GetAdminUser();
+            _ = UserFixture.GetUsers();
+            User adminUser = UserFixture.GetAdminUser();
 
             JwtService.AuthentifyController(controller!, adminUser);
 
@@ -109,13 +104,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_ValidIdAsAdmin_ReturnsOk()
         {
             // Given
-            var user = UserFixture.GetNormalUser();
-            var userDTO = UserFixture.GetNormalUserDTO();
-            var adminUser = UserFixture.GetAdminUser();
+            User user = UserFixture.GetNormalUser();
+            UserDTO userDTO = UserFixture.GetNormalUserDTO();
+            User adminUser = UserFixture.GetAdminUser();
 
             JwtService.AuthentifyController(controller!, adminUser);
-            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
-            mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
+            _ = userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
+            _ = mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
 
             // When
             IActionResult? result = controller!.Get(2).GetAwaiter().GetResult();
@@ -128,12 +123,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_ValidIdOwnUser_ReturnsOk()
         {
             // Given
-            var user = UserFixture.GetNormalUser();
-            var userDTO = UserFixture.GetNormalUserDTO();
+            User user = UserFixture.GetNormalUser();
+            UserDTO userDTO = UserFixture.GetNormalUserDTO();
 
             JwtService.AuthentifyController(controller!, user);
-            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
-            mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
+            _ = userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>())).ReturnsAsync(user);
+            _ = mapperMock!.Setup(m => m.Map<UserDTO>(user)).Returns(userDTO);
 
             // When
             IActionResult? result = controller!.Get(2).GetAwaiter().GetResult();
@@ -146,7 +141,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_DifferentUserIdAsNormalUser_ReturnsForbid()
         {
             // Given
-            var normalUser = UserFixture.GetNormalUser();
+            User normalUser = UserFixture.GetNormalUser();
             JwtService.AuthentifyController(controller!, normalUser);
 
             // When
@@ -160,9 +155,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_UserNotFound_ReturnsNotFound()
         {
             // Given
-            var adminUser = UserFixture.GetAdminUser();
+            User adminUser = UserFixture.GetAdminUser();
             JwtService.AuthentifyController(controller!, adminUser);
-            userRepositoryMock!.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<User>>())).ReturnsAsync((User?)null);
+            _ = userRepositoryMock!.Setup(r => r.GetByIdAsync(999, It.IsAny<QueryOptions<User>>())).ReturnsAsync((User?)null);
 
             // When
             IActionResult? result = controller!.Get(999).GetAwaiter().GetResult();
@@ -188,14 +183,14 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_ValidIdAsAdmin_ReturnsOkWithUser()
         {
             // Given
-            var user = UserFixture.GetNormalUser();
-            var userDTO = UserFixture.GetNormalUserDTO();
+            User user = UserFixture.GetNormalUser();
+            UserDTO userDTO = UserFixture.GetNormalUserDTO();
 
             JwtService.AuthentifyController(controller!, UserFixture.GetAdminUser());
 
-            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
+            _ = userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(user);
-            mapperMock!.Setup(m => m.Map<UserDTO>(user))
+            _ = mapperMock!.Setup(m => m.Map<UserDTO>(user))
                 .Returns(userDTO);
 
             // When
@@ -209,14 +204,14 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Get_ValidIdOwnUser_ReturnsOkWithUser()
         {
             // Given
-            var user = UserFixture.GetNormalUser();
-            var userDTO = UserFixture.GetNormalUserDTO();
+            User user = UserFixture.GetNormalUser();
+            UserDTO userDTO = UserFixture.GetNormalUserDTO();
 
             JwtService.AuthentifyController(controller!, UserFixture.GetNormalUser());
 
-            userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
+            _ = userRepositoryMock!.Setup(r => r.GetByIdAsync(2, It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(user);
-            mapperMock!.Setup(m => m.Map<UserDTO>(user))
+            _ = mapperMock!.Setup(m => m.Map<UserDTO>(user))
                 .Returns(userDTO);
 
             // When
@@ -240,7 +235,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 3, Login = "user3", LastLogin = DateTime.UtcNow.AddMinutes(-14) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
+            _ = userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(recentUsers);
 
             // When
@@ -248,7 +243,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(3, okResult.Value);
         }
 
@@ -257,7 +252,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             var emptyList = new List<User>();
-            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
+            _ = userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(emptyList);
 
             // When
@@ -265,7 +260,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(0, okResult.Value);
         }
 
@@ -279,7 +274,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 2, Login = "user2", LastLogin = DateTime.UtcNow.AddMinutes(-30) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
+            _ = userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>>()))
                 .ReturnsAsync(new List<User>());
 
             // When
@@ -287,7 +282,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(0, okResult.Value);
         }
 
@@ -296,11 +291,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void GetCount_RepositoryThrowsException_ThrowsException()
         {
             // Given
-            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
+            _ = userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
                 .ThrowsAsync(new Exception("Database error"));
 
             // When
-            controller!.GetCount().GetAwaiter().GetResult();
+            _ = controller!.GetCount().GetAwaiter().GetResult();
         }
 
         [TestMethod]
@@ -312,7 +307,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 new User { UserId = 1, Login = "user1", LastLogin = DateTime.UtcNow.AddMinutes(-1) }
             };
 
-            userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
+            _ = userRepositoryMock!.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<User>?>()))
                 .ReturnsAsync(singleUser);
 
             // When
@@ -320,7 +315,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(1, okResult.Value);
         }
 
@@ -332,13 +327,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Login_ValidCredentials_ReturnsOkWithAuthDTO()
         {
             // Given
-            var loginDTO = UserFixture.GetValidLoginDTO();
-            var user = UserFixture.GetNormalUser();
-            var authDTO = UserFixture.GetAuthDTO();
+            LoginDTO loginDTO = UserFixture.GetValidLoginDTO();
+            User user = UserFixture.GetNormalUser();
+            AuthDTO authDTO = UserFixture.GetAuthDTO();
 
-            userRepositoryMock!.Setup(r => r.Login(loginDTO))
+            _ = userRepositoryMock!.Setup(r => r.Login(loginDTO))
                 .ReturnsAsync(user);
-            userRepositoryMock.Setup(r => r.Auth(user, configurationMock!.Object, loginDTO.Remember))
+            _ = userRepositoryMock.Setup(r => r.Auth(user, configurationMock!.Object, loginDTO.Remember))
                 .ReturnsAsync(authDTO);
 
             // When
@@ -346,7 +341,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(authDTO, okResult.Value);
             userRepositoryMock.Verify(r => r.Login(loginDTO), Times.Once);
         }
@@ -355,9 +350,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Login_InvalidCredentials_ReturnsUnauthorized()
         {
             // Given
-            var loginDTO = UserFixture.GetInvalidLoginDTO();
+            LoginDTO loginDTO = UserFixture.GetInvalidLoginDTO();
 
-            userRepositoryMock!.Setup(r => r.Login(loginDTO))
+            _ = userRepositoryMock!.Setup(r => r.Login(loginDTO))
                 .ReturnsAsync((User?)null);
 
             // When
@@ -372,7 +367,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Login_NullLoginDTO_ReturnsUnauthorized()
         {
             // Given
-            userRepositoryMock!.Setup(r => r.Login(It.IsAny<LoginDTO>()))
+            _ = userRepositoryMock!.Setup(r => r.Login(It.IsAny<LoginDTO>()))
                 .ReturnsAsync((User?)null);
 
             // When
@@ -390,13 +385,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         public void Recall_ValidRememberToken_ReturnsOkWithAuthDTO()
         {
             // Given
-            var tokenDTO = UserFixture.GetRememberToken();
-            var user = UserFixture.GetNormalUser();
-            var authDTO = UserFixture.GetAuthDTO();
+            TokenDTO tokenDTO = UserFixture.GetRememberToken();
+            User user = UserFixture.GetNormalUser();
+            AuthDTO authDTO = UserFixture.GetAuthDTO();
 
-            userRepositoryMock!.Setup(r => r.Recall(tokenDTO))
+            _ = userRepositoryMock!.Setup(r => r.Recall(tokenDTO))
                 .ReturnsAsync(user);
-            userRepositoryMock.Setup(r => r.Auth(user, configurationMock!.Object, null))
+            _ = userRepositoryMock.Setup(r => r.Auth(user, configurationMock!.Object, null))
                 .ReturnsAsync(authDTO);
 
             // When
@@ -404,7 +399,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.AreEqual(authDTO, okResult.Value);
             userRepositoryMock.Verify(r => r.Recall(tokenDTO), Times.Once);
         }
@@ -415,7 +410,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             // Given
             var tokenDTO = new TokenDTO { TokenValue = "invalid-token" };
 
-            userRepositoryMock!.Setup(r => r.Recall(tokenDTO))
+            _ = userRepositoryMock!.Setup(r => r.Recall(tokenDTO))
                 .ReturnsAsync((User?)null);
 
             // When
@@ -436,7 +431,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
                 TokenExpiry = DateTime.UtcNow.AddDays(-1)
             };
 
-            userRepositoryMock!.Setup(r => r.Recall(expiredToken))
+            _ = userRepositoryMock!.Setup(r => r.Recall(expiredToken))
                 .ReturnsAsync((User?)null);
 
             // When
