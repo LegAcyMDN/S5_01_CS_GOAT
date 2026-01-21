@@ -12,22 +12,19 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
     /// </remarks>
     public class PriceHistoryManager : ReadRepository<PriceHistory, int>, IPriceHistoryRepository
     {
-#if DEBUG
-        private static readonly string FLASK_URL = "http://localhost:5555";
-#else
-        private static string FLASK_URL = "https://iacsgoat-h6bkescydravhwf8.canadacentral-01.azurewebsites.net";
-#endif
-
         protected new readonly CSGOATDbContext _context;
-        public PriceHistoryManager(CSGOATDbContext context) : base(context)
+        private readonly string _flaskUrl;
+
+        public PriceHistoryManager(CSGOATDbContext context, IConfiguration configuration) : base(context)
         {
             _context = context;
+            _flaskUrl = configuration["Urls:FlaskService"] ?? "http://localhost:5555";
         }
 
         public async Task<IEnumerable<PriceHistory>?> PredictWithAI(Wear wear, int days = 30, bool limit = false)
         {
             var httpClient = new HttpClient();
-            string flaskApiUrl = $"{FLASK_URL}/api/price_history/predict_price/bywear/{wear.WearId}/{days}";
+            string flaskApiUrl = $"{_flaskUrl}/api/price_history/predict_price/bywear/{wear.WearId}/{days}";
             HttpResponseMessage response = await httpClient.GetAsync(flaskApiUrl);
             if (!response.IsSuccessStatusCode)
             {

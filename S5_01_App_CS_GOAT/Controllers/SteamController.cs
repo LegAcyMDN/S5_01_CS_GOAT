@@ -17,12 +17,7 @@ namespace S5_01_App_CS_GOAT.Controllers
         ISteamRepository steamRepository
     ) : ControllerBase
     {
-
-#if DEBUG
-        private static readonly string URL = "https://localhost:7030";
-#else
-        private static string URL = "https://blazorcsgoat-a4gke7edayahgcef.eastus-01.azurewebsites.net";
-#endif
+        private readonly string URL = configuration["Urls:BlazorFrontend"] ?? "https://localhost:7030";
         /// <summary>
         /// Initiate Steam OAuth login flow
         /// </summary>

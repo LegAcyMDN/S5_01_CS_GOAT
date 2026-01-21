@@ -99,11 +99,7 @@ namespace S5_01_App_CS_GOAT.Configuration
                     OnRemoteFailure = context =>
                     {
                         context.HandleResponse();
-#if DEBUG
-                        string URL = "https://localhost:7030";
-#else
-                        string URL = "https://blazorcsgoat-a4gke7edayahgcef.eastus-01.azurewebsites.net";
-#endif
+                        string URL = configuration["Urls:BlazorFrontend"] ?? "https://localhost:7030";
                         context.Response.Redirect($"{URL}?error=steam_auth_failed");
                         return Task.CompletedTask;
                     }
