@@ -1,3 +1,4 @@
+using System.Dynamic;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -7,10 +8,12 @@ using S5_01_App_CS_GOAT.Services;
 using Shared.DTO;
 using Shared.DTO.Helpers;
 using Shared.Enum;
-using System.Dynamic;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager;
 
+/// <summary>
+/// Manages user account operations including creation, authentication, updates, and profile management
+/// </summary>
 public class UserManager : CrudRepository<User, int>, IUserRepository
 {
     protected readonly IConfiguration _configuration;
@@ -22,9 +25,23 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         _configuration = configuration;
     }
 
+    /// <summary>
+    /// Updates user profile information including email, phone, 2FA method, display name, and password
+    /// </summary>
+    /// <param name="existing">The existing user entity to update</param>
+    /// <param name="userDTO">The new user details from the request</param>
+    /// <exception cref="InvalidOperationException">Thrown if email/phone already in use, 2FA validation fails, or password verification fails</exception>
+    /// <remarks>
+    /// Complex validation rules:
+    /// - Email/phone uniqueness checked if changed
+    /// - Email/phone verification reset when changed (user must re-verify)
+    /// - 2FA method changes require password verification
+    /// - 2FA method must have verified contact method (cannot enable phone 2FA without verified phone)
+    /// - Password changes require current password verification
+    /// </remarks>
     public async Task UpdateUserDetails(User existing, UpdateUserDTO userDTO)
     {
-        _context.Set<User>().Attach(existing);
+        _ = _context.Set<User>().Attach(existing);
 
         bool needPasswordCheck = false;
 
@@ -51,57 +68,102 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
 
         if (existing.Email != userDTO.Email)
         {
-            if (userDTO.Email != null && await this.GetByEmail(userDTO.Email) != null)
+            if (userDTO.Email != null && await GetByEmail(userDTO.Email) != null)
+            {
                 throw new InvalidOperationException("Email is already in use.");
+            }
+
             existing.Email = userDTO.Email;
             existing.EmailVerifiedOn = null;
         }
         if (existing.Phone != userDTO.Phone)
         {
-            if (userDTO.Phone != null && await this.GetByPhone(userDTO.Phone) != null)
+            if (userDTO.Phone != null && await GetByPhone(userDTO.Phone) != null)
+            {
                 throw new InvalidOperationException("Phone is already in use.");
+            }
+
             existing.Phone = userDTO.Phone;
             existing.PhoneVerifiedOn = null;
         }
 
         if (existing.TwoFaIsEmail && existing.EmailVerifiedOn == null)
+        {
             throw new InvalidOperationException("Cannot use email 2FA without a verified email.");
+        }
+
         if (existing.TwoFaIsPhone && existing.PhoneVerifiedOn == null)
+        {
             throw new InvalidOperationException("Cannot use phone 2FA without a verified phone.");
+        }
 
         if (needPasswordCheck || userDTO.NewPassword != null)
         {
             if (string.IsNullOrEmpty(userDTO.OldPassword))
+            {
                 throw new InvalidOperationException("Current password is required to update sensitive information.");
-            
+            }
+
             bool? goodPassword = SecurityService.VerifyPassword(
                 userDTO.OldPassword,
                 existing.HashPassword,
                 existing.SaltPassword
             );
             if (goodPassword != true)
+            {
                 throw new InvalidOperationException("Current password is incorrect.");
+            }
 
             if (userDTO.NewPassword != null)
+            {
                 if (!existing.TrySetPassword(userDTO.NewPassword))
+                {
                     throw new InvalidOperationException("New password does not meet complexity requirements.");
+                }
+            }
         }
 
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Creates a new user account with login credentials and contact information
+    /// </summary>
+    /// <param name="newAccount">Account creation parameters including login, password, email, phone</param>
+    /// <returns>The newly created User entity</returns>
+    /// <exception cref="InvalidOperationException">Thrown if login/email/phone already exists or password doesn't meet requirements</exception>
+    /// <remarks>
+    /// Validation and initialization:
+    /// - Login must be unique
+    /// - At least one contact method (email or phone) must be provided
+    /// - Email and phone must be unique if provided
+    /// - Password must meet complexity requirements (enforced by User.TrySetPassword)
+    /// - Initializes new user with notification settings, limits, and welcome promo code
+    /// - Uses database transaction for atomicity
+    /// </remarks>
     public async Task<User> CreateUser(CreateUserDTO newAccount)
     {
         if (await GetByLogin(newAccount.Login) != null)
+        {
             throw new InvalidOperationException("Login is already in use.");
-        if (newAccount.Email == null && newAccount.Phone == null)
-            throw new InvalidOperationException("At least one contact method (email or phone) must be provided.");
-        if (newAccount.Email != null && await GetByEmail(newAccount.Email) != null)
-            throw new InvalidOperationException("Email is already in use.");
-        if (newAccount.Phone != null && await GetByPhone(newAccount.Phone) != null)
-            throw new InvalidOperationException("Phone is already in use.");
+        }
 
-        User newUser = new User
+        if (newAccount.Email == null && newAccount.Phone == null)
+        {
+            throw new InvalidOperationException("At least one contact method (email or phone) must be provided.");
+        }
+
+        if (newAccount.Email != null && await GetByEmail(newAccount.Email) != null)
+        {
+            throw new InvalidOperationException("Email is already in use.");
+        }
+
+        if (newAccount.Phone != null && await GetByPhone(newAccount.Phone) != null)
+        {
+            throw new InvalidOperationException("Phone is already in use.");
+        }
+
+        var newUser = new User
         {
             Login = newAccount.Login,
             DisplayName = newAccount.DisplayName,
@@ -109,42 +171,54 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             Phone = newAccount.Phone
         };
         if (!newUser.TrySetPassword(newAccount.Password))
+        {
             throw new InvalidOperationException("Password does not meet complexity requirements.");
+        }
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        await _context.Set<User>().AddAsync(newUser);
-        await _context.SaveChangesAsync();
+        await using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+        _ = await _context.Set<User>().AddAsync(newUser);
+        _ = await _context.SaveChangesAsync();
         await InitializeUser(newUser);
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
         await transaction.CommitAsync();
         return newUser;
     }
 
+    /// <summary>
+    /// Initializes a new user with default notification settings, limits, and welcome promo code
+    /// </summary>
+    /// <param name="user">The user entity to initialize</param>
+    /// <remarks>
+    /// Creates:
+    /// - NotificationSetting entries for each NotificationType
+    /// - Limit entries for each LimitType
+    /// - Welcome promo code (WELCOME): 25% discount, expires in 7 days, 1 use
+    /// </remarks>
     public async Task InitializeUser(User user)
     {
         List<NotificationType> nTypes = await _context.Set<NotificationType>().ToListAsync();
-        foreach (var nType in nTypes)
+        foreach (NotificationType nType in nTypes)
         {
-            NotificationSetting setting = new NotificationSetting
+            var setting = new NotificationSetting
             {
                 UserId = user.UserId,
                 NotificationType = nType
             };
-            await _context.Set<NotificationSetting>().AddAsync(setting);
+            _ = await _context.Set<NotificationSetting>().AddAsync(setting);
         }
 
         List<LimitType> limitTypes = await _context.Set<LimitType>().ToListAsync();
-        foreach (var lType in limitTypes)
+        foreach (LimitType lType in limitTypes)
         {
-            Limit limit = new Limit
+            var limit = new Limit
             {
                 UserId = user.UserId,
                 LimitType = lType
             };
-            await _context.Set<Limit>().AddAsync(limit);
+            _ = await _context.Set<Limit>().AddAsync(limit);
         }
 
-        PromoCode newUserPromoCode = new PromoCode
+        var newUserPromoCode = new PromoCode
         {
             UserId = user.UserId,
             RemainingUses = 1,
@@ -153,24 +227,48 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             DiscountAmount = 0,
             ExpiryDate = DateTime.Now.AddDays(7)
         };
-        await _context.Set<PromoCode>().AddAsync(newUserPromoCode);
+        _ = await _context.Set<PromoCode>().AddAsync(newUserPromoCode);
     }
 
+    /// <summary>
+    /// Authenticates user with login credentials (password verification)
+    /// </summary>
+    /// <param name="loginDTO">Login parameters with identifier (login/email/phone) and password</param>
+    /// <returns>User entity if authentication succeeds, null otherwise</returns>
+    /// <remarks>
+    /// Process:
+    /// 1. Looks up user by identifier (login/email/phone - case-insensitive)
+    /// 2. Verifies password using SecurityService.VerifyPassword
+    /// 3. Returns user if both succeed, null if either fails
+    /// </remarks>
     public async Task<User?> Login(LoginDTO loginDTO)
     {
-        User? user = await this.GetByIdentifier(loginDTO.Identifier);
-        if (user == null) return null;
+        User? user = await GetByIdentifier(loginDTO.Identifier);
+        if (user == null)
+        {
+            return null;
+        }
 
         bool? goodPassword = SecurityService.VerifyPassword(
             loginDTO.Password,
             user.HashPassword,
             user.SaltPassword);
 
-        if (goodPassword != true) return null;
-
-        return user;
+        return goodPassword != true ? null : user;
     }
 
+    /// <summary>
+    /// Recalls user session using a persistent remember token (token type 1)
+    /// </summary>
+    /// <param name="rememberDTO">Token details for session recall</param>
+    /// <returns>User entity if token is valid, null otherwise</returns>
+    /// <remarks>
+    /// Validation:
+    /// - Token must exist and match provided value
+    /// - Token must be type 1 (remember token)
+    /// - Token must not be expired
+    /// - Expired tokens are automatically deleted from database
+    /// </remarks>
     public async Task<User?> Recall(TokenDTO rememberDTO)
     {
         Token? token = await _context.Set<Token>().FindAsync(rememberDTO.TokenId);
@@ -179,12 +277,15 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             || token.TokenValue != rememberDTO.TokenValue
             || token.UserId != rememberDTO.UserId
             || token.TokenTypeId != 1
-        ) return null;
+        )
+        {
+            return null;
+        }
 
         if (token.TokenExpiry <= DateTime.Now)
         {
-            _context.Set<Token>().Remove(token);
-            await _context.SaveChangesAsync();
+            _ = _context.Set<Token>().Remove(token);
+            _ = await _context.SaveChangesAsync();
             return null;
         }
 
@@ -194,9 +295,23 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         return user;
     }
 
+    /// <summary>
+    /// Generates authentication tokens (JWT and optional remember token) after successful login
+    /// </summary>
+    /// <param name="user">The authenticated user</param>
+    /// <param name="config">Configuration for JWT generation</param>
+    /// <param name="remember">Optional remember token duration in days (null = no remember token)</param>
+    /// <returns>AuthDTO with JWT token and optional remember token</returns>
+    /// <remarks>
+    /// Operations:
+    /// - Generates JWT token using JwtService (expires in 30 days)
+    /// - Creates remember token if remember parameter > 0
+    /// - Updates LastLogin timestamp
+    /// - Returns JWT and remember token for client storage
+    /// </remarks>
     public async Task<AuthDTO> Auth(User user, IConfiguration config, int? remember = null)
     {
-        _context.Set<User>().Attach(user);
+        _ = _context.Set<User>().Attach(user);
         string jwtToken = JwtService.GenerateJwtToken(user, config);
         Token? rememberToken = null;
         if (remember != null && remember > 0)
@@ -209,7 +324,7 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
                 TokenExpiry = tokenExpiry
             };
         }
-        AuthDTO authDTO = new AuthDTO
+        var authDTO = new AuthDTO
         {
             UserId = user.UserId,
             DisplayName = user.DisplayName,
@@ -217,16 +332,19 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         };
         if (rememberToken != null)
         {
-            await _context.Set<Token>().AddAsync(rememberToken);
+            _ = await _context.Set<Token>().AddAsync(rememberToken);
         }
         user.LastLogin = DateTime.Now;
-        await _context.SaveChangesAsync();
+        _ = await _context.SaveChangesAsync();
         authDTO.RememberToken = rememberToken != null!
             ? _mapper.Map<TokenDTO>(rememberToken)
             : null;
         return authDTO;
     }
 
+    /// <summary>
+    /// Retrieves user by login name (case-insensitive)
+    /// </summary>
     public async Task<User?> GetByLogin(string login)
     {
         return await _context.Set<User>()
@@ -235,6 +353,9 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             );
     }
 
+    /// <summary>
+    /// Retrieves user by email address (case-insensitive)
+    /// </summary>
     public async Task<User?> GetByEmail(string email)
     {
         return await _context.Set<User>()
@@ -243,6 +364,9 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             );
     }
 
+    /// <summary>
+    /// Retrieves user by phone number (case-insensitive)
+    /// </summary>
     public async Task<User?> GetByPhone(string phone)
     {
         return await _context.Set<User>()
@@ -251,104 +375,164 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
             );
     }
 
+    /// <summary>
+    /// Retrieves user by flexible identifier (login, email, or phone)
+    /// </summary>
+    /// <remarks>
+    /// Tries in order:
+    /// 1. Login (exact match, case-insensitive)
+    /// 2. Email (exact match, case-insensitive)
+    /// 3. Phone (exact match, case-insensitive)
+    /// </remarks>
     public async Task<User?> GetByIdentifier(string identifier)
     {
         User? user = await GetByLogin(identifier);
-        if (user != null) return user;
+        if (user != null)
+        {
+            return user;
+        }
+
         user = await GetByEmail(identifier);
-        if (user != null) return user;
+        if (user != null)
+        {
+            return user;
+        }
+
         user = await GetByPhone(identifier);
         return user;
     }
-    
+
     /// <summary>
-        /// Get user by SteamID
-        /// </summary>
-        /// <param name="steamId">Steam ID (64-bit)</param>
-        /// <returns>User if found, null otherwise</returns>
-        public async Task<User?> GetBySteamIdAsync(string steamId)
+    /// Get user by SteamID
+    /// </summary>
+    /// <param name="steamId">Steam ID (64-bit)</param>
+    /// <returns>User if found, null otherwise</returns>
+    public async Task<User?> GetBySteamIdAsync(string steamId)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.SteamId == steamId && u.DeletedOn == null);
+    }
+
+    /// <summary>
+    /// Create or update user from Steam authentication
+    /// </summary>
+    /// <param name="steamAuthDTO">Steam authentication data</param>
+    /// <returns>The created or updated user</returns>
+    /// <summary>
+    /// Create or update user from Steam authentication
+    /// </summary>
+    /// <summary>
+    /// Creates or updates user from Steam authentication
+    /// </summary>
+    /// <param name="steamAuthDTO">Steam authentication data from Steam API</param>
+    /// <returns>The created or updated user</returns>
+    /// <remarks>
+    /// Two scenarios:
+    /// - Existing user: Updates DisplayName and LastLogin
+    /// - New user: Creates account with random secure login/password, no email/phone (Steam only)
+    /// 
+    /// Steam-only users have:
+    /// - Login format: "steam_{SteamId}"
+    /// - Random 64-character password (user cannot login without Steam)
+    /// - No email/phone initially
+    /// - 2FA disabled
+    /// </remarks>
+    public async Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO)
+    {
+        // Check if user already exists
+        User? existingUser = await GetBySteamIdAsync(steamAuthDTO.SteamId);
+
+        if (existingUser != null)
         {
-            return await _context.Users
-                .FirstOrDefaultAsync(u => u.SteamId == steamId && u.DeletedOn == null);
-        }
-        
-        /// <summary>
-        /// Create or update user from Steam authentication
-        /// </summary>
-        /// <param name="steamAuthDTO">Steam authentication data</param>
-        /// <returns>The created or updated user</returns>
-        /// <summary>
-        /// Create or update user from Steam authentication
-        /// </summary>
-        public async Task<User> AuthenticateWithSteam(SteamAuthDTO steamAuthDTO)
-        {
-            // Check if user already exists
-            var existingUser = await GetBySteamIdAsync(steamAuthDTO.SteamId);
-    
-            if (existingUser != null)
-            {
-                // Update existing user
-                existingUser.DisplayName = steamAuthDTO.Username;
-                existingUser.LastLogin = DateTime.UtcNow;
-        
-                _context.Users.Update(existingUser);
-                await _context.SaveChangesAsync();
-        
-                return existingUser;
-            }
-    
-            // Create new user with random secure credentials
-            string randomSalt = SecurityService.GenerateToken(32);
-            string randomPassword = SecurityService.GenerateToken(64);
-            string hashedPassword = SecurityService.HashAndSalt(randomPassword, randomSalt);
-    
-            var newUser = new User
-            {
-                SteamId = steamAuthDTO.SteamId,
-                Login = $"steam_{steamAuthDTO.SteamId}",
-                DisplayName = steamAuthDTO.Username,
-                Email = null,
-                Phone = null,
-                SaltPassword = randomSalt,
-                HashPassword = hashedPassword,
-                TwoFaIsPhone = false,
-                TwoFaIsEmail = false,
-                IsAdmin = false,
-                CreationDate = DateTime.UtcNow,
-                LastLogin = DateTime.UtcNow,
-                Wallet = 0.0,
-                DeletedOn = null,
-                Seed = SecurityService.GenerateSeed(16),
-                Nonce = 0
-            };
-    
-            await _context.Users.AddAsync(newUser);
-            await _context.SaveChangesAsync();
-    
-            return newUser;
+            // Update existing user
+            existingUser.DisplayName = steamAuthDTO.Username;
+            existingUser.LastLogin = DateTime.UtcNow;
+
+            _ = _context.Users.Update(existingUser);
+            _ = await _context.SaveChangesAsync();
+
+            return existingUser;
         }
 
+        // Create new user with random secure credentials
+        string randomSalt = SecurityService.GenerateToken(32);
+        string randomPassword = SecurityService.GenerateToken(64);
+        string hashedPassword = SecurityService.HashAndSalt(randomPassword, randomSalt);
 
+        var newUser = new User
+        {
+            SteamId = steamAuthDTO.SteamId,
+            Login = $"steam_{steamAuthDTO.SteamId}",
+            DisplayName = steamAuthDTO.Username,
+            Email = null,
+            Phone = null,
+            SaltPassword = randomSalt,
+            HashPassword = hashedPassword,
+            TwoFaIsPhone = false,
+            TwoFaIsEmail = false,
+            IsAdmin = false,
+            CreationDate = DateTime.UtcNow,
+            LastLogin = DateTime.UtcNow,
+            Wallet = 0.0,
+            DeletedOn = null,
+            Seed = SecurityService.GenerateSeed(16),
+            Nonce = 0
+        };
+
+        _ = await _context.Users.AddAsync(newUser);
+        _ = await _context.SaveChangesAsync();
+
+        return newUser;
+    }
+
+
+    /// <summary>
+    /// Initiates password reset process by sending reset token via email or SMS
+    /// </summary>
+    /// <param name="identifier">User identifier (login, email, or phone)</param>
+    /// <param name="url">Base URL for password reset link</param>
+    /// <param name="preferMail">If true, sends via email when available; otherwise SMS</param>
+    /// <returns>HTTP status code (200 success, 404 user not found, 429 too many requests, 400 no contact method)</returns>
+    /// <remarks>
+    /// Rate limiting:
+    /// - Prevents multiple reset requests within 15 minutes
+    /// - Returns 429 if existing unexpired reset token exists
+    /// 
+    /// Token details:
+    /// - Type: 2 (password reset)
+    /// - Duration: 15 minutes
+    /// - Length: 32 chars for email, 16 chars for SMS
+    /// 
+    /// Message format: Bilingual (English/French) with reset link
+    /// </remarks>
     public async Task<int> StartResetPassword(string identifier, string url, bool preferMail = true)
     {
         Console.WriteLine($"Starting password reset for identifier: {identifier}, url: {url}, preferMail: {preferMail}");
         User? user = await GetByIdentifier(identifier);
-        if (user == null) return StatusCodes.Status404NotFound;
+        if (user == null)
+        {
+            return StatusCodes.Status404NotFound;
+        }
+
         IEnumerable<Token> existingTokens = _context.Set<Token>()
             .Where(t => t.UserId == user.UserId && t.TokenTypeId == 2 && t.TokenExpiry > DateTime.Now);
-        if (existingTokens.Any()) return StatusCodes.Status429TooManyRequests;
+        if (existingTokens.Any())
+        {
+            return StatusCodes.Status429TooManyRequests;
+        }
+
         using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
-        Token resetToken = new Token
+        var resetToken = new Token
         {
             UserId = user.UserId,
             TokenTypeId = 2,
             TokenExpiry = DateTime.Now.AddMinutes(15),
             TokenValue = SecurityService.GenerateSeed(preferMail ? 32 : 16)
         };
-        await _context.Set<Token>().AddAsync(resetToken);
-        await _context.SaveChangesAsync();
+        _ = await _context.Set<Token>().AddAsync(resetToken);
+        _ = await _context.SaveChangesAsync();
 
-        Message message = new Message(_configuration, user)
+        var message = new Message(_configuration, user)
         {
             Text = $"\n\nA password reset request has been received for your CS:GOAT account." +
                 $"\nFollow the link below if you have forgotten your password." +
@@ -368,61 +552,129 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         {
             HttpResponseMessage response = await message.SendMailAsync();
             if (!response.IsSuccessStatusCode)
+            {
                 await transaction.RollbackAsync();
-            else 
+            }
+            else
+            {
                 await transaction.CommitAsync();
+            }
+
             return (int)response.StatusCode;
         }
         else if (!string.IsNullOrEmpty(user.Phone))
         {
             HttpResponseMessage response = await message.SendSmsAsync();
             if (!response.IsSuccessStatusCode)
+            {
                 await transaction.RollbackAsync();
-            else 
+            }
+            else
+            {
                 await transaction.CommitAsync();
+            }
+
             return (int)response.StatusCode;
         }
         await transaction.RollbackAsync();
         return StatusCodes.Status400BadRequest;
     }
 
+    /// <summary>
+    /// Completes password reset by validating reset token and setting new password
+    /// </summary>
+    /// <param name="identifier">User identifier (login, email, or phone)</param>
+    /// <param name="code">The reset token from the reset email/SMS</param>
+    /// <returns>Tuple of (HTTP status code, new password if successful)</returns>
+    /// <remarks>
+    /// Validation:
+    /// - User must exist
+    /// - Token must exist, match type 2, not be expired
+    /// - Token is deleted after use (one-time use)
+    /// 
+    /// Return values:
+    /// - (200, new_password): Success - user should login with new password
+    /// - (404, null): User not found
+    /// - (400, null): Invalid or expired token
+    /// - (500, null): Password generation failed
+    /// 
+    /// Generated password: Random 12-character token
+    /// </remarks>
     public async Task<Tuple<int, string?>> EndResetPassword(string identifier, string code)
     {
         User? user = await GetByIdentifier(identifier);
-        if (user == null) return new Tuple<int, string?>(StatusCodes.Status404NotFound, null);
+        if (user == null)
+        {
+            return new Tuple<int, string?>(StatusCodes.Status404NotFound, null);
+        }
+
         Token? token = await _context.Set<Token>()
             .FirstOrDefaultAsync(t =>
                 t.UserId == user.UserId &&
                 t.TokenTypeId == 2 &&
                 t.TokenValue == code &&
                 t.TokenExpiry > DateTime.Now);
-        if (token == null) return new Tuple<int, string?>(StatusCodes.Status400BadRequest, null);
+        if (token == null)
+        {
+            return new Tuple<int, string?>(StatusCodes.Status400BadRequest, null);
+        }
+
         string newPassword = SecurityService.GenerateSeed(12);
         if (!user.TrySetPassword(newPassword, true))
+        {
             return new Tuple<int, string?>(StatusCodes.Status500InternalServerError, null);
-        _context.Set<Token>().Remove(token);
-        await _context.SaveChangesAsync();
+        }
+
+        _ = _context.Set<Token>().Remove(token);
+        _ = await _context.SaveChangesAsync();
         return new Tuple<int, string?>(StatusCodes.Status200OK, newPassword);
     }
 
+    /// <summary>
+    /// Exports complete user data for GDPR compliance (data portability)
+    /// </summary>
+    /// <param name="userId">The user ID to export</param>
+    /// <returns>Dynamic object with user data and related transactions, null if user not found</returns>
+    /// <remarks>
+    /// Exported data includes:
+    /// - User profile (name, settings) - excludes password hashes
+    /// - Notification settings and preferences
+    /// - Limits and bans
+    /// - Favorite cases list
+    /// - Inventory items with full details
+    /// - All transactions (item, money, upgrade results)
+    /// - Fair random sessions for verification
+    /// 
+    /// Sensitive data excluded:
+    /// - SaltPassword and HashPassword (security)
+    /// - Email verification status (internal)
+    /// </remarks>
     public async Task<object?> ExportUserDataAsync(int userId)
     {
         QueryOptions<User> userOptions = new QueryOptions<User>()
             .Before("NotificationSettings.NotificationType",
                 "Limits.LimitType", "Bans.BanType")
             .Before(u => u.Favorites);
-        User? user = await GetByIdAsyncNew(userId, userOptions);
-        if (user == null) return null;
+        User? user = await GetByIdAsync(userId, userOptions);
+        if (user == null)
+        {
+            return null;
+        }
 
         dynamic exportUser = new ExpandoObject();
-        var exportUserDict = (IDictionary<string, object>)exportUser;
-        foreach (var prop in user.GetType().GetProperties())
+        var exportUserDict = (IDictionary<string, object?>)exportUser;
+        foreach (System.Reflection.PropertyInfo prop in user.GetType().GetProperties())
         {
-            var propertyType = prop.PropertyType;
+            Type propertyType = prop.PropertyType;
             if (typeof(System.Collections.IEnumerable).IsAssignableFrom(propertyType) && propertyType != typeof(string))
+            {
                 continue; // Skip navigation properties (IEnumerable, ICollection, complex types)
-            if (propertyType.Namespace?.StartsWith(typeof(User).Namespace) ?? false)
+            }
+
+            if (typeof(User)?.Namespace != null && (propertyType.Namespace?.StartsWith(typeof(User).Namespace!) ?? false))
+            {
                 continue; // Skip custom entities / navigation properties (EF models)
+            }
 
             exportUserDict[prop.Name] = prop.GetValue(user);
         }
@@ -453,7 +705,8 @@ public class UserManager : CrudRepository<User, int>, IUserRepository
         exportUser.ItemTransactions = _mapper.Map<List<ItemTransactionDTO>>(itemTrans);
         exportUser.MoneyTransactions = _mapper.Map<List<MoneyTransactionDTO>>(moneyTrans);
         exportUser.UpgradeResults = _mapper.Map<List<UpgradeResultDTO>>(upgradeResults);
-        exportUser.RandomTransactions = randTrans.Select(rt => new {
+        exportUser.RandomTransactions = randTrans.Select(rt => new
+        {
             rt.TransactionId,
             rt.InventoryItemId,
             rt.TransactionDate,

@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Shared.DTO;
+using AutoMapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public BanMapper()
         {
             // Entity -> DTO
-            CreateMap<Ban, BanDTO>()
+            _ = CreateMap<Ban, BanDTO>()
                 .ForMember(dest => dest.BanId, opt => opt.MapFrom(src => src.BanId))
                 .ForMember(dest => dest.BanReason, opt => opt.MapFrom(src => src.BanReason))
                 .ForMember(dest => dest.BanDate, opt => opt.MapFrom(src => src.BanDate))
@@ -18,7 +18,7 @@ namespace S5_01_App_CS_GOAT.Mapper
                 .ForMember(dest => dest.BanTypeDescription, opt => opt.MapFrom(src => src.BanType.BanTypeDescription));
 
             // DTO -> Entity
-            CreateMap<BanDTO, Ban>()
+            _ = CreateMap<BanDTO, Ban>()
                 .ForMember(dest => dest.BanId, opt => opt.MapFrom(src => src.BanId))
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.BanTypeId, opt => opt.Ignore())

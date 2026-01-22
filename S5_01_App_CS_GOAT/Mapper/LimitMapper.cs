@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Shared.DTO;
+using AutoMapper;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public LimitMapper()
         {
             // Entity -> DTO
-            CreateMap<Limit, LimitDTO>()
+            _ = CreateMap<Limit, LimitDTO>()
                 .ForMember(dest => dest.LimitAmount, opt => opt.MapFrom(src => src.LimitAmount))
                 .ForMember(dest => dest.LimitTypeName, opt => opt.MapFrom(src => src.LimitType.LimitTypeName));
         }

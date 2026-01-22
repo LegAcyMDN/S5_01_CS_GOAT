@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
@@ -62,322 +62,304 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             base.OnModelCreating(modelBuilder);
 
             // Configure User
-            modelBuilder.Entity<User>(e =>
-            {
-                e.HasKey(p => p.UserId);
-            });
+            _ = modelBuilder.Entity<User>(e => e.HasKey(p => p.UserId));
 
             // Configure Item Type hierarchy
-            modelBuilder.Entity<ItemType>(e =>
+            _ = modelBuilder.Entity<ItemType>(e =>
             {
-                e.HasKey(p => p.ItemTypeId);
-                e.HasMany(p => p.SubItemTypes)
+                _ = e.HasKey(p => p.ItemTypeId);
+                _ = e.HasMany(p => p.SubItemTypes)
                     .WithOne(m => m.ParentItemType)
                     .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
             // Configure Item
-            modelBuilder.Entity<Item>(e =>
+            _ = modelBuilder.Entity<Item>(e =>
             {
-                e.HasKey(p => p.ItemId);
-                e.HasMany(p => p.Skins)
+                _ = e.HasKey(p => p.ItemId);
+                _ = e.HasMany(p => p.Skins)
                     .WithOne(m => m.Item)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_skin_item");
             });
 
             // Configure Rarity
-            modelBuilder.Entity<Rarity>(e =>
+            _ = modelBuilder.Entity<Rarity>(e =>
             {
-                e.HasKey(p => p.RarityId);
-                e.HasMany(p => p.Skins)
+                _ = e.HasKey(p => p.RarityId);
+                _ = e.HasMany(p => p.Skins)
                     .WithOne(m => m.Rarity)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_skin_rarity");
             });
 
             // Configure Skin
-            modelBuilder.Entity<Skin>(e =>
+            _ = modelBuilder.Entity<Skin>(e =>
             {
-                e.HasKey(p => p.SkinId);
-                e.HasMany(p => p.Wears)
+                _ = e.HasKey(p => p.SkinId);
+                _ = e.HasMany(p => p.Wears)
                     .WithOne(m => m.Skin)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wear_skin");
-                e.HasMany(p => p.CaseContents)
+                _ = e.HasMany(p => p.CaseContents)
                     .WithOne(m => m.Skin)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_casecontent_skin");
             });
 
             // Configure Wear
-            modelBuilder.Entity<Wear>(e =>
+            _ = modelBuilder.Entity<Wear>(e =>
             {
-                e.HasKey(p => p.WearId);
-                e.HasMany(p => p.InventoryItems)
+                _ = e.HasKey(p => p.WearId);
+                _ = e.HasMany(p => p.InventoryItems)
                     .WithOne(m => m.Wear)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_inventoryitem_wear");
-                e.HasOne(p => p.WearType)
+                _ = e.HasOne(p => p.WearType)
                     .WithMany(m => m.Wears)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wear_weartype");
             });
 
             // Configure Case
-            modelBuilder.Entity<Case>(e =>
+            _ = modelBuilder.Entity<Case>(e =>
             {
-                e.HasKey(p => p.CaseId);
-                e.HasMany(p => p.CaseContents)
+                _ = e.HasKey(p => p.CaseId);
+                _ = e.HasMany(p => p.CaseContents)
                     .WithOne(m => m.Case)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_casecontent_case");
-                e.HasMany(p => p.RandomTransactions)
+                _ = e.HasMany(p => p.RandomTransactions)
                     .WithOne(m => m.Case)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_randomtransaction_case");
-                e.HasMany(p => p.Favorites)
+                _ = e.HasMany(p => p.Favorites)
                     .WithOne(m => m.Case)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_favorite_case");
             });
 
             // Configure CaseContent
-            modelBuilder.Entity<CaseContent>(e =>
-            {
-                e.HasKey(p => new { p.CaseId, p.SkinId });
-            });
+            _ = modelBuilder.Entity<CaseContent>(e => e.HasKey(p => new { p.CaseId, p.SkinId }));
 
             // Configure PaymentMethod
-            modelBuilder.Entity<PaymentMethod>(e =>
+            _ = modelBuilder.Entity<PaymentMethod>(e =>
             {
-                e.HasKey(p => p.PaymentMethodId);
-                e.HasMany(p => p.MoneyTransactions)
+                _ = e.HasKey(p => p.PaymentMethodId);
+                _ = e.HasMany(p => p.MoneyTransactions)
                     .WithOne(m => m.PaymentMethod)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_moneytransaction_paymentmethod");
             });
 
             // Configure Transaction
-            modelBuilder.Entity<Transaction>(e =>
+            _ = modelBuilder.Entity<Transaction>(e =>
             {
-                e.HasKey(p => p.TransactionId);
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => p.TransactionId);
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.Transactions)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_transaction_user");
             });
 
-            modelBuilder.Entity<MoneyTransaction>(e =>
-            {
-                e.HasOne(p => p.PaymentMethod)
+            _ = modelBuilder.Entity<MoneyTransaction>(e => e.HasOne(p => p.PaymentMethod)
                     .WithMany(m => m.MoneyTransactions)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_moneytransaction_paymentmethod");
-            });
+                    .HasConstraintName("FK_moneytransaction_paymentmethod"));
 
-            modelBuilder.Entity<ItemTransaction>(e =>
-            {
-                e.HasOne(p => p.InventoryItem)
+            _ = modelBuilder.Entity<ItemTransaction>(e => e.HasOne(p => p.InventoryItem)
                     .WithMany(m => m.ItemTransactions)
                     .OnDelete(DeleteBehavior.SetNull)
-                    .HasConstraintName("FK_itemtransaction_inventoryitem");
-            });
+                    .HasConstraintName("FK_itemtransaction_inventoryitem"));
 
-            modelBuilder.Entity<RandomTransaction>(e =>
+            _ = modelBuilder.Entity<RandomTransaction>(e =>
             {
-                e.HasMany(p => p.UpgradeResults)
+                _ = e.HasMany(p => p.UpgradeResults)
                     .WithOne(m => m.RandomTransaction)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_upgraderesult_randomtransaction");
-                e.HasOne(p => p.Case)
+                _ = e.HasOne(p => p.Case)
                     .WithMany(m => m.RandomTransactions)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_randomtransaction_case");
             });
 
             // Configure Notification
-            modelBuilder.Entity<Notification>(e =>
+            _ = modelBuilder.Entity<Notification>(e =>
             {
-                e.HasKey(p => p.NotificationId);
-                e.HasOne(p => p.NotificationType)
+                _ = e.HasKey(p => p.NotificationId);
+                _ = e.HasOne(p => p.NotificationType)
                     .WithMany(m => m.Notifications)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_notification_notificationtype");
             });
 
-            modelBuilder.Entity<GlobalNotification>(e =>
-            {
-                e.ToTable("t_e_globalnotification_gnf");
-            });
+            _ = modelBuilder.Entity<GlobalNotification>(e => e.ToTable("t_e_globalnotification_gnf"));
 
-            modelBuilder.Entity<UserNotification>(e =>
+            _ = modelBuilder.Entity<UserNotification>(e =>
             {
-                e.ToTable("t_e_usernotification_unf");
-                e.HasOne(p => p.User)
+                _ = e.ToTable("t_e_usernotification_unf");
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.UserNotifications)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_usernotification_user");
             });
 
             // Configure NotificationType
-            modelBuilder.Entity<NotificationType>(e =>
+            _ = modelBuilder.Entity<NotificationType>(e =>
             {
-                e.HasKey(p => p.NotificationTypeId);
-                e.HasMany(p => p.Notifications)
+                _ = e.HasKey(p => p.NotificationTypeId);
+                _ = e.HasMany(p => p.Notifications)
                     .WithOne(m => m.NotificationType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_notification_notificationtype");
-                e.HasMany(p => p.NotificationSettings)
+                _ = e.HasMany(p => p.NotificationSettings)
                     .WithOne(m => m.NotificationType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_notificationsetting_notificationtype");
             });
 
             // Configure NotificationSetting
-            modelBuilder.Entity<NotificationSetting>(e =>
-            {
-                e.HasKey(p => new { p.UserId, p.NotificationTypeId });
-            });
+            _ = modelBuilder.Entity<NotificationSetting>(e => e.HasKey(p => new { p.UserId, p.NotificationTypeId }));
 
             // Configure Token
-            modelBuilder.Entity<Token>(e =>
+            _ = modelBuilder.Entity<Token>(e =>
             {
-                e.HasKey(p => p.TokenId);
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => p.TokenId);
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.Tokens)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_token_user");
-                e.HasOne(p => p.TokenType)
+                _ = e.HasOne(p => p.TokenType)
                     .WithMany(m => m.Tokens)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_token_tokentype");
             });
 
             // Configure TokenType
-            modelBuilder.Entity<TokenType>(e =>
+            _ = modelBuilder.Entity<TokenType>(e =>
             {
-                e.HasKey(p => p.TokenTypeId);
-                e.HasMany(p => p.Tokens)
+                _ = e.HasKey(p => p.TokenTypeId);
+                _ = e.HasMany(p => p.Tokens)
                     .WithOne(m => m.TokenType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_token_tokentype");
             });
 
             // Configure Ban
-            modelBuilder.Entity<Ban>(e =>
+            _ = modelBuilder.Entity<Ban>(e =>
             {
-                e.HasKey(p => new { p.UserId, p.BanTypeId });
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => new { p.UserId, p.BanTypeId });
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.Bans)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ban_user");
-                e.HasOne(p => p.BanType)
+                _ = e.HasOne(p => p.BanType)
                     .WithMany(m => m.Bans)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ban_bantype");
             });
 
             // Configure BanType
-            modelBuilder.Entity<BanType>(e =>
+            _ = modelBuilder.Entity<BanType>(e =>
             {
-                e.HasKey(p => p.BanTypeId);
-                e.HasMany(p => p.Bans)
+                _ = e.HasKey(p => p.BanTypeId);
+                _ = e.HasMany(p => p.Bans)
                     .WithOne(m => m.BanType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ban_bantype");
-                e.HasOne(p => p.ParentBanType)
+                _ = e.HasOne(p => p.ParentBanType)
                     .WithMany(m => m.SubBanTypes)
                     .OnDelete(DeleteBehavior.ClientSetNull);
             });
 
             // Configure Favorite
-            modelBuilder.Entity<Favorite>(e =>
+            _ = modelBuilder.Entity<Favorite>(e =>
             {
-                e.HasKey(p => new { p.UserId, p.CaseId });
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => new { p.UserId, p.CaseId });
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.Favorites)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_favorite_user");
-                e.HasOne(p => p.Case)
+                _ = e.HasOne(p => p.Case)
                     .WithMany(m => m.Favorites)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_favorite_case");
             });
 
             // Configure InventoryItem
-            modelBuilder.Entity<InventoryItem>(e =>
+            _ = modelBuilder.Entity<InventoryItem>(e =>
             {
-                e.HasKey(p => p.InventoryItemId);
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => p.InventoryItemId);
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.InventoryItems)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_inventoryitem_user");
-                e.HasOne(p => p.Wear)
+                _ = e.HasOne(p => p.Wear)
                     .WithMany(m => m.InventoryItems)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_inventoryitem_wear");
-                e.HasMany(p => p.UpgradeResults)
+                _ = e.HasMany(p => p.UpgradeResults)
                     .WithOne(m => m.InventoryItem)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_upgraderesult_inventoryitem");
-                e.HasMany(p => p.ItemTransactions)
+                _ = e.HasMany(p => p.ItemTransactions)
                     .WithOne(m => m.InventoryItem)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_itemtransaction_inventoryitem");
             });
 
             // Configure UpgradeResult
-            modelBuilder.Entity<UpgradeResult>(e =>
+            _ = modelBuilder.Entity<UpgradeResult>(e =>
             {
-                e.HasKey(p => new { p.InventoryItemId, p.TransactionId });
-                e.HasOne(p => p.InventoryItem)
+                _ = e.HasKey(p => new { p.InventoryItemId, p.TransactionId });
+                _ = e.HasOne(p => p.InventoryItem)
                     .WithMany(m => m.UpgradeResults)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_upgraderesult_inventoryitem");
-                e.HasOne(p => p.RandomTransaction)
+                _ = e.HasOne(p => p.RandomTransaction)
                     .WithMany(m => m.UpgradeResults)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_upgraderesult_randomtransaction");
-                e.HasOne(p => p.FairRandom)
+                _ = e.HasOne(p => p.FairRandom)
                     .WithOne(m => m.UpgradeResult)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_upgraderesult");
             });
 
             // Configure FairRandom
-            modelBuilder.Entity<FairRandom>(e =>
+            _ = modelBuilder.Entity<FairRandom>(e =>
             {
-                e.HasKey(p => p.FairRandomId);
-                e.HasOne(p => p.RandomTransaction)
+                _ = e.HasKey(p => p.FairRandomId);
+                _ = e.HasOne(p => p.RandomTransaction)
                     .WithOne(m => m.FairRandom)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_randomtransaction");
-                e.HasOne(p => p.UpgradeResult)
+                _ = e.HasOne(p => p.UpgradeResult)
                     .WithOne(m => m.FairRandom)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_upgraderesult");
-                e.HasOne(p => p.User)
+                _ = e.HasOne(p => p.User)
                     .WithOne(m => m.FairRandom)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("FK_fairrandom_user");
             });
 
             // Configure PriceHistory
-            modelBuilder.Entity<PriceHistory>(e =>
+            _ = modelBuilder.Entity<PriceHistory>(e =>
             {
-                e.HasKey(p => p.PriceHistoryId);
-                e.HasOne(p => p.WearClass)
+                _ = e.HasKey(p => p.PriceHistoryId);
+                _ = e.HasOne(p => p.WearClass)
                     .WithMany(m => m.PriceHistories)
                     .HasForeignKey(p => new { p.SkinId, p.WearTypeId })
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_wearclass");
-                e.HasOne(p => p.WearType)
+                _ = e.HasOne(p => p.WearType)
                     .WithMany(m => m.PriceHistories)
                     .HasForeignKey(p => p.WearTypeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_weartype");
-                e.HasOne(p => p.Skin)
+                _ = e.HasOne(p => p.Skin)
                     .WithMany(m => m.PriceHistories)
                     .HasForeignKey(p => p.SkinId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
@@ -385,74 +367,74 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
             });
 
             // Configure Limit
-            modelBuilder.Entity<Limit>(e =>
+            _ = modelBuilder.Entity<Limit>(e =>
             {
-                e.HasKey(p => new { p.UserId, p.LimitTypeId });
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => new { p.UserId, p.LimitTypeId });
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.Limits)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_limit_user");
-                e.HasOne(p => p.LimitType)
+                _ = e.HasOne(p => p.LimitType)
                     .WithMany(m => m.Limits)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_limit_limittype");
             });
 
             // Configure LimitType
-            modelBuilder.Entity<LimitType>(e =>
+            _ = modelBuilder.Entity<LimitType>(e =>
             {
-                e.HasKey(p => p.LimitTypeId);
-                e.HasMany(p => p.Limits)
+                _ = e.HasKey(p => p.LimitTypeId);
+                _ = e.HasMany(p => p.Limits)
                     .WithOne(m => m.LimitType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_limit_limittype");
             });
 
             // Configure PromoCode
-            modelBuilder.Entity<PromoCode>(e =>
+            _ = modelBuilder.Entity<PromoCode>(e =>
             {
-                e.HasKey(p => p.PromoCodeId);
-                e.HasOne(p => p.User)
+                _ = e.HasKey(p => p.PromoCodeId);
+                _ = e.HasOne(p => p.User)
                     .WithMany(m => m.PromoCodes)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_promocode_user");
-                e.HasOne(p => p.Case)
+                _ = e.HasOne(p => p.Case)
                     .WithMany(m => m.PromoCodes)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_promocode_case");
             });
 
             // Configure WearType
-            modelBuilder.Entity<WearType>(e =>
+            _ = modelBuilder.Entity<WearType>(e =>
             {
-                e.HasKey(p => p.WearTypeId);
-                e.HasMany(p => p.Wears)
+                _ = e.HasKey(p => p.WearTypeId);
+                _ = e.HasMany(p => p.Wears)
                     .WithOne(m => m.WearType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wear_weartype");
-                e.HasMany(p => p.PriceHistories)
+                _ = e.HasMany(p => p.PriceHistories)
                     .WithOne(m => m.WearType)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_weartype");
             });
 
             // Configure WearClass
-            modelBuilder.Entity<WearClass>(e =>
+            _ = modelBuilder.Entity<WearClass>(e =>
             {
-                e.HasKey(p => new { p.SkinId, p.WearTypeId });
-                e.HasOne(p => p.Skin)
+                _ = e.HasKey(p => new { p.SkinId, p.WearTypeId });
+                _ = e.HasOne(p => p.Skin)
                     .WithMany(m => m.WearClasses)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wearclass_skin");
-                e.HasOne(p => p.WearType)
+                _ = e.HasOne(p => p.WearType)
                     .WithMany(m => m.WearClasses)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wearclass_weartype");
-                e.HasMany(p => p.Wears)
+                _ = e.HasMany(p => p.Wears)
                     .WithOne(m => m.WearClass)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_wear_wearclass");
-                e.HasMany(p => p.PriceHistories)
+                _ = e.HasMany(p => p.PriceHistories)
                     .WithOne(m => m.WearClass)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_pricehistory_wearclass");
@@ -460,7 +442,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 
             // Seeding static data
 
-            modelBuilder.Entity<ItemType>().HasData(
+            _ = modelBuilder.Entity<ItemType>().HasData(
                 new ItemType { ItemTypeId = 1, ItemTypeName = "Pistol", ParentItemTypeId = null },
                 new ItemType { ItemTypeId = 2, ItemTypeName = "Rifle", ParentItemTypeId = null },
                 new ItemType { ItemTypeId = 3, ItemTypeName = "Sniper Rifle", ParentItemTypeId = null },
@@ -471,7 +453,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new ItemType { ItemTypeId = 8, ItemTypeName = "Gloves", ParentItemTypeId = null }
             );
 
-            modelBuilder.Entity<WearType>().HasData(
+            _ = modelBuilder.Entity<WearType>().HasData(
                 new WearType { WearTypeId = 1, WearTypeName = "Factory New" },
                 new WearType { WearTypeId = 2, WearTypeName = "Minimal Wear" },
                 new WearType { WearTypeId = 3, WearTypeName = "Field-Tested" },
@@ -479,7 +461,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new WearType { WearTypeId = 5, WearTypeName = "Battle-Scarred" }
             );
 
-            modelBuilder.Entity<Rarity>().HasData(
+            _ = modelBuilder.Entity<Rarity>().HasData(
                 new Rarity { RarityId = 1, RarityName = "Consumer", RarityColor = "#afafaf" },
                 new Rarity { RarityId = 2, RarityName = "Industrial", RarityColor = "#6496e1" },
                 new Rarity { RarityId = 3, RarityName = "Mil-Spec", RarityColor = "#4b69cd" },
@@ -489,7 +471,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new Rarity { RarityId = 7, RarityName = "Contraband", RarityColor = "#f29b1d" }
             );
 
-            modelBuilder.Entity<BanType>().HasData(
+            _ = modelBuilder.Entity<BanType>().HasData(
                 new BanType { BanTypeId = 1, BanTypeName = "Total", BanTypeDescription = "Perte d'accès à tous les fonctions du site, connexion incluse." },
                 new BanType { BanTypeId = 2, BanTypeName = "Transactionnel", BanTypeDescription = "Compte en lecture seule.", ParentBanTypeId = 1 },
                 new BanType { BanTypeId = 3, BanTypeName = "Inventaire", BanTypeDescription = "Impossibilité de modifier l'inventaire.", ParentBanTypeId = 2 },
@@ -501,7 +483,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new BanType { BanTypeId = 9, BanTypeName = "Débit", BanTypeDescription = "Le solde ne peut pas être exporté vers d'autres plateformes.", ParentBanTypeId = 7 }
             );
 
-            modelBuilder.Entity<TokenType>().HasData(
+            _ = modelBuilder.Entity<TokenType>().HasData(
                 new TokenType { TokenTypeId = 1, TokenTypeName = "Remember Cookie" },
                 new TokenType { TokenTypeId = 2, TokenTypeName = "Password Reset" },
                 new TokenType { TokenTypeId = 3, TokenTypeName = "Email Verification" },
@@ -509,7 +491,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new TokenType { TokenTypeId = 5, TokenTypeName = "2FA" }
             );
 
-            modelBuilder.Entity<NotificationType>().HasData(
+            _ = modelBuilder.Entity<NotificationType>().HasData(
                 new NotificationType { NotificationTypeId = 1, NotificationTypeName = "Annonce" },
                 new NotificationType { NotificationTypeId = 2, NotificationTypeName = "Sécurité & Confidentialité" },
                 new NotificationType { NotificationTypeId = 3, NotificationTypeName = "Offres Spéciales" },
@@ -517,7 +499,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new NotificationType { NotificationTypeId = 5, NotificationTypeName = "Évènement" }
             );
 
-            modelBuilder.Entity<LimitType>().HasData(
+            _ = modelBuilder.Entity<LimitType>().HasData(
                 new LimitType { LimitTypeId = 1, LimitTypeName = "Dépôt Horaire", Duration = 1 },
                 new LimitType { LimitTypeId = 2, LimitTypeName = "Dépenses Horaire", Duration = 1 },
                 new LimitType { LimitTypeId = 3, LimitTypeName = "Ouvertures Horaire", Duration = 1 },
@@ -536,7 +518,7 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
                 new LimitType { LimitTypeId = 16, LimitTypeName = "Améliorations Mensuel", Duration = 720 }
             );
 
-            modelBuilder.Entity<PaymentMethod>().HasData(
+            _ = modelBuilder.Entity<PaymentMethod>().HasData(
                 new PaymentMethod { PaymentMethodId = 1, PaymentMethodName = "Carte de crédit", FromWallet = false, ToWallet = true },
                 new PaymentMethod { PaymentMethodId = 2, PaymentMethodName = "RIB", FromWallet = true, ToWallet = false },
                 new PaymentMethod { PaymentMethodId = 3, PaymentMethodName = "PayPal", FromWallet = true, ToWallet = true }

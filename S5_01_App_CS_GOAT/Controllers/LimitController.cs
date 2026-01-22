@@ -1,73 +1,90 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user limits (rate limiting and action thresholds)
+    /// </summary>
     [Route("api/Limit")]
     [ApiController]
     [SetThreadPrincipal]
     public class LimitController(
        IMapper mapper,
-       IDataRepository<Limit, (int,int)> manager,
+       IDataRepository<Limit, (int, int)> manager,
        ITypeRepository<LimitType> typeManager,
        IConfiguration configuration
        ) : ControllerBase
     {
-        
+
         /// <summary>
         /// Get limits for the authenticated user
         /// </summary>
         /// <returns>List of LimitDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            IEnumerable<Limit> limits = await authResult.GetByUser(manager, false, null, "LimitType");
+            QueryOptions<Limit> options = new QueryOptions<Limit>()
+                .Before(l => l.LimitType);
+            IEnumerable<Limit> limits = await authResult.GetByUser(manager, false, options);
 
             IEnumerable<LimitDTO> limitsDTO = mapper.Map<IEnumerable<LimitDTO>>(limits);
             return Ok(new GetOptions<LimitDTO>(Request, limitsDTO));
         }
 
         /// <summary>
-        /// Update a limit for a user
+        /// Update a limit for authenticated user
         /// </summary>
         /// <param name="limitDto">The updated limit data</param>
         /// <returns>No content on success</returns>
         [HttpPatch("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update([FromBody] LimitDTO limitDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             int userId = authResult.AuthUserId!.Value;
             LimitType? limitType = typeManager.GetTypeByName(limitDto.LimitTypeName);
             if (limitType == null)
+            {
                 return NotFound($"LimitType not found: {limitDto.LimitTypeName}");
+            }
 
             Limit? existingLimit = await manager.GetByIdAsync((userId, limitType.LimitTypeId));
             if (existingLimit == null)
+            {
                 return NotFound($"Limit not found for UserId: {userId} and LimitTypeId: {limitType.LimitTypeId}");
+            }
 
-            Dictionary<string, object> patchData = new Dictionary<string, object>
+            var patchData = new Dictionary<string, object>
             {
                 { nameof(Limit.LimitAmount), limitDto.LimitAmount }
             };
-            
+
             await manager.PatchAsync(existingLimit, patchData);
             return NoContent();
         }

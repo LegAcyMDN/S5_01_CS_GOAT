@@ -3,6 +3,9 @@ using System.Text;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Provides security-related utilities including token generation, password hashing, and password verification
+    /// </summary>
     public class SecurityService
     {
         /// <summary>
@@ -26,7 +29,10 @@ namespace S5_01_App_CS_GOAT.Services
         {
             byte[] bytes = new byte[length];
             using (var rng = RandomNumberGenerator.Create())
+            {
                 rng.GetBytes(bytes);
+            }
+
             return Convert.ToBase64String(bytes);
         }
 
@@ -39,14 +45,14 @@ namespace S5_01_App_CS_GOAT.Services
         public static string HashString(string input)
         {
             if (string.IsNullOrEmpty(input))
-                throw new ArgumentException("Input cannot be null or empty");
-
-            using (SHA256 sha256 = SHA256.Create())
             {
-                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
-                byte[] hashBytes = sha256.ComputeHash(inputBytes);
-                return Convert.ToBase64String(hashBytes);
+                throw new ArgumentException("Input cannot be null or empty");
             }
+
+            using var sha256 = SHA256.Create();
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            byte[] hashBytes = sha256.ComputeHash(inputBytes);
+            return Convert.ToBase64String(hashBytes);
         }
 
         /// <summary>
@@ -59,16 +65,16 @@ namespace S5_01_App_CS_GOAT.Services
         public static string HashAndSalt(string password, string salt)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(salt))
+            {
                 throw new ArgumentException("Password or salt cannot be null or empty");
+            }
 
             byte[] saltBytes = Convert.FromBase64String(salt);
             byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
 
-            using (var pbkdf2 = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 100000, HashAlgorithmName.SHA256))
-            {
-                byte[] hash = pbkdf2.GetBytes(32);
-                return Convert.ToBase64String(hash);
-            }
+            using var pbkdf2 = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 100000, HashAlgorithmName.SHA256);
+            byte[] hash = pbkdf2.GetBytes(32);
+            return Convert.ToBase64String(hash);
         }
 
         /// <summary>
@@ -81,7 +87,10 @@ namespace S5_01_App_CS_GOAT.Services
         public static bool? VerifyPassword(string? password, string? hash, string? salt)
         {
             if (string.IsNullOrEmpty(password) || string.IsNullOrEmpty(hash) || string.IsNullOrEmpty(salt))
+            {
                 return null;
+            }
+
             string hashedInput = HashAndSalt(password, salt);
             return hashedInput == hash;
         }

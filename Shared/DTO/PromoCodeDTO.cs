@@ -26,7 +26,7 @@ public class PromoCodeDTO : IQueryableDTO
     public TimeSpan? RefreshDelay { get; set; }
     public int? CaseId { get; set; }
     public int? UserId { get; set; }
-    
+
     // Navigation properties pour affichage
     public string? CaseName { get; set; }
     public string? UserLogin { get; set; }

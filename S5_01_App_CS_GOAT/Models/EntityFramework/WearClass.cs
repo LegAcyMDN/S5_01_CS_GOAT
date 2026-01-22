@@ -1,4 +1,3 @@
-﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,9 +23,9 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
         public virtual WearType WearType { get; set; } = null!;
 
         [InverseProperty(nameof(Wear.WearClass))]
-        public virtual ICollection<Wear> Wears { get; set; } = new List<Wear>();
+        public virtual ICollection<Wear> Wears { get; set; } = [];
 
         [InverseProperty(nameof(PriceHistory.WearClass))]
-        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = new List<PriceHistory>();
+        public virtual ICollection<PriceHistory> PriceHistories { get; set; } = [];
     }
 }

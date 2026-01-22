@@ -1,4 +1,3 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,19 +10,19 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
+            _ = migrationBuilder.DropForeignKey(
                 name: "FK_t_e_pricehistory_prh_t_e_wear_wer_WearId",
                 table: "t_e_pricehistory_prh");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_t_e_pricehistory_prh_WearId",
                 table: "t_e_pricehistory_prh");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "WearId",
                 table: "t_e_pricehistory_prh");
 
-            migrationBuilder.AlterColumn<DateTime>(
+            _ = migrationBuilder.AlterColumn<DateTime>(
                 name: "prc_expirydate",
                 table: "t_e_promocode_prc",
                 type: "timestamp without time zone",
@@ -31,19 +30,19 @@ namespace S5_01_App_CS_GOAT.Migrations
                 oldClrType: typeof(DateTime),
                 oldType: "timestamp without time zone");
 
-            migrationBuilder.AddColumn<TimeSpan>(
+            _ = migrationBuilder.AddColumn<TimeSpan>(
                 name: "prc_refreshdelay",
                 table: "t_e_promocode_prc",
                 type: "interval",
                 nullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            _ = migrationBuilder.AddColumn<int>(
                 name: "prc_remaininguses",
                 table: "t_e_promocode_prc",
                 type: "integer",
                 nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
+            _ = migrationBuilder.AddColumn<DateTime>(
                 name: "prc_validitystart",
                 table: "t_e_promocode_prc",
                 type: "timestamp without time zone",
@@ -53,19 +52,19 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "prc_refreshdelay",
                 table: "t_e_promocode_prc");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "prc_remaininguses",
                 table: "t_e_promocode_prc");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "prc_validitystart",
                 table: "t_e_promocode_prc");
 
-            migrationBuilder.AlterColumn<DateTime>(
+            _ = migrationBuilder.AlterColumn<DateTime>(
                 name: "prc_expirydate",
                 table: "t_e_promocode_prc",
                 type: "timestamp without time zone",
@@ -75,18 +74,18 @@ namespace S5_01_App_CS_GOAT.Migrations
                 oldType: "timestamp without time zone",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            _ = migrationBuilder.AddColumn<int>(
                 name: "WearId",
                 table: "t_e_pricehistory_prh",
                 type: "integer",
                 nullable: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_pricehistory_prh_WearId",
                 table: "t_e_pricehistory_prh",
                 column: "WearId");
 
-            migrationBuilder.AddForeignKey(
+            _ = migrationBuilder.AddForeignKey(
                 name: "FK_t_e_pricehistory_prh_t_e_wear_wer_WearId",
                 table: "t_e_pricehistory_prh",
                 column: "WearId",

@@ -1,12 +1,15 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages wear (item condition/quality) information and 3D models
+    /// </summary>
     [Route("api/Wear")]
     [ApiController]
     public class WearController(
@@ -15,17 +18,23 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Get 3D model by wear ID
+        /// Get 3D model data for rendering a specific wear/item quality
         /// </summary>
         /// <param name="wearId">The ID of the wear</param>
-        /// <returns>ModelDTO object for the wear</returns>
+        /// <returns>ModelDTO object with 3D model information</returns>
         [HttpGet("get3dmodel/{wearId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get3dModelByWear(int wearId)
         {
-            Wear? wear = await manager.GetByIdAsyncOld(wearId, "Skin.Item");
-            if (wear == null) return NotFound();
+            QueryOptions<Wear> options = new QueryOptions<Wear>()
+                .Before(w => w.Skin.Item);
+            Wear? wear = await manager.GetByIdAsync(wearId, options);
+            if (wear == null)
+            {
+                return NotFound();
+            }
+
             ModelDTO modelDto = mapper.Map<ModelDTO>(wear);
             return Ok(modelDto);
         }

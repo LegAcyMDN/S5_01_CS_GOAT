@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using AutoMapper;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -67,7 +60,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -75,7 +68,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(moneyTransactions);
 
             // When
@@ -83,7 +76,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Once);
         }
 
         #endregion
@@ -98,7 +91,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncNew(null), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>>()), Times.Never);
         }
 
         [TestMethod]
@@ -112,7 +105,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(ForbidResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Never);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -120,7 +113,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            moneyTransactionRepositoryMock.Setup(r => r.GetAllAsyncOld(null, "PaymentMethod"))
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
                                           .ReturnsAsync(allMoneyTransactions);
 
             // When
@@ -128,7 +121,39 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsyncOld(null, "PaymentMethod"), Times.Once);
+            moneyTransactionRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void GetByUser_AuthenticatedWithEmptyTransactions_ReturnsOkWithEmptyList()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, normalUser);
+            var emptyList = new List<MoneyTransaction>();
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+                                          .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.GetByUser().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        [TestMethod]
+        public void GetAll_AsAdminWithEmptyList_ReturnsOkWithEmptyList()
+        {
+            // Given
+            JwtService.AuthentifyController(controller, admin);
+            var emptyList = new List<MoneyTransaction>();
+            _ = moneyTransactionRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<MoneyTransaction>?>()))
+                                          .ReturnsAsync(emptyList);
+
+            // When
+            IActionResult? result = controller.GetAll().GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
 
         #endregion

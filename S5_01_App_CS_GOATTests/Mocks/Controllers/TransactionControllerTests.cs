@@ -1,21 +1,16 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Extensions.Configuration;
 using Moq;
-using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Controllers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System;
-using System.Threading;
-using Microsoft.Extensions.Configuration;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
     [TestClass()]
     public class TransactionControllerTests
     {
-        private Mock<IDataRepository<Transaction, int>>? transactionRepositoryMock;
         private Mock<IConfiguration> configurationMock;
         private TransactionController? controller;
 
@@ -25,15 +20,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestInitialize]
         public void Initialize()
         {
-            transactionRepositoryMock = new Mock<IDataRepository<Transaction, int>>();
             configurationMock = new Mock<IConfiguration>();
 
             admin = UserFixture.GetAdminUser();
             normalUser = UserFixture.GetNormalUser();
 
             controller = new TransactionController(
-                configurationMock.Object,
-                transactionRepositoryMock.Object
+                configurationMock.Object
             );
         }
 
@@ -51,9 +44,9 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, admin);
 
             // When/Then
-            Assert.ThrowsException<NotImplementedException>(() =>
+            _ = Assert.ThrowsException<NotImplementedException>(() =>
             {
-                controller.Delete(1).GetAwaiter().GetResult();
+                _ = controller.Delete(1).GetAwaiter().GetResult();
             });
         }
 

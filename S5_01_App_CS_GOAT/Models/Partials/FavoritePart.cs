@@ -4,6 +4,6 @@ namespace S5_01_App_CS_GOAT.Models.EntityFramework
 {
     public partial class Favorite : IUserDependant
     {
-        public int? DependantUserId { get => this.UserId; }
+        public int? DependantUserId => UserId;
     }
 }

@@ -1,14 +1,15 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
-
+    /// <summary>
+    /// Manages item transaction records (admin and user history)
+    /// </summary>
     [Route("api/itemTransaction")]
     [ApiController]
     [SetThreadPrincipal]
@@ -20,68 +21,87 @@ namespace S5_01_App_CS_GOAT.Controllers
     {
 
         /// <summary>
-        /// Get all promo codes (admin only)
+        /// Get all item transactions (admin only)
         /// </summary>
-        /// <returns>List of all PromoCode objects</returns>
+        /// <returns>List of all ItemTransactionDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if(!authResult.IsAdmin)
-                return Forbid();
+            }
 
-            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsyncOld();
-             IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
+            if (!authResult.IsAdmin)
+            {
+                return Forbid();
+            }
+
+            IEnumerable<ItemTransaction> promoCodes = await manager.GetAllAsync();
+            IEnumerable<ItemTransactionDTO> promoCodesDTO = mapper.Map<IEnumerable<ItemTransactionDTO>>(promoCodes);
             return Ok(new GetOptions<ItemTransactionDTO>(Request, promoCodesDTO));
         }
 
         /// <summary>
-        /// Get case details by ID
+        /// Get item transaction details by ID
         /// </summary>
-        /// <param name="id">The ID of the case</param>
-        /// <returns>CaseDetailDTO object</returns>
+        /// <param name="id">The ID of the transaction</param>
+        /// <returns>ItemTransactionDetailDTO object</returns>
         [HttpGet("details/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Get(int id)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            ItemTransaction? itemTransaction = await manager.GetByIdAsyncNew(id);
-            if (itemTransaction == null) return NotFound();
+            ItemTransaction? itemTransaction = await manager.GetByIdAsync(id);
+            if (itemTransaction == null)
+            {
+                return NotFound();
+            }
+
             if (authResult.AuthUserId != itemTransaction.DependantUserId && !authResult.IsAdmin)
+            {
                 return Forbid();
+            }
+
             ItemTransactionDetailDTO itemTransactionDetail = mapper.Map<ItemTransactionDetailDTO>(itemTransaction);
 
             return Ok(itemTransactionDetail);
         }
 
         /// <summary>
-        /// Get inventory items for the authenticated user
+        /// Get item transactions for the authenticated user
         /// </summary>
-        /// <returns>List of InventoryItemDTO objects for the user</returns>
+        /// <returns>List of ItemTransactionDetailDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
+            QueryOptions<ItemTransaction> queryOptions = new QueryOptions<ItemTransaction>()
+                .Before(it => it.InventoryItem.Wear.Skin.Item.ItemType,
+                        it => it.InventoryItem.Wear.Skin.Rarity,
+                        it => it.InventoryItem.Wear.WearType);
             IEnumerable<ItemTransaction> itemTransactions = await authResult.GetByUser(
-                manager, 
-                false,
-                null,
-                "InventoryItem.Wear.Skin.Item.ItemType",
-                "InventoryItem.Wear.Skin.Rarity",
-                "InventoryItem.Wear.WearType"
-            );
+                manager, false, queryOptions);
             IEnumerable<ItemTransactionDetailDTO> itemTransactionDetailDTO = mapper.Map<IEnumerable<ItemTransactionDetailDTO>>(itemTransactions);
             return Ok(new GetOptions<ItemTransactionDetailDTO>(Request, itemTransactionDetailDTO));
         }

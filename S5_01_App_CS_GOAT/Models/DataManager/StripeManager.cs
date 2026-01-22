@@ -1,0 +1,241 @@
+using Microsoft.EntityFrameworkCore.Storage;
+using S5_01_App_CS_GOAT.Models.EntityFramework;
+using S5_01_App_CS_GOAT.Models.Repository;
+using Shared.DTO.Helpers;
+using Stripe;
+using Stripe.Checkout;
+
+namespace S5_01_App_CS_GOAT.Models.DataManager
+{
+    /// <summary>
+    /// Provides Stripe payment and payout helpers.
+    /// </summary>
+    public class StripeManager : IStripeRepository
+    {
+        private readonly CSGOATDbContext _context;
+        private readonly IUserRepository _userRepository;
+        private readonly IDataRepository<MoneyTransaction, int> _transactionRepository;
+
+        public StripeManager(
+            CSGOATDbContext context,
+            IUserRepository userRepository,
+            IDataRepository<MoneyTransaction, int> transactionRepository)
+        {
+            _context = context;
+            _userRepository = userRepository;
+            _transactionRepository = transactionRepository;
+        }
+
+        /// <summary>
+        /// Creates a Stripe checkout session for wallet credit payment
+        /// </summary>
+        /// <param name="userId">The user ID for metadata</param>
+        /// <param name="request">Checkout request containing amount and success/cancel URLs</param>
+        /// <returns>SessionCreateOptions ready to be passed to Stripe API</returns>
+        /// <remarks>
+        /// Creates a one-time payment session for adding wallet credit.
+        /// Amount is in EUR and converted to cents for Stripe.
+        /// </remarks>
+        public SessionCreateOptions NewPaymentSession(int userId, CheckoutRequest request)
+        {
+            return new SessionCreateOptions
+            {
+                PaymentMethodTypes = ["card"],
+                LineItems =
+                    [
+                        new SessionLineItemOptions
+                        {
+                            PriceData = new SessionLineItemPriceDataOptions
+                            {
+                                Currency = "eur",
+                                ProductData = new SessionLineItemPriceDataProductDataOptions
+                                {
+                                    Name = "Wallet Credit",
+                                    Description = $"Add €{request.Amount} to wallet"
+                                },
+                                UnitAmount = (long)(request.Amount * 100),
+                            },
+                            Quantity = 1,
+                        },
+                    ],
+                Mode = "payment",
+                SuccessUrl = $"{request.SuccessUrl}?session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = request.CancelUrl,
+                Metadata = new Dictionary<string, string>
+                    {
+                        { "user_id", userId.ToString() },
+                        { "amount", request.Amount.ToString() }
+
+                    }
+            };
+        }
+
+        /// <summary>
+        /// Creates a Stripe setup session for payment method registration (for withdrawals)
+        /// </summary>
+        /// <param name="userId">The user ID for metadata</param>
+        /// <param name="request">Payout request containing amount and success/cancel URLs</param>
+        /// <returns>SessionCreateOptions for setup mode (saves payment method without charging)</returns>
+        public SessionCreateOptions NewSetupSession(int userId, PayoutRequest request)
+        {
+            return new SessionCreateOptions
+            {
+                PaymentMethodTypes = ["card"],
+                Mode = "setup",
+                SuccessUrl = $"{request.SuccessUrl}?session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = request.CancelUrl,
+                Metadata = new Dictionary<string, string>
+                    {
+                        { "user_id", userId.ToString() },
+                        { "amount", request.Amount.ToString("F2") },
+                        { "type", "withdrawal" }
+                    }
+            };
+        }
+
+        /// <summary>
+        /// Handles Stripe SetupIntent.succeeded webhook event for payment method registration
+        /// </summary>
+        /// <param name="stripeEvent">The Stripe event containing the setup intent</param>
+        /// <remarks>
+        /// When a setup intent for withdrawal succeeds, immediately processes the payout.
+        /// Uses database transaction to ensure consistency.
+        /// </remarks>
+        public async Task HandleSetupIntentSucceeded(Event stripeEvent)
+        {
+            var setupIntent = stripeEvent.Data.Object as SetupIntent;
+            if (setupIntent == null || setupIntent.Metadata == null)
+            {
+                return;
+            }
+
+            if (!setupIntent.Metadata.ContainsKey("type")
+                || setupIntent.Metadata["type"] != "withdrawal")
+            {
+                return;
+            }
+
+            int userId = int.Parse(setupIntent.Metadata["user_id"]);
+            double amount = double.Parse(setupIntent.Metadata["amount"]);
+
+            User? user = await _userRepository.GetByIdAsync(userId);
+            if (user == null || user.Wallet < amount)
+            {
+                return;
+            }
+
+            using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var payoutService = new PayoutService();
+                Payout payout = await payoutService.CreateAsync(new PayoutCreateOptions
+                {
+                    Amount = (long)(amount * 100),
+                    Currency = "eur",
+                    Method = "instant",
+                    SourceType = "card",
+                });
+
+                user.Wallet -= amount;
+                await _userRepository.UpdateAsync(user);
+
+                var moneyTrans = new MoneyTransaction
+                {
+                    UserId = userId,
+                    WalletValue = -amount,
+                    TransactionDate = DateTime.UtcNow,
+                    PaymentMethodId = 1,
+                };
+                _ = await _transactionRepository.AddAsync(moneyTrans);
+                _ = await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (StripeException ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Handles Stripe checkout.session.completed webhook event for payment and withdrawal processing
+        /// </summary>
+        /// <param name="stripeEvent">The Stripe event containing the session</param>
+        /// <remarks>
+        /// Processes both payment (wallet credit) and withdrawal transactions based on session metadata.
+        /// Updates user wallet and creates money transaction records.
+        /// Uses database transaction to ensure consistency.
+        /// </remarks>
+        public async Task HandleCheckoutSessionCompleted(Event stripeEvent)
+        {
+            var session = stripeEvent.Data.Object as Session;
+            if (session == null)
+            {
+                return;
+            }
+
+            if (!session.Metadata.ContainsKey("user_id"))
+            {
+                return;
+            }
+
+            if (!session.Metadata.ContainsKey("amount"))
+            {
+                return;
+            }
+
+            bool withdrawal = false;
+            if (session.Metadata.ContainsKey("type") &&
+                session.Metadata["type"] == "withdrawal")
+            {
+                withdrawal = true;
+            }
+
+            using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                int userId = int.Parse(session.Metadata["user_id"]);
+                double amount = double.Parse(session.Metadata["amount"]);
+                User? user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return;
+                }
+
+                double oldWallet = user.Wallet;
+                if (!withdrawal)
+                {
+                    user.Wallet += amount;
+                }
+                else
+                {
+                    user.Wallet -= amount;
+                    amount *= -1;
+                }
+                await _userRepository.UpdateAsync(user);
+
+                var moneyTrans = new MoneyTransaction
+                {
+                    UserId = userId,
+                    WalletValue = amount,
+                    TransactionDate = DateTime.UtcNow,
+                    PaymentMethodId = 1,
+                    CancelledOn = DateTime.UtcNow,
+                    NotificationId = null
+
+                };
+
+                _ = await _transactionRepository.AddAsync(moneyTrans);
+                _ = await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                Console.WriteLine(ex.Message);
+                return;
+            }
+        }
+    }
+}

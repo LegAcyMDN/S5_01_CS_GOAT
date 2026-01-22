@@ -1,10 +1,8 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
 namespace S5_01_App_CS_GOAT.Migrations
 {
@@ -14,7 +12,7 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_bantype_bnt",
                 columns: table => new
                 {
@@ -26,15 +24,15 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_bantype_bnt", x => x.bnt_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_bantype_bnt", x => x.bnt_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_bantype_bnt_t_e_bantype_bnt_bnt_parentid",
                         column: x => x.bnt_parentid,
                         principalTable: "t_e_bantype_bnt",
                         principalColumn: "bnt_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_case_cas",
                 columns: table => new
                 {
@@ -44,12 +42,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     cas_caseimage = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     cas_caseprice = table.Column<double>(type: "double precision", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_case_cas", x => x.cas_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_case_cas", x => x.cas_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_fairrandom_frn",
                 columns: table => new
                 {
@@ -61,12 +56,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     frn_combinedhash = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     frn_fraction = table.Column<double>(type: "double precision", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_fairrandom_frn", x => x.frn_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_fairrandom_frn", x => x.frn_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_itemtype_itt",
                 columns: table => new
                 {
@@ -77,15 +69,15 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_itemtype_itt", x => x.itt_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_itemtype_itt", x => x.itt_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_itemtype_itt_t_e_itemtype_itt_itt_parentid",
                         column: x => x.itt_parentid,
                         principalTable: "t_e_itemtype_itt",
                         principalColumn: "itt_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_limittype_lmt",
                 columns: table => new
                 {
@@ -94,12 +86,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     lmt_limittypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     lmt_duration = table.Column<int>(type: "integer", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_limittype_lmt", x => x.lmt_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_limittype_lmt", x => x.lmt_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_notificationtype_ntt",
                 columns: table => new
                 {
@@ -107,12 +96,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ntt_notificationtypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_notificationtype_ntt", x => x.ntt_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_notificationtype_ntt", x => x.ntt_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_paymentmethod_pmt",
                 columns: table => new
                 {
@@ -122,12 +108,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     pmt_fromwallet = table.Column<bool>(type: "boolean", nullable: false),
                     pmt_towallet = table.Column<bool>(type: "boolean", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_paymentmethod_pmt", x => x.pmt_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_paymentmethod_pmt", x => x.pmt_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_rarity_rar",
                 columns: table => new
                 {
@@ -136,12 +119,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     rar_rarityname = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     rar_raritycolor = table.Column<string>(type: "text", nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_rarity_rar", x => x.rar_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_rarity_rar", x => x.rar_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_tokentype_tkt",
                 columns: table => new
                 {
@@ -149,12 +129,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     tkt_tokentypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_tokentype_tkt", x => x.tkt_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_tokentype_tkt", x => x.tkt_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_user_usr",
                 columns: table => new
                 {
@@ -179,12 +156,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                     usr_wallet = table.Column<double>(type: "double precision", nullable: false),
                     usr_deletedon = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_user_usr", x => x.usr_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_user_usr", x => x.usr_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_weartype_wrt",
                 columns: table => new
                 {
@@ -192,12 +166,9 @@ namespace S5_01_App_CS_GOAT.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     wrt_weartypename = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_t_e_weartype_wrt", x => x.wrt_id);
-                });
+                constraints: table => table.PrimaryKey("PK_t_e_weartype_wrt", x => x.wrt_id));
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_item_itm",
                 columns: table => new
                 {
@@ -210,8 +181,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_item_itm", x => x.itm_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_item_itm", x => x.itm_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_item_itm_t_e_itemtype_itt_itt_id",
                         column: x => x.itt_id,
                         principalTable: "t_e_itemtype_itt",
@@ -219,7 +190,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_notification_ntf",
                 columns: table => new
                 {
@@ -232,15 +203,15 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_notification_ntf", x => x.ntf_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_notification_ntf", x => x.ntf_id);
+                    _ = table.ForeignKey(
                         name: "FK_notification_notificationtype",
                         column: x => x.ntt_id,
                         principalTable: "t_e_notificationtype_ntt",
                         principalColumn: "ntt_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_promocode_prc",
                 columns: table => new
                 {
@@ -255,20 +226,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_promocode_prc", x => x.prc_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_promocode_prc", x => x.prc_id);
+                    _ = table.ForeignKey(
                         name: "FK_promocode_case",
                         column: x => x.cas_id,
                         principalTable: "t_e_case_cas",
                         principalColumn: "cas_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_promocode_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_token_tkn",
                 columns: table => new
                 {
@@ -282,20 +253,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_token_tkn", x => x.tkn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_token_tkn", x => x.tkn_id);
+                    _ = table.ForeignKey(
                         name: "FK_token_tokentype",
                         column: x => x.tkt_id,
                         principalTable: "t_e_tokentype_tkt",
                         principalColumn: "tkt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_token_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_ban_ban",
                 columns: table => new
                 {
@@ -308,20 +279,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_ban_ban", x => new { x.usr_id, x.bnt_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_ban_ban", x => new { x.usr_id, x.bnt_id });
+                    _ = table.ForeignKey(
                         name: "FK_ban_bantype",
                         column: x => x.bnt_id,
                         principalTable: "t_e_bantype_bnt",
                         principalColumn: "bnt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_ban_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_favorite_fav",
                 columns: table => new
                 {
@@ -330,20 +301,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_favorite_fav", x => new { x.usr_id, x.cas_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_favorite_fav", x => new { x.usr_id, x.cas_id });
+                    _ = table.ForeignKey(
                         name: "FK_favorite_case",
                         column: x => x.cas_id,
                         principalTable: "t_e_case_cas",
                         principalColumn: "cas_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_favorite_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_limit_lim",
                 columns: table => new
                 {
@@ -353,20 +324,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_limit_lim", x => new { x.usr_id, x.lmt_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_limit_lim", x => new { x.usr_id, x.lmt_id });
+                    _ = table.ForeignKey(
                         name: "FK_limit_limittype",
                         column: x => x.lmt_id,
                         principalTable: "t_e_limittype_lmt",
                         principalColumn: "lmt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_limit_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_notificationsetting_nts",
                 columns: table => new
                 {
@@ -378,13 +349,13 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_notificationsetting_nts", x => new { x.usr_id, x.ntt_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_notificationsetting_nts", x => new { x.usr_id, x.ntt_id });
+                    _ = table.ForeignKey(
                         name: "FK_notificationsetting_notificationtype",
                         column: x => x.ntt_id,
                         principalTable: "t_e_notificationtype_ntt",
                         principalColumn: "ntt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_t_j_notificationsetting_nts_t_e_user_usr_usr_id",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
@@ -392,7 +363,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_skin_skn",
                 columns: table => new
                 {
@@ -406,20 +377,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_skin_skn", x => x.skn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_skin_skn", x => x.skn_id);
+                    _ = table.ForeignKey(
                         name: "FK_skin_item",
                         column: x => x.itm_id,
                         principalTable: "t_e_item_itm",
                         principalColumn: "itm_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_skin_rarity",
                         column: x => x.rar_id,
                         principalTable: "t_e_rarity_rar",
                         principalColumn: "rar_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_globalnotification_gnf",
                 columns: table => new
                 {
@@ -428,8 +399,8 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_globalnotification_gnf", x => x.ntf_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_globalnotification_gnf", x => x.ntf_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_globalnotification_gnf_t_e_notification_ntf_ntf_id",
                         column: x => x.ntf_id,
                         principalTable: "t_e_notification_ntf",
@@ -437,7 +408,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_transaction_txn",
                 columns: table => new
                 {
@@ -451,20 +422,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_transaction_txn", x => x.txn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_transaction_txn", x => x.txn_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_transaction_txn_t_e_notification_ntf_ntf_id",
                         column: x => x.ntf_id,
                         principalTable: "t_e_notification_ntf",
                         principalColumn: "ntf_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_transaction_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_usernotification_unf",
                 columns: table => new
                 {
@@ -474,21 +445,21 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_usernotification_unf", x => x.ntf_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_usernotification_unf", x => x.ntf_id);
+                    _ = table.ForeignKey(
                         name: "FK_t_e_usernotification_unf_t_e_notification_ntf_ntf_id",
                         column: x => x.ntf_id,
                         principalTable: "t_e_notification_ntf",
                         principalColumn: "ntf_id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_usernotification_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_wear_wer",
                 columns: table => new
                 {
@@ -501,20 +472,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_wear_wer", x => x.wer_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_wear_wer", x => x.wer_id);
+                    _ = table.ForeignKey(
                         name: "FK_wear_skin",
                         column: x => x.skn_id,
                         principalTable: "t_e_skin_skn",
                         principalColumn: "skn_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_wear_weartype",
                         column: x => x.wrt_id,
                         principalTable: "t_e_weartype_wrt",
                         principalColumn: "wrt_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_casecontent_cct",
                 columns: table => new
                 {
@@ -524,20 +495,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_casecontent_cct", x => new { x.cas_id, x.skn_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_casecontent_cct", x => new { x.cas_id, x.skn_id });
+                    _ = table.ForeignKey(
                         name: "FK_casecontent_case",
                         column: x => x.cas_id,
                         principalTable: "t_e_case_cas",
                         principalColumn: "cas_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_casecontent_skin",
                         column: x => x.skn_id,
                         principalTable: "t_e_skin_skn",
                         principalColumn: "skn_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_moneytransaction_mtr",
                 columns: table => new
                 {
@@ -546,13 +517,13 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_moneytransaction_mtr", x => x.txn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_moneytransaction_mtr", x => x.txn_id);
+                    _ = table.ForeignKey(
                         name: "FK_moneytransaction_paymentmethod",
                         column: x => x.pmt_id,
                         principalTable: "t_e_paymentmethod_pmt",
                         principalColumn: "pmt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_t_e_moneytransaction_mtr_t_e_transaction_txn_txn_id",
                         column: x => x.txn_id,
                         principalTable: "t_e_transaction_txn",
@@ -560,7 +531,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_randomtransaction_rtr",
                 columns: table => new
                 {
@@ -571,20 +542,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_randomtransaction_rtr", x => x.txn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_randomtransaction_rtr", x => x.txn_id);
+                    _ = table.ForeignKey(
                         name: "FK_fairrandom_randomtransaction",
                         column: x => x.frn_id,
                         principalTable: "t_e_fairrandom_frn",
                         principalColumn: "frn_id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_randomtransaction_case",
                         column: x => x.cas_id,
                         principalTable: "t_e_case_cas",
                         principalColumn: "cas_id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_t_e_randomtransaction_rtr_t_e_transaction_txn_txn_id",
                         column: x => x.txn_id,
                         principalTable: "t_e_transaction_txn",
@@ -592,7 +563,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_pricehistory_prh",
                 columns: table => new
                 {
@@ -607,25 +578,25 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_pricehistory_prh", x => x.prh_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_pricehistory_prh", x => x.prh_id);
+                    _ = table.ForeignKey(
                         name: "FK_pricehistory_skin",
                         column: x => x.skn_id,
                         principalTable: "t_e_skin_skn",
                         principalColumn: "skn_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_pricehistory_weartype",
                         column: x => x.wrt_id,
                         principalTable: "t_e_weartype_wrt",
                         principalColumn: "wrt_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_t_e_pricehistory_prh_t_e_wear_wer_WearId",
                         column: x => x.WearId,
                         principalTable: "t_e_wear_wer",
                         principalColumn: "wer_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_inventoryitem_inv",
                 columns: table => new
                 {
@@ -640,20 +611,20 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_inventoryitem_inv", x => x.inv_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_inventoryitem_inv", x => x.inv_id);
+                    _ = table.ForeignKey(
                         name: "FK_inventoryitem_user",
                         column: x => x.usr_id,
                         principalTable: "t_e_user_usr",
                         principalColumn: "usr_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_inventoryitem_wear",
                         column: x => x.wer_id,
                         principalTable: "t_e_wear_wer",
                         principalColumn: "wer_id");
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_e_itemtransaction_itr",
                 columns: table => new
                 {
@@ -662,14 +633,14 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_e_itemtransaction_itr", x => x.txn_id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_e_itemtransaction_itr", x => x.txn_id);
+                    _ = table.ForeignKey(
                         name: "FK_itemtransaction_inventoryitem",
                         column: x => x.inv_id,
                         principalTable: "t_j_inventoryitem_inv",
                         principalColumn: "inv_id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_t_e_itemtransaction_itr_t_e_transaction_txn_txn_id",
                         column: x => x.txn_id,
                         principalTable: "t_e_transaction_txn",
@@ -677,7 +648,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "t_j_upgraderesult_upg",
                 columns: table => new
                 {
@@ -693,19 +664,19 @@ namespace S5_01_App_CS_GOAT.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_t_j_upgraderesult_upg", x => new { x.inv_id, x.tra_id });
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_t_j_upgraderesult_upg", x => new { x.inv_id, x.tra_id });
+                    _ = table.ForeignKey(
                         name: "FK_fairrandom_upgraderesult",
                         column: x => x.frn_id,
                         principalTable: "t_e_fairrandom_frn",
                         principalColumn: "frn_id",
                         onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_upgraderesult_inventoryitem",
                         column: x => x.inv_id,
                         principalTable: "t_j_inventoryitem_inv",
                         principalColumn: "inv_id");
-                    table.ForeignKey(
+                    _ = table.ForeignKey(
                         name: "FK_upgraderesult_randomtransaction",
                         column: x => x.tra_id,
                         principalTable: "t_e_randomtransaction_rtr",
@@ -713,12 +684,12 @@ namespace S5_01_App_CS_GOAT.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_bantype_bnt",
                 columns: new[] { "bnt_id", "bnt_bantypedescription", "bnt_bantypename", "bnt_parentid" },
                 values: new object[] { 1, "Perte d'accès à tous les fonctions du site, connexion incluse.", "Total", null });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_itemtype_itt",
                 columns: new[] { "itt_id", "itt_itemtypename", "itt_parentid" },
                 values: new object[,]
@@ -733,7 +704,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 8, "Gloves", null }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_limittype_lmt",
                 columns: new[] { "lmt_id", "lmt_duration", "lmt_limittypename" },
                 values: new object[,]
@@ -756,7 +727,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 16, 720, "Améliorations Mensuel" }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_notificationtype_ntt",
                 columns: new[] { "ntt_id", "ntt_notificationtypename" },
                 values: new object[,]
@@ -768,7 +739,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 5, "Évènement" }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_paymentmethod_pmt",
                 columns: new[] { "pmt_id", "pmt_fromwallet", "pmt_paymentmethodname", "pmt_towallet" },
                 values: new object[,]
@@ -778,7 +749,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 3, true, "PayPal", true }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_rarity_rar",
                 columns: new[] { "rar_id", "rar_raritycolor", "rar_rarityname" },
                 values: new object[,]
@@ -792,7 +763,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 7, "#f29b1d", "Contraband" }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_tokentype_tkt",
                 columns: new[] { "tkt_id", "tkt_tokentypename" },
                 values: new object[,]
@@ -804,7 +775,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 5, "2FA" }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_weartype_wrt",
                 columns: new[] { "wrt_id", "wrt_weartypename" },
                 values: new object[,]
@@ -816,7 +787,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 5, "Battle-Scarred" }
                 });
 
-            migrationBuilder.InsertData(
+            _ = migrationBuilder.InsertData(
                 table: "t_e_bantype_bnt",
                 columns: new[] { "bnt_id", "bnt_bantypedescription", "bnt_bantypename", "bnt_parentid" },
                 values: new object[,]
@@ -831,357 +802,357 @@ namespace S5_01_App_CS_GOAT.Migrations
                     { 9, "Le solde ne peut pas être exporté vers d'autres plateformes.", "Débit", 7 }
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_bantype_bnt_bnt_bantypename",
                 table: "t_e_bantype_bnt",
                 column: "bnt_bantypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_bantype_bnt_bnt_parentid",
                 table: "t_e_bantype_bnt",
                 column: "bnt_parentid");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_case_cas_cas_casename",
                 table: "t_e_case_cas",
                 column: "cas_casename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_case_cas_cas_caseprice",
                 table: "t_e_case_cas",
                 column: "cas_caseprice");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_globalnotification_gnf_gnf_includevisitors",
                 table: "t_e_globalnotification_gnf",
                 column: "gnf_includevisitors");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_item_itm_itm_defindex",
                 table: "t_e_item_itm",
                 column: "itm_defindex");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_item_itm_itm_itemname",
                 table: "t_e_item_itm",
                 column: "itm_itemname");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_item_itm_itt_id",
                 table: "t_e_item_itm",
                 column: "itt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_itemtransaction_itr_inv_id",
                 table: "t_e_itemtransaction_itr",
                 column: "inv_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_itemtype_itt_itt_itemtypename",
                 table: "t_e_itemtype_itt",
                 column: "itt_itemtypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_itemtype_itt_itt_parentid",
                 table: "t_e_itemtype_itt",
                 column: "itt_parentid");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_limittype_lmt_lmt_limittypename",
                 table: "t_e_limittype_lmt",
                 column: "lmt_limittypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_moneytransaction_mtr_pmt_id",
                 table: "t_e_moneytransaction_mtr",
                 column: "pmt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_notification_ntf_ntf_notificationdate",
                 table: "t_e_notification_ntf",
                 column: "ntf_notificationdate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_notification_ntf_ntt_id",
                 table: "t_e_notification_ntf",
                 column: "ntt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_notificationtype_ntt_ntt_notificationtypename",
                 table: "t_e_notificationtype_ntt",
                 column: "ntt_notificationtypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_paymentmethod_pmt_pmt_paymentmethodname",
                 table: "t_e_paymentmethod_pmt",
                 column: "pmt_paymentmethodname",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_pricehistory_prh_prh_pricedate",
                 table: "t_e_pricehistory_prh",
                 column: "prh_pricedate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_pricehistory_prh_skn_id",
                 table: "t_e_pricehistory_prh",
                 column: "skn_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_pricehistory_prh_WearId",
                 table: "t_e_pricehistory_prh",
                 column: "WearId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_pricehistory_prh_wrt_id",
                 table: "t_e_pricehistory_prh",
                 column: "wrt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_promocode_prc_cas_id",
                 table: "t_e_promocode_prc",
                 column: "cas_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_promocode_prc_prc_code",
                 table: "t_e_promocode_prc",
                 column: "prc_code");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_promocode_prc_prc_expirydate",
                 table: "t_e_promocode_prc",
                 column: "prc_expirydate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_promocode_prc_usr_id",
                 table: "t_e_promocode_prc",
                 column: "usr_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_randomtransaction_rtr_cas_id",
                 table: "t_e_randomtransaction_rtr",
                 column: "cas_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_randomtransaction_rtr_frn_id",
                 table: "t_e_randomtransaction_rtr",
                 column: "frn_id",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_rarity_rar_rar_rarityname",
                 table: "t_e_rarity_rar",
                 column: "rar_rarityname",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_skin_skn_itm_id",
                 table: "t_e_skin_skn",
                 column: "itm_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_skin_skn_rar_id",
                 table: "t_e_skin_skn",
                 column: "rar_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_skin_skn_skn_paintindex",
                 table: "t_e_skin_skn",
                 column: "skn_paintindex");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_skin_skn_skn_skinname",
                 table: "t_e_skin_skn",
                 column: "skn_skinname");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_token_tkn_tkn_token",
                 table: "t_e_token_tkn",
                 column: "tkn_token");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_token_tkn_tkn_tokencreationdate",
                 table: "t_e_token_tkn",
                 column: "tkn_tokencreationdate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_token_tkn_tkn_tokenexpiry",
                 table: "t_e_token_tkn",
                 column: "tkn_tokenexpiry");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_token_tkn_tkt_id",
                 table: "t_e_token_tkn",
                 column: "tkt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_token_tkn_usr_id",
                 table: "t_e_token_tkn",
                 column: "usr_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_tokentype_tkt_tkt_tokentypename",
                 table: "t_e_tokentype_tkt",
                 column: "tkt_tokentypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_transaction_txn_ntf_id",
                 table: "t_e_transaction_txn",
                 column: "ntf_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_transaction_txn_txn_cancelledon",
                 table: "t_e_transaction_txn",
                 column: "txn_cancelledon");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_transaction_txn_txn_transactiondate",
                 table: "t_e_transaction_txn",
                 column: "txn_transactiondate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_transaction_txn_usr_id",
                 table: "t_e_transaction_txn",
                 column: "usr_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_deletedon",
                 table: "t_e_user_usr",
                 column: "usr_deletedon");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_email",
                 table: "t_e_user_usr",
                 column: "usr_email",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_isadmin",
                 table: "t_e_user_usr",
                 column: "usr_isadmin");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_lastlogin",
                 table: "t_e_user_usr",
                 column: "usr_lastlogin");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_login",
                 table: "t_e_user_usr",
                 column: "usr_login",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_phone",
                 table: "t_e_user_usr",
                 column: "usr_phone",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_user_usr_usr_steamid",
                 table: "t_e_user_usr",
                 column: "usr_steamid",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_usernotification_unf_usr_id",
                 table: "t_e_usernotification_unf",
                 column: "usr_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_wear_wer_skn_id",
                 table: "t_e_wear_wer",
                 column: "skn_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_wear_wer_wer_uuid",
                 table: "t_e_wear_wer",
                 column: "wer_uuid");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_wear_wer_wrt_id",
                 table: "t_e_wear_wer",
                 column: "wrt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_e_weartype_wrt_wrt_weartypename",
                 table: "t_e_weartype_wrt",
                 column: "wrt_weartypename",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_ban_ban_ban_bandate",
                 table: "t_j_ban_ban",
                 column: "ban_bandate");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_ban_ban_bnt_id",
                 table: "t_j_ban_ban",
                 column: "bnt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_casecontent_cct_cct_weight",
                 table: "t_j_casecontent_cct",
                 column: "cct_weight");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_casecontent_cct_skn_id",
                 table: "t_j_casecontent_cct",
                 column: "skn_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_favorite_fav_cas_id",
                 table: "t_j_favorite_fav",
                 column: "cas_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_inventoryitem_inv_inv_acquiredon",
                 table: "t_j_inventoryitem_inv",
                 column: "inv_acquiredon");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_inventoryitem_inv_inv_isfavorite",
                 table: "t_j_inventoryitem_inv",
                 column: "inv_isfavorite");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_inventoryitem_inv_inv_removedon",
                 table: "t_j_inventoryitem_inv",
                 column: "inv_removedon");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_inventoryitem_inv_usr_id",
                 table: "t_j_inventoryitem_inv",
                 column: "usr_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_inventoryitem_inv_wer_id",
                 table: "t_j_inventoryitem_inv",
                 column: "wer_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_limit_lim_lmt_id",
                 table: "t_j_limit_lim",
                 column: "lmt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_notificationsetting_nts_ntt_id",
                 table: "t_j_notificationsetting_nts",
                 column: "ntt_id");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_upgraderesult_upg_frn_id",
                 table: "t_j_upgraderesult_upg",
                 column: "frn_id",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_t_j_upgraderesult_upg_tra_id",
                 table: "t_j_upgraderesult_upg",
                 column: "tra_id");
@@ -1190,97 +1161,97 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_globalnotification_gnf");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_itemtransaction_itr");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_moneytransaction_mtr");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_pricehistory_prh");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_promocode_prc");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_token_tkn");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_usernotification_unf");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_ban_ban");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_casecontent_cct");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_favorite_fav");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_limit_lim");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_notificationsetting_nts");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_upgraderesult_upg");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_paymentmethod_pmt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_tokentype_tkt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_bantype_bnt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_limittype_lmt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_j_inventoryitem_inv");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_randomtransaction_rtr");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_wear_wer");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_fairrandom_frn");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_case_cas");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_transaction_txn");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_skin_skn");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_weartype_wrt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_notification_ntf");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_user_usr");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_item_itm");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_rarity_rar");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_notificationtype_ntt");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "t_e_itemtype_itt");
         }
     }

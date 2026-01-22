@@ -9,17 +9,17 @@ public class SteamAuthDTO
     /// Steam ID (64-bit identifier)
     /// </summary>
     public string SteamId { get; set; } = null!;
-    
+
     /// <summary>
     /// Steam username (persona name)
     /// </summary>
     public string Username { get; set; } = null!;
-    
+
     /// <summary>
     /// URL to user's Steam avatar image
     /// </summary>
     public string? AvatarUrl { get; set; }
-    
+
     /// <summary>
     /// URL to user's Steam profile
     /// </summary>

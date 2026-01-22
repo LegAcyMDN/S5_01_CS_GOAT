@@ -1,6 +1,6 @@
 using AutoMapper;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Mapper
 {
@@ -9,7 +9,7 @@ namespace S5_01_App_CS_GOAT.Mapper
         public NotificationTypeMapper()
         {
             // Entity -> DTO
-            CreateMap<NotificationType, NotificationTypeDTO>()
+            _ = CreateMap<NotificationType, NotificationTypeDTO>()
                 .ForMember(dest => dest.NotificationTypeName, opt => opt.MapFrom(src => src.NotificationTypeName));
         }
     }

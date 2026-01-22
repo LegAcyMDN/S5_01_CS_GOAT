@@ -1,15 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using System.Text;
 
 namespace S5_01_App_CS_GOAT.Services
 {
+    /// <summary>
+    /// Contains JWT authentication result information
+    /// </summary>
     public struct AuthResult
     {
         public int? AuthUserId { get; set; }
@@ -30,10 +32,17 @@ namespace S5_01_App_CS_GOAT.Services
         /// <returns>True if access is allowed, false otherwise</returns>
         public bool IsAllowed(IUserDependant obj, bool adminOverride)
         {
-            if (obj.DependantUserId == null) return true;
-            if (!IsAuthenticated) return false;
-            if (adminOverride && IsAdmin) return true;
-            return obj.DependantUserId == AuthUserId;
+            if (obj.DependantUserId == null)
+            {
+                return true;
+            }
+
+            if (!IsAuthenticated)
+            {
+                return false;
+            }
+
+            return adminOverride && IsAdmin ? true : obj.DependantUserId == AuthUserId;
         }
 
         /// <summary>
@@ -46,16 +55,18 @@ namespace S5_01_App_CS_GOAT.Services
         public async Task<IEnumerable<T1>> GetByUser<T1, T2>(
                 IReadableRepository<T1, T2> manager,
                 bool adminOverride,
-                Expression<Func<T1, bool>>? where = null,
-                params string[] includes)
+                QueryOptions<T1>? options = null)
                 where T1 : class, IUserDependant
         {
-            IEnumerable<T1> allObjects = await manager.GetAllAsyncOld(where, includes);
+            IEnumerable<T1> allObjects = await manager.GetAllAsync(options);
             AuthResult self = this;
             return allObjects.Where(o => self.IsAllowed(o, adminOverride));
         }
     }
 
+    /// <summary>
+    /// Provides JWT token generation and authentication validation services
+    /// </summary>
     public abstract class JwtService
     {
         /// <summary>
@@ -65,16 +76,16 @@ namespace S5_01_App_CS_GOAT.Services
         /// <returns>The list of claims</returns>
         public static List<Claim> GetClaims(User user)
         {
-            List<Claim> claims = new List<Claim>()
-            {
+            List<Claim> claims =
+            [
                  // Standard JWT claims
                  new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                  new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                  // Custom claims
                  new Claim(nameof(User.UserId), user.UserId.ToString()),
-                 new Claim(nameof(User.Login), user.Login.ToString()),
+                 new Claim(nameof(User.Login), user.Login!.ToString()),
                  new Claim(nameof(User.IsAdmin), user.IsAdmin.ToString())
-            };
+            ];
             return claims;
         }
 
@@ -87,11 +98,15 @@ namespace S5_01_App_CS_GOAT.Services
         public static string GenerateJwtToken(User user, IConfiguration configuration)
         {
             string? secret = configuration["Jwt:Secret"];
-            if (secret == null) throw new Exception("Jwt Secret is not configured in appsettings.json");
-            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            if (secret == null)
+            {
+                throw new Exception("Jwt Secret is not configured in appsettings.json");
+            }
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             List<Claim> claims = GetClaims(user);
-            JwtSecurityToken token = new JwtSecurityToken
+            var token = new JwtSecurityToken
             (
                 issuer: configuration["Jwt:Issuer"],
                 audience: configuration["Jwt:Audience"],
@@ -110,7 +125,7 @@ namespace S5_01_App_CS_GOAT.Services
         public static AuthResult JwtAuth(IConfiguration? configuration = null)
         {
             // Find current context JWT authentification if present
-            ClaimsIdentity? identity = Thread.CurrentPrincipal?.Identity as ClaimsIdentity;
+            var identity = Thread.CurrentPrincipal?.Identity as ClaimsIdentity;
             // Get the user information
             Claim? userIdClaim = identity?.FindFirst(nameof(User.UserId));
             Claim? isAdminClaim = identity?.FindFirst(nameof(User.IsAdmin));
@@ -142,21 +157,23 @@ namespace S5_01_App_CS_GOAT.Services
         /// <param name="user">The user to authentify as</param>
         public static void AuthentifyController(ControllerBase controller, User user)
         {
-            ClaimsIdentity identity = new ClaimsIdentity(GetClaims(user), "Bearer");
-            ClaimsPrincipal principal = new ClaimsPrincipal(identity);
+            var identity = new ClaimsIdentity(GetClaims(user), "Bearer");
+            var principal = new ClaimsPrincipal(identity);
 
-            HttpContext httpContext = new DefaultHttpContext();
-            httpContext.User = principal;
+            HttpContext httpContext = new DefaultHttpContext
+            {
+                User = principal
+            };
             Thread.CurrentPrincipal = principal;
 
-            ControllerContext controllerContext = new ControllerContext()
+            var controllerContext = new ControllerContext()
             {
                 HttpContext = httpContext
             };
             controller.ControllerContext = controllerContext;
         }
     }
-    
+
     /// <summary>
     /// Action filter attribute to automatically set Thread.CurrentPrincipal from HttpContext
     /// </summary>

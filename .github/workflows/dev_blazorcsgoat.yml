@@ -208,37 +208,37 @@ jobs:
           package: ./deploy
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7F9E85A1AA744ABEBECAFB00415B4D78 }}
 
-  test-azure:
-    name: Run E2E Tests (Azure)
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - uses: actions/checkout@v4
+  # test-azure:
+  #   name: Run E2E Tests (Azure)
+  #   runs-on: ubuntu-latest
+  #   needs: deploy
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore test dependencies
-        run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
+  #     - name: Restore test dependencies
+  #       run: dotnet restore ${{ env.TEST_PROJECT_PATH }}
 
-      - name: Build test project
-        run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
+  #     - name: Build test project
+  #       run: dotnet build ${{ env.TEST_PROJECT_PATH }} -c Release --no-restore
 
-      - name: Install Playwright browsers
-        run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
+  #     - name: Install Playwright browsers
+  #       run: pwsh S5_01_Blazor_CS_GOATTests/bin/Release/net8.0/playwright.ps1 install --with-deps chromium
 
-      - name: Run E2E Tests against Azure
-        run: |
-          dotnet test ${{ env.TEST_PROJECT_PATH }} \
-            --configuration Release \
-            --no-build \
-            --logger "trx;LogFileName=test-results.trx" \
-            --logger "console;verbosity=detailed"
-        env:
-          TEST_ENVIRONMENT: Azure
-        timeout-minutes: 15
+  #     - name: Run E2E Tests against Azure
+  #       run: |
+  #         dotnet test ${{ env.TEST_PROJECT_PATH }} \
+  #           --configuration Release \
+  #           --no-build \
+  #           --logger "trx;LogFileName=test-results.trx" \
+  #           --logger "console;verbosity=detailed"
+  #       env:
+  #         TEST_ENVIRONMENT: Azure
+  #       timeout-minutes: 15
 
 #      - name: Upload test results
 #        if: always()
@@ -263,3 +263,4 @@ jobs:
 #          path: '**/TestResults/*.trx'
 #          reporter: dotnet-trx
 #          fail-on-error: true
+

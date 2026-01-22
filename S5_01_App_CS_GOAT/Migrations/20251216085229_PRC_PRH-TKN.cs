@@ -1,4 +1,3 @@
-﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,7 +10,7 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<DateTime>(
+            _ = migrationBuilder.AlterColumn<DateTime>(
                 name: "prc_validitystart",
                 table: "t_e_promocode_prc",
                 type: "timestamp without time zone",
@@ -21,7 +20,7 @@ namespace S5_01_App_CS_GOAT.Migrations
                 oldType: "timestamp without time zone",
                 oldNullable: true);
 
-            migrationBuilder.AddColumn<int>(
+            _ = migrationBuilder.AddColumn<int>(
                 name: "prh_volume",
                 table: "t_e_pricehistory_prh",
                 type: "integer",
@@ -32,11 +31,11 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "prh_volume",
                 table: "t_e_pricehistory_prh");
 
-            migrationBuilder.AlterColumn<DateTime>(
+            _ = migrationBuilder.AlterColumn<DateTime>(
                 name: "prc_validitystart",
                 table: "t_e_promocode_prc",
                 type: "timestamp without time zone",

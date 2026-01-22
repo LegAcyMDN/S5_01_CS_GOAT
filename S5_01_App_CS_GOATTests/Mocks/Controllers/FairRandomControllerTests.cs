@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -72,7 +63,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsyncOld(fr => fr.IsResolved), Times.Never);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<FairRandom>?>()), Times.Never);
         }
 
         [TestMethod]
@@ -80,12 +71,12 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            
+
             List<FairRandom> mixedFairRandomList = FairRandomFixture.GetFairRandoms();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsyncOld(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"))
+            _ = fairRandomRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<FairRandom>?>()))
                                     .ReturnsAsync(mixedFairRandomList);
-            
-            mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(mixedFairRandomList))
+
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(mixedFairRandomList))
                       .Returns(fairRandomDTOList);
 
             // When
@@ -93,7 +84,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsyncOld(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<FairRandom>?>()), Times.Once);
         }
 
         [TestMethod]
@@ -101,11 +92,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, normalUser);
-            List<FairRandom> emptyList = new List<FairRandom>();
-            fairRandomRepositoryMock.Setup(r => r.GetAllAsyncOld(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"))
+            var emptyList = new List<FairRandom>();
+            _ = fairRandomRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<QueryOptions<FairRandom>?>()))
                                     .ReturnsAsync(emptyList);
-            
-            mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(emptyList))
+
+            _ = mapperMock.Setup(m => m.Map<IEnumerable<FairRandomDTO>>(emptyList))
                       .Returns(new List<FairRandomDTO>());
 
             // When
@@ -113,7 +104,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            fairRandomRepositoryMock.Verify(r => r.GetAllAsyncOld(fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction"), Times.Once);
+            fairRandomRepositoryMock.Verify(r => r.GetAllAsync(It.IsAny<QueryOptions<FairRandom>?>()), Times.Once);
         }
 
         #endregion
@@ -138,7 +129,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             JwtService.AuthentifyController(controller, normalUser);
 
             FairRandom fairRandom = FairRandomFixture.GetFairRandom();
-            fairRandomRepositoryMock.Setup(r => r.Init(normalUser.UserId, true))
+            _ = fairRandomRepositoryMock.Setup(r => r.Init(normalUser.UserId, true))
                                     .ReturnsAsync(fairRandom);
 
             // When

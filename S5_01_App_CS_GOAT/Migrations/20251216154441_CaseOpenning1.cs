@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,12 +10,12 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "frn_fraction",
                 table: "t_e_fairrandom_frn",
                 newName: "frn_fraction2");
 
-            migrationBuilder.AddColumn<double>(
+            _ = migrationBuilder.AddColumn<double>(
                 name: "frn_fraction1",
                 table: "t_e_fairrandom_frn",
                 type: "double precision",
@@ -25,11 +25,11 @@ namespace S5_01_App_CS_GOAT.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "frn_fraction1",
                 table: "t_e_fairrandom_frn");
 
-            migrationBuilder.RenameColumn(
+            _ = migrationBuilder.RenameColumn(
                 name: "frn_fraction2",
                 table: "t_e_fairrandom_frn",
                 newName: "frn_fraction");

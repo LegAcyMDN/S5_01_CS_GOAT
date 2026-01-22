@@ -1,0 +1,17 @@
+@page "/NeedEmail"
+@inject NavigationManager _navigation
+<h2>Vous avez besoin d'un email lié à votre compte pour faire cela</h2>
+
+<div id="button-retour-compte" @onclick="navigateToLogin">
+<p>Retourner vers la vue de votre compte</p>
+</div>
+
+
+
+@code {
+
+    private void navigateToLogin()
+    {
+        _navigation.NavigateTo("/profile");
+    }
+}

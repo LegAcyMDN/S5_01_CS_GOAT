@@ -1,16 +1,13 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Threading;
-using System.Threading.Tasks;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -64,13 +61,13 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+            _ = notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
                                           .Returns(notificationType);
-            mapperMock.Setup(m => m.Map<GlobalNotification>(notificationDTO))
+            _ = mapperMock.Setup(m => m.Map<GlobalNotification>(notificationDTO))
                       .Returns(globalNotification);
-            globalNotificationRepositoryMock.Setup(r => r.AddAsync(globalNotification))
+            _ = globalNotificationRepositoryMock.Setup(r => r.AddAsync(globalNotification))
                                             .ReturnsAsync(globalNotification);
-            mapperMock.Setup(m => m.Map<NotificationDTO>(globalNotification))
+            _ = mapperMock.Setup(m => m.Map<NotificationDTO>(globalNotification))
                       .Returns(notificationDTO);
 
             // When
@@ -128,7 +125,7 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         {
             // Given
             JwtService.AuthentifyController(controller, admin);
-            notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
+            _ = notificationTypeRepositoryMock.Setup(r => r.GetTypeByName(notificationDTO.NotificationTypeName))
                                           .Returns((NotificationType?)null);
 
             // When

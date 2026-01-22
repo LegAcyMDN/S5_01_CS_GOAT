@@ -1,14 +1,15 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using System.Collections;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages user bans (admin operations)
+    /// </summary>
     [Route("api/Ban")]
     [ApiController]
     [SetThreadPrincipal]
@@ -24,15 +25,24 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all BanDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
-            IEnumerable<Ban> bans = await manager.GetAllAsyncOld(null, "BanType");
+            }
+
+            QueryOptions<Ban> options = new QueryOptions<Ban>()
+                .Before(b => b.BanType);
+            IEnumerable<Ban> bans = await manager.GetAllAsync(options);
             IEnumerable<BanDTO> bansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(new GetOptions<BanDTO>(Request, bansDTO));
         }
@@ -43,13 +53,18 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of BanDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, null, "BanType");
+            QueryOptions<Ban> queryOptions = new QueryOptions<Ban>()
+                .Before(b => b.BanType);
+            IEnumerable<Ban> bans = await authResult.GetByUser(manager, true, queryOptions);
             IEnumerable<BanDTO> userBansDTO = mapper.Map<IEnumerable<BanDTO>>(bans);
             return Ok(new GetOptions<BanDTO>(Request, userBansDTO));
         }
@@ -62,24 +77,36 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create(BanDTO banDTO)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if (!authResult.IsAdmin)
-                return Forbid();
+            }
 
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!authResult.IsAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             BanType? banType = typeManager.GetTypeByName(banDTO.BanTypeName);
             if (banType == null)
+            {
                 return BadRequest($"Invalid ban type: {banDTO.BanTypeName}");
+            }
 
             Ban ban = mapper.Map<Ban>(banDTO);
             ban.BanTypeId = banType.BanTypeId;
 
-            await manager.AddAsync(ban);
+            _ = await manager.AddAsync(ban);
 
             BanDTO createdBanDTO = mapper.Map<BanDTO>(ban);
             return CreatedAtAction("GetAll", new { id = ban.BanId }, createdBanDTO);
@@ -94,19 +121,32 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, BanDTO banDTO)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
 
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            Ban? banToUpdate = await manager.GetByIdAsyncNew(id);
-            if (banToUpdate == null) return NotFound();
+            Ban? banToUpdate = await manager.GetByIdAsync(id);
+            if (banToUpdate == null)
+            {
+                return NotFound();
+            }
 
             Ban ban = mapper.Map<Ban>(banDTO);
             await manager.UpdateAsync(banToUpdate, ban);

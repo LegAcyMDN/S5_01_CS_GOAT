@@ -1,13 +1,15 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages notifications (system, global, and user-specific)
+    /// </summary>
     [Route("api/Notification")]
     [ApiController]
     [SetThreadPrincipal]
@@ -25,39 +27,49 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all NotificationDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
-            IEnumerable<Notification> notifications = await manager.GetAllAsyncOld();
+            }
+
+            IEnumerable<Notification> notifications = await manager.GetAllAsync();
             if (!notifications.Any())
+            {
                 return NotFound();
+            }
 
             IEnumerable<NotificationDTO> notificationsDTO = mapper.Map<IEnumerable<NotificationDTO>>(notifications);
             return Ok(new GetOptions<NotificationDTO>(Request, notificationsDTO));
         }
 
         /// <summary>
-        /// Get relevant notifications for the authenticated user
+        /// Get relevant notifications for authenticated user (global and user-specific)
         /// </summary>
-        /// <param name="filters">Optional filter parameters</param>
-        /// <param name="sorts">Optional sort parameters</param>
-        /// <returns>List of NotificationDTO objects for the user (global + user-specific)</returns>
+        /// <returns>List of NotificationDTO objects (global + user-specific)</returns>
         [HttpGet("relevant")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRelevant()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            IEnumerable<GlobalNotification> globalNotifications = await globalNotificationManager.GetAllAsyncOld();
+            IEnumerable<GlobalNotification> globalNotifications = await globalNotificationManager.GetAllAsync();
             IEnumerable<UserNotification> userNotifications = await authResult.GetByUser(userNotificationManager, false);
 
             List<Notification> allRelevantNotifications =
@@ -80,9 +92,11 @@ namespace S5_01_App_CS_GOAT.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDetails(int id)
         {
-            Notification? notification = await manager.GetByIdAsyncNew(id);
+            Notification? notification = await manager.GetByIdAsync(id);
             if (notification == null)
+            {
                 return NotFound();
+            }
 
             NotificationDTO notificationDTO = mapper.Map<NotificationDTO>(notification);
             return Ok(notificationDTO);

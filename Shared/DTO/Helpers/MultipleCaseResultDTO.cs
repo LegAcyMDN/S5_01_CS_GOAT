@@ -1,8 +1,8 @@
-﻿namespace Shared.DTO.Helpers
+namespace Shared.DTO.Helpers
 {
     public class MultipleCaseResultDTO
     {
-        public Dictionary<int, SkinDTO> Skins { get; set; } = new Dictionary<int, SkinDTO>();
+        public Dictionary<int, SkinDTO> Skins { get; set; } = [];
 
         public int CaseId { get; set; }
 
@@ -18,6 +18,6 @@
 
         public int ContentLength { get; set; } = 1;
 
-        public List<IndividualCaseResultDTO> Results { get; set; } = new List<IndividualCaseResultDTO>();
+        public List<IndividualCaseResultDTO> Results { get; set; } = [];
     }
 }

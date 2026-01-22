@@ -1,14 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using S5_01_App_CS_GOAT.Controllers;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
+using S5_01_App_CS_GOAT.Services;
 using S5_01_App_CS_GOATTests.Fixtures;
-using System.Collections.Generic;
-using System.Threading;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 {
@@ -31,9 +29,11 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
             caseWithSkins = SkinFixture.GetCaseWithSkins();
             skinDTOs = SkinFixture.GetSkinDTOs();
 
+            var skinRepositoryMock = new Mock<IReadableRepository<Skin, int>>();
             controller = new SkinController(
                 mapperMock.Object,
-                caseRepositoryMock.Object
+                caseRepositoryMock.Object,
+                skinRepositoryMock.Object
             );
         }
 
@@ -48,15 +48,15 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
         [TestMethod]
         public void GetByCase_ValidCaseId_ReturnsOk()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 1,
-              "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
+                It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync(caseWithSkins);
-            
-            List<CaseContent> caseContents = caseWithSkins.CaseContents.ToList();
-            mapperMock.Setup(m => m.Map<SkinDTO>(caseContents[0].Skin))
+
+            var caseContents = caseWithSkins.CaseContents.ToList();
+            _ = mapperMock.Setup(m => m.Map<SkinDTO>(caseContents[0].Skin))
                        .Returns(skinDTOs[0]);
-            mapperMock.Setup(m => m.Map<SkinDTO>(caseContents[1].Skin))
+            _ = mapperMock.Setup(m => m.Map<SkinDTO>(caseContents[1].Skin))
                        .Returns(skinDTOs[1]);
 
             // When
@@ -64,20 +64,20 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
-            OkObjectResult okResult = (OkObjectResult)result;
+            var okResult = (OkObjectResult)result;
             Assert.IsNotNull(okResult.Value);
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(
+            caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 1,
-               "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
+                It.IsAny<QueryOptions<Case>>()
             ), Times.Once);
         }
 
         [TestMethod]
         public void GetByCase_InvalidCaseId_ReturnsNotFound()
         {
-            caseRepositoryMock.Setup(r => r.GetByIdAsyncOld(
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(
                 999,
-             "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
+                It.IsAny<QueryOptions<Case>>()
             )).ReturnsAsync((Case?)null);
 
             // When
@@ -85,12 +85,66 @@ namespace S5_01_App_CS_GOATTests.Mocks.Controllers
 
             // Then
             Assert.IsInstanceOfType(result, typeof(NotFoundResult));
-            caseRepositoryMock.Verify(r => r.GetByIdAsyncOld(
+            caseRepositoryMock.Verify(r => r.GetByIdAsync(
                 999,
-              "CaseContents.Skin.Rarity", "CaseContents.Skin.PriceHistories.WearType", "CaseContents.Skin.Wears.WearType", "CaseContents.Skin.Item"
+                It.IsAny<QueryOptions<Case>>()
             ), Times.Once);
+        }
+
+        [TestMethod]
+        public void GetByCase_NegativeCaseId_ReturnsNotFound()
+        {
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(
+                -1,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync((Case?)null);
+
+            // When
+            IActionResult? result = controller.GetByCase(-1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByCase_ZeroCaseId_ReturnsNotFound()
+        {
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(
+                0,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync((Case?)null);
+
+            // When
+            IActionResult? result = controller.GetByCase(0).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+        }
+
+        [TestMethod]
+        public void GetByCase_CaseWithEmptySkins_ReturnsOkWithEmptyList()
+        {
+            var emptyCaseContents = new List<CaseContent>();
+            var caseWithNoSkins = new Case
+            {
+                CaseId = 1,
+                CaseName = "Empty Case",
+                CaseContents = emptyCaseContents
+            };
+
+            _ = caseRepositoryMock.Setup(r => r.GetByIdAsync(
+                1,
+                It.IsAny<QueryOptions<Case>>()
+            )).ReturnsAsync(caseWithNoSkins);
+
+            // When
+            IActionResult? result = controller.GetByCase(1).GetAwaiter().GetResult();
+
+            // Then
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
 
         #endregion
     }
 }
+

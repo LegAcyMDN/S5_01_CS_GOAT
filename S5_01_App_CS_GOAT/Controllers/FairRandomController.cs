@@ -1,13 +1,15 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Shared.DTO;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
+using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages provably fair random number sessions for verifiable gaming operations
+    /// </summary>
     [Route("api/FairRandom")]
     [ApiController]
     [SetThreadPrincipal]
@@ -17,39 +19,48 @@ namespace S5_01_App_CS_GOAT.Controllers
         IConfiguration configuration) : ControllerBase
     {
         /// <summary>
-        /// Get fair randoms for the authenticated user
+        /// Get resolved fair random sessions for the authenticated user (for verification)
         /// </summary>
         /// Only returns resolved FairRandoms
         /// <returns>List of FairRandomDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false, fr => fr.UserId == null, "RandomTransaction", "UpgradeResult.RandomTransaction");
+            QueryOptions<FairRandom> queryOptions = new QueryOptions<FairRandom>()
+                .Before(fr => fr.UserId == null)
+                .Before(fr => fr.RandomTransaction)
+                .Before("UpgradeResult.RandomTransaction");
+            IEnumerable<FairRandom> fairRandoms = await authResult.GetByUser(manager, false, queryOptions);
 
             IEnumerable<FairRandomDTO> userFairRandomsDTO = mapper.Map<IEnumerable<FairRandomDTO>>(fairRandoms);
             return Ok(new GetOptions<FairRandomDTO>(Request, userFairRandomsDTO));
         }
 
         /// <summary>
-        /// Get unresolved FairRandom ServerHash for user
+        /// Get unresolved FairRandom server hash for the current session
         /// </summary>
-        /// Can dynamically create a new FairRandom if none exists
-        /// <returns>ServerHash string</returns>
-        /// <response code="200">Returns the ServerHash string</response>
+        /// Can dynamically create a new FairRandom session if none exists
+        /// <returns>ServerHash string for client-side verification</returns>
         [HttpGet("serverhash")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetServerHash()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            FairRandom next = await manager.Init(authResult.AuthUserId.Value, true);
+            FairRandom next = await manager.Init(authResult.AuthUserId!.Value, true);
             return Ok(next.ServerHash);
         }
     }

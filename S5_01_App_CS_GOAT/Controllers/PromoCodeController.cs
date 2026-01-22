@@ -1,16 +1,16 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Shared.DTO;
-using Shared.DTO.Helpers;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
 using S5_01_App_CS_GOAT.Services;
-using Microsoft.EntityFrameworkCore;
+using Shared.DTO;
+using Shared.DTO.Helpers;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages promotional codes for discounts on cases
+    /// </summary>
     [Route("api/PromoCode")]
     [ApiController]
     [SetThreadPrincipal]
@@ -22,30 +22,42 @@ namespace S5_01_App_CS_GOAT.Controllers
     ) : ControllerBase
     {
         /// <summary>
-        /// Check if code is valid and retrieve promo code details
+        /// Check if promo code is valid and retrieve discount details
         /// </summary>
-        /// <param name="code"></param>
-        /// <returns>The promocode object if valid and usable by the user</returns>
+        /// <param name="code">The promotional code to check</param>
+        /// <param name="caseId">Optional case ID to calculate final price</param>
+        /// <returns>Promo code details with discount information</returns>
         [HttpGet("check/{code}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Check(string code, int? caseId)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             Case? targetCase = null;
             if (caseId != null)
             {
-                targetCase = await caseRepository.GetByIdAsyncNew(caseId.Value);
-                if (targetCase == null) return NotFound();
+                targetCase = await caseRepository.GetByIdAsync(caseId.Value);
+                if (targetCase == null)
+                {
+                    return NotFound();
+                }
             }
             PromoCode? promoCode = await manager.Check(
                 code,
-                authResult.AuthUserId.Value,
+                authResult.AuthUserId!.Value,
                 caseId
             );
-            if (promoCode == null) return NotFound();
+            if (promoCode == null)
+            {
+                return NotFound();
+            }
+
             CasePromoCodeDTO dto = mapper.Map<CasePromoCodeDTO>(promoCode);
             if (targetCase != null)
             {
@@ -67,17 +79,21 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
+            }
 
-            var promoCodes = await manager.GetAllAsyncOld(
-                where: null,
-                includes: new[] { "Case", "User" }
-            );
+            QueryOptions<PromoCode> queryOptions = new QueryOptions<PromoCode>()
+                .Before(p => p.User, p => p.Case);
+            IEnumerable<PromoCode> promoCodes = await manager.GetAllAsync(queryOptions);
+            IEnumerable<PromoCodeDTO> promoCodeDtos = promoCodes
+                .Select(pc => mapper.Map<PromoCodeDTO>(pc));
 
-            var promoCodeDtos = mapper.Map<IEnumerable<PromoCodeDTO>>(promoCodes);            
-            
             return Ok(new GetOptions<PromoCodeDTO>(Request, promoCodeDtos));
         }
 
@@ -89,23 +105,34 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPost("create")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Create([FromBody] PromoCodeDTO promoCodeDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             // Mapper DTO -> Entity
-            var promoCode = mapper.Map<PromoCode>(promoCodeDto);
-            
+            PromoCode promoCode = mapper.Map<PromoCode>(promoCodeDto);
+
             PromoCode createdPromoCode = await manager.AddAsync(promoCode);
-            
+
             // Mapper l'entité créée vers DTO pour la réponse
-            var createdDto = mapper.Map<PromoCodeDTO>(createdPromoCode);
-            
+            PromoCodeDTO createdDto = mapper.Map<PromoCodeDTO>(createdPromoCode);
+
             return CreatedAtAction(nameof(GetAll), new { id = createdPromoCode.PromoCodeId }, createdDto);
         }
 
@@ -118,23 +145,36 @@ namespace S5_01_App_CS_GOAT.Controllers
         [HttpPut("update/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Update(int id, [FromBody] PromoCodeDTO promoCodeDto)
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
-            if (!authResult.IsAdmin)
-                return Forbid();
-            if (!ModelState.IsValid) 
-                return BadRequest(ModelState);
+            }
 
-            PromoCode? existingPromoCode = await manager.GetByIdAsyncNew(id);
-            if (existingPromoCode == null) return NotFound();
+            if (!authResult.IsAdmin)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            PromoCode? existingPromoCode = await manager.GetByIdAsync(id);
+            if (existingPromoCode == null)
+            {
+                return NotFound();
+            }
 
             // Mapper les modifications du DTO vers l'entité existante
-            var updatedPromoCode = mapper.Map<PromoCode>(promoCodeDto);
-            
+            PromoCode updatedPromoCode = mapper.Map<PromoCode>(promoCodeDto);
+
             await manager.UpdateAsync(existingPromoCode, updatedPromoCode);
             return NoContent();
         }
@@ -151,12 +191,20 @@ namespace S5_01_App_CS_GOAT.Controllers
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            var promoCode = await manager.GetByIdAsyncNew(id);
-            if (promoCode == null) 
+            }
+
+            PromoCode? promoCode = await manager.GetByIdAsync(id);
+            if (promoCode == null)
+            {
                 return NotFound();
+            }
 
             await manager.DeleteAsync(promoCode);
             return NoContent();

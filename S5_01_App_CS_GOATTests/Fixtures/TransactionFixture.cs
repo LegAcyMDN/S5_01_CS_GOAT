@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using Shared.DTO;
 
@@ -195,6 +193,39 @@ namespace S5_01_App_CS_GOATTests.Fixtures
                 ItemTypeName = "Rifle",
                 Uuid = "test-uuid-1",
                 RarityColor = "#4B69FF"
+            };
+        }
+
+        public static List<ItemTransactionDetailDTO> GetItemTransactionDetailDTOs()
+        {
+            return new List<ItemTransactionDetailDTO>
+            {
+                new ItemTransactionDetailDTO
+                {
+                    InventoryItemId = 1,
+                    TransactionDate = DateTime.Now.AddDays(-5),
+                    WalletValue = 15.50,
+                    CancelledOn = null,
+                    WearName = "Field-Tested",
+                    SkinName = "Redline",
+                    ItemName = "AK-47",
+                    ItemTypeName = "Rifle",
+                    Uuid = "test-uuid-1",
+                    RarityColor = "#4B69FF"
+                },
+                new ItemTransactionDetailDTO
+                {
+                    InventoryItemId = 3,
+                    TransactionDate = DateTime.Now.AddDays(-2),
+                    WalletValue = 45.00,
+                    CancelledOn = null,
+                    WearName = "Minimal Wear",
+                    SkinName = "Phantom Disruptor",
+                    ItemName = "M4A1-S",
+                    ItemTypeName = "Rifle",
+                    Uuid = "test-uuid-3",
+                    RarityColor = "#D2A679"
+                }
             };
         }
 

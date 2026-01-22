@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -8,6 +7,9 @@ using Shared.DTO;
 
 namespace S5_01_App_CS_GOAT.Controllers
 {
+    /// <summary>
+    /// Manages money transaction records (wallet debits/credits and payments)
+    /// </summary>
     [Route("api/MoneyTransaction")]
     [ApiController]
     [SetThreadPrincipal]
@@ -23,14 +25,19 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of MoneyTransactionDTO objects for the user</returns>
         [HttpGet("byuser")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetByUser()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
 
-            IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false, null, "PaymentMethod");
+            QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
+                .Before(e => e.PaymentMethod);
+            IEnumerable<MoneyTransaction> transactions = await authResult.GetByUser(manager, false, queryOptions);
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }
@@ -41,16 +48,25 @@ namespace S5_01_App_CS_GOAT.Controllers
         /// <returns>List of all MoneyTransactionDTO objects</returns>
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAll()
         {
             AuthResult authResult = JwtService.JwtAuth(configuration);
             if (!authResult.IsAuthenticated)
+            {
                 return Unauthorized();
+            }
+
             if (!authResult.IsAdmin)
+            {
                 return Forbid();
-            
-            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsyncOld(null, "PaymentMethod");
+            }
+
+            QueryOptions<MoneyTransaction> queryOptions = new QueryOptions<MoneyTransaction>()
+                .Before(e => e.PaymentMethod);
+            IEnumerable<MoneyTransaction> transactions = await manager.GetAllAsync(queryOptions);
             IEnumerable<MoneyTransactionDTO> transactionsDto = mapper.Map<IEnumerable<MoneyTransactionDTO>>(transactions);
             return Ok(new GetOptions<MoneyTransactionDTO>(Request, transactionsDto));
         }

@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using S5_01_Blazor_CS_GOAT.Service;
 
 public class StripeService
@@ -15,17 +16,8 @@ public class StripeService
 
     public async Task<string?> CreateCheckoutSessionAsync(double amount)
     {
-        int? userId = await _authService.GetUserIdAsync();
-        
-        if (userId == null)
-        {
-            Console.WriteLine("User not authenticated");
-            return null;
-        }
-        
         var request = new
         {
-            userId = userId.Value,
             amount = amount,
             #if DEBUG
             successUrl = "https://localhost:7030/payment-success",
@@ -49,17 +41,11 @@ public class StripeService
     
     public async Task<string?> CreateWithdrawalSessionAsync(double amount)
     {
-        int? userId = await _authService.GetUserIdAsync();
-        
-        if (userId == null)
-        {
-            Console.WriteLine("User not authenticated");
-            return null;
-        }
+        var token = await _authService.GetTokenAsync();
+        if (string.IsNullOrEmpty(token)) return null;
         
         var request = new
         {
-            userId = userId.Value,
             amount = amount,
 #if DEBUG
             successUrl = "https://localhost:7030/withdrawal-success",
@@ -70,12 +56,25 @@ public class StripeService
 #endif
         };
 
-        var response = await _httpClient.PostAsJsonAsync("stripe/create-payout-session", request);
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "stripe/create-payout-session")
+        {
+            Content = JsonContent.Create(request),
+            Headers =
+            {
+                Authorization = new AuthenticationHeaderValue("Bearer", token)
+            }
+        };
+
+        var response = await _httpClient.SendAsync(requestMessage);
         
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<CheckoutResponse>();
             return result?.Url;
+        }
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
         }
 
         return null;

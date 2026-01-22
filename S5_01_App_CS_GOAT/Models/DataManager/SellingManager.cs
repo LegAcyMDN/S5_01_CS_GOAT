@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore.Storage;
 using S5_01_App_CS_GOAT.Models.EntityFramework;
 using S5_01_App_CS_GOAT.Models.Repository;
@@ -8,6 +6,9 @@ using S5_01_App_CS_GOAT.Services;
 
 namespace S5_01_App_CS_GOAT.Models.DataManager
 {
+    /// <summary>
+    /// Manages the selling of inventory items and corresponding wallet transactions
+    /// </summary>
     public class SellingManager : ISellingRepository
     {
         protected readonly CSGOATDbContext _context;
@@ -31,41 +32,63 @@ namespace S5_01_App_CS_GOAT.Models.DataManager
             _itemTransactionRepository = itemTransactionRepository;
         }
 
+        /// <summary>
+        /// Sells an inventory item by ID, crediting the current price to the user's wallet
+        /// </summary>
+        /// <param name="invItemId">The inventory item ID to sell</param>
+        /// <returns>HTTP status code indicating success (204), not found (404), or error</returns>
         public async Task<int> SellAsync(int invItemId)
         {
             QueryOptions<InventoryItem> options = new QueryOptions<InventoryItem>()
                 .Before(i => i.User)
                 .After(i => i.Wear.WearClass.PriceHistories);
-            InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsyncNew(
+            InventoryItem? invItem = await _inventoryItemRepository.GetByIdAsync(
                 invItemId,
                 options
             );
-            if (invItem == null) return StatusCodes.Status404NotFound;
-            return await SellAsync(invItem);
+            return invItem == null ? StatusCodes.Status404NotFound : await SellAsync(invItem);
         }
 
+        /// <summary>
+        /// Sells an inventory item, marking it as removed and crediting the price to wallet
+        /// </summary>
+        /// <param name="invItem">The inventory item to sell</param>
+        /// <returns>HTTP status code (204 success, 410 already removed, 503 price unavailable)</returns>
+        /// <remarks>
+        /// This method:
+        /// 1. Checks if item is already removed (410 Gone)
+        /// 2. Gets current price from price history (503 if unavailable)
+        /// 3. Marks item as removed with current timestamp
+        /// 4. Credits wallet with item price
+        /// 5. Creates ItemTransaction record
+        /// Uses database transaction for atomicity.
+        /// </remarks>
         public async Task<int> SellAsync(InventoryItem invItem)
         {
-            // TODO: Check if the user is not restricted by a ban
-            // return StatusCodes.Status403Forbidden;
+            if (invItem.RemovedOn != null)
+            {
+                return StatusCodes.Status410Gone;
+            }
 
-            if (invItem.RemovedOn != null) return StatusCodes.Status410Gone;
             using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
 
             double? currentPrice = invItem.Wear.CurrentPrice;
-            if (currentPrice == null) return StatusCodes.Status503ServiceUnavailable;
+            if (currentPrice == null)
+            {
+                return StatusCodes.Status503ServiceUnavailable;
+            }
 
             invItem.RemovedOn = DateTime.Now;
             invItem.User.Wallet += (double)currentPrice;
-            ItemTransaction itemTransaction = new ItemTransaction()
+            var itemTransaction = new ItemTransaction()
             {
                 WalletValue = (double)currentPrice,
                 InventoryItemId = invItem.InventoryItemId,
                 UserId = invItem.UserId,
             };
-            await _itemTransactionRepository.AddAsync(itemTransaction);
+            _ = await _itemTransactionRepository.AddAsync(itemTransaction);
             await _inventoryItemRepository.UpdateAsync(invItem);
-            await _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             return StatusCodes.Status204NoContent;
         }
